@@ -14,7 +14,8 @@ except Exception:  # pragma: no cover
 SRC_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.abspath(os.path.join(SRC_DIR, ".."))
 CONFIG_FILE = os.path.join(ROOT_DIR, "config.yaml")
-LONG_RANGE_DAYS_THRESHOLD = 7
+LONG_RANGE_DAYS_THRESHOLD = 10
+MAIN_DEFAULT_DAYS = 9
 SKIMS_FETCH_DAYS_THRESHOLD = 11
 
 
@@ -54,20 +55,20 @@ def build_run_date_token(days: int) -> str:
 def resolve_run_date_token(fetch_days: int | None) -> str:
     """
     统一运行日期标识：
-    - 大窗口（>阈值）使用区间 token：YYYYMMDD-YYYYMMDD
+    - 大窗口（>=阈值）使用区间 token：YYYYMMDD-YYYYMMDD
     - 其它情况使用单日 token：YYYYMMDD
     """
     if fetch_days is not None:
-        if fetch_days > LONG_RANGE_DAYS_THRESHOLD:
+        if fetch_days >= LONG_RANGE_DAYS_THRESHOLD:
             return build_run_date_token(fetch_days)
         return datetime.now(timezone.utc).strftime("%Y%m%d")
 
     setting = load_arxiv_paper_setting()
     try:
-        days_window = int(setting.get("days_window") or 0)
+        days_window = int(setting.get("days_window") or MAIN_DEFAULT_DAYS)
     except Exception:
-        days_window = 0
-    if days_window > LONG_RANGE_DAYS_THRESHOLD:
+        days_window = MAIN_DEFAULT_DAYS
+    if days_window >= LONG_RANGE_DAYS_THRESHOLD:
         return build_run_date_token(days_window)
     return datetime.now(timezone.utc).strftime("%Y%m%d")
 
@@ -75,18 +76,18 @@ def resolve_run_date_token(fetch_days: int | None) -> str:
 def resolve_sidebar_date_label(fetch_days: int | None) -> str | None:
     # 1) 显式传 --fetch-days 时，仅在大窗口模式下显示日期范围。
     if fetch_days is not None:
-        if fetch_days > LONG_RANGE_DAYS_THRESHOLD:
+        if fetch_days >= LONG_RANGE_DAYS_THRESHOLD:
             return build_sidebar_date_label(fetch_days)
         return None
 
     # 2) 未显式传入时，按 config 的 days_window 判断：
-    #    仅在“大时间跨度”模式（默认阈值 >7 天）自动显示区间标题。
+    #    仅在“大时间跨度”模式（默认阈值 >=10 天）自动显示区间标题。
     setting = load_arxiv_paper_setting()
     try:
-        days_window = int(setting.get("days_window") or 0)
+        days_window = int(setting.get("days_window") or MAIN_DEFAULT_DAYS)
     except Exception:
-        days_window = 0
-    if days_window > LONG_RANGE_DAYS_THRESHOLD:
+        days_window = MAIN_DEFAULT_DAYS
+    if days_window >= LONG_RANGE_DAYS_THRESHOLD:
         return build_sidebar_date_label(days_window)
     return None
 
