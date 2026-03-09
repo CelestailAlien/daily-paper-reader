@@ -2349,6 +2349,34 @@ article.markdown-section {
   border-right: none !important; /* 移除 Docsify 主题默认的右侧彩色竖线 */
 }
 
+/* 首页 / 使用教程 这类顶层入口保持同级排版；其中“使用教程”不显示选中态 */
+.sidebar-nav a.dpr-sidebar-root-link,
+.sidebar-nav a.dpr-sidebar-root-link:link,
+.sidebar-nav a.dpr-sidebar-root-link:visited {
+  display: block;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  background: transparent !important;
+  font-weight: 400 !important;
+}
+
+.sidebar-nav a.dpr-sidebar-noactive-link.active,
+.sidebar-nav a.dpr-sidebar-noactive-link.router-link-active,
+.sidebar-nav li.active > a.dpr-sidebar-noactive-link {
+  color: inherit !important;
+  background: transparent !important;
+  border-right: none !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+}
+
+.sidebar-nav li:has(> a.dpr-sidebar-noactive-link).active {
+  background: transparent !important;
+  border-right: none !important;
+}
+
 /* 对“不错 / 一般”评价的条目，选中时仍保持各自的绿色 / 粉色 */
 .sidebar-nav li.sidebar-paper-good > a {
   color: #73d13d !important; /* 未选中：更浅的绿色 */
