@@ -25,3 +25,166 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: CV
+      description: 计算机视觉基础与前沿，关注视觉表征学习、识别、检测、分割、生成模型与视觉 Transformer。
+      enabled: true
+      paper_sources:
+        - arxiv
+        - biorxiv
+      keywords:
+        - keyword: object detection
+          keyword_cn: ''
+          query: object detection
+        - keyword: image recognition
+          keyword_cn: ''
+          query: image recognition
+        - keyword: representation learning
+          keyword_cn: ''
+          query: representation learning
+        - keyword: vision transformer
+          keyword_cn: ''
+          query: vision transformer
+        - keyword: computer vision
+          keyword_cn: 计算机视觉
+          query: computer vision
+      intent_queries:
+        - query: Prioritize survey papers and highly cited method papers in modern computer vision.
+          query_cn: 优先推荐现代计算机视觉中的综述和高引用方法论文。
+          enabled: true
+          source: manual
+          note: ''
+        - query: Recommend papers on image recognition, detection, and segmentation with strong experimental results.
+          query_cn: 推荐图像识别、检测、分割方向且实验结果较强的论文。
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            Find recent and influential papers in computer vision, especially representation learning and vision
+            transformers.
+          query_cn: 查找计算机视觉中近期且有影响力的论文，重点关注表征学习与视觉Transformer。
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-04-01T09:08:58.184Z'
+    - tag: LLM-MLLM-MoE
+      description: 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: mixture of experts
+          keyword_cn: 专家混合
+          query: mixture of experts
+        - keyword: routing mechanism
+          keyword_cn: 路由机制
+          query: instruction tuning
+        - keyword: sparse model
+          keyword_cn: 稀疏模型
+          query: multimodal reasoning
+        - keyword: vision-language model
+          keyword_cn: 视觉语言模型
+          query: vision-language model
+        - keyword: multimodal large language model
+          keyword_cn: 多模态大语言模型
+          query: multimodal large language model
+        - keyword: large language model
+          keyword_cn: 大语言模型
+          query: large language model
+      intent_queries:
+        - query: Focus on vision language and multimodal reasoning papers that use mixture of experts.
+          query_cn: 重点关注采用专家混合的视觉语言和多模态推理论文。
+          enabled: true
+          source: generated
+          note: ''
+        - query: Prioritize survey papers and representative model papers on MoE in language and multimodal models
+          query_cn: 优先推荐语言模型与多模态模型中 MoE 的综述和代表性模型论文。
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and
+            MLLMs.
+          query_cn: 推荐 LLM 和 MLLM 中关于稀疏 MoE 架构、路由、负载均衡和高效扩展的论文。
+          enabled: true
+          source: manual
+          note: ''
+        - query: Find recent papers on large language models, multimodal large language models, and mixture of experts.
+          query_cn: 查找大语言模型、多模态大语言模型与专家混合方向的近期论文。
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-04-01T09:16:58.063Z'
+    - tag: ModelMerge
+      description: 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: model composition
+          keyword_cn: 模型组合
+          query: model composition
+        - keyword: parameter alignment
+          keyword_cn: 参数对齐
+          query: parameter alignment
+        - keyword: task arithmetic
+          keyword_cn: 任务向量算术
+          query: task arithmetic
+        - keyword: weight averaging
+          keyword_cn: 权重平均
+          query: weight averaging
+        - keyword: model fusion
+          keyword_cn: 模型融合
+          query: model fusion
+        - keyword: model merging
+          keyword_cn: 模型合并
+          query: model merging
+      intent_queries:
+        - query: Focus on practical and theoretical papers about model merging in LLMs and multimodal models.
+          query_cn: 重点关注 LLM 和多模态模型中 model merging 的理论与实践论文。
+          enabled: true
+          source: generated
+          note: ''
+        - query: Prioritize survey papers and method papers on merging fine tuned models without retraining.
+          query_cn: 优先推荐无需重新训练即可合并微调模型的综述和方法论文。
+          enabled: true
+          source: manual
+          note: ''
+        - query: Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.
+          query_cn: 推荐权重平均、任务向量、参数对齐和模型组合方向的论文。
+          enabled: true
+          source: manual
+          note: ''
+        - query: Find recent papers on model merging and model fusion for neural networks and large language models.
+          query_cn: 查找神经网络和大语言模型中的模型合并与模型融合论文。
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-04-01T09:17:41.583Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
+  biorxiv:
+    papers_table: biorxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_biorxiv_papers_exact
+    vector_rpc_exact: match_biorxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_biorxiv_papers_bm25
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
