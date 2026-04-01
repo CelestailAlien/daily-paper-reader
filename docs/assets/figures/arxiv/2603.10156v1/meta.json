@@ -1,0 +1,86 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-001.webp",
+      "caption": "Table 8. Training hyperparameters for LoRA and full fine-tuning on Mistral-7B-Instruct-v0.2 and Gemma models.",
+      "page": 15,
+      "index": 1,
+      "width": 425,
+      "height": 321
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-002.webp",
+      "caption": "Table 9. Selected learning rates. Best learning rate per model, setup, method, and task, chosen by maximizing mean validation accuracy across seeds. LoRA rates are swept over [5e−5, 5e−4]; full fine-tuning rates over [5e−6, 5e−5].",
+      "page": 15,
+      "index": 2,
+      "width": 1008,
+      "height": 376
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-003.webp",
+      "caption": "Table 5. Wall-clock training time across all models. Training time in seconds at the best learning rate. Mashup includes relevance estimation and merge overhead, with training time scaled by convergence percentage. Ratio < 100% means Mashup is faster.",
+      "page": 7,
+      "index": 3,
+      "width": 991,
+      "height": 471
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-004.webp",
+      "caption": "Figure 3. Mean rank by accuracy of each combination of merging method and number of merged models across 8 benchmarks (ARCEasy, CommonsenseQA, HellaSwag, MathQA, OpenBookQA, PIQA, SocialIQA, Winogrande) in a leave-one-out setup for Mistral-7B-Instruct-v0.2.",
+      "page": 7,
+      "index": 4,
+      "width": 489,
+      "height": 246
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-005.webp",
+      "caption": "Figure 7. Gemma-3 4B: per-task learning rate sensitivity.",
+      "page": 18,
+      "index": 5,
+      "width": 1003,
+      "height": 538
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-006.webp",
+      "caption": "Figure 4. Gemma-3 4B LoRA sensitivity of training results to learning rates. Mean accuracy on 8 benchmarks across 3 seeds",
+      "page": 8,
+      "index": 6,
+      "width": 475,
+      "height": 330
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-007.webp",
+      "caption": "Table 2. Finetuning methods comparison on Mistral-7B-Instruct-v0.2, Lots-of-LoRAs setup. Accuracy results across six benchmarks comparing different LoRA merging and initialization approaches. The best result is highlighted in bold.",
+      "page": 4,
+      "index": 7,
+      "width": 817,
+      "height": 196
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-008.webp",
+      "caption": "Figure 6. Gemma-2 2B: per-task learning rate sensitivity.",
+      "page": 17,
+      "index": 8,
+      "width": 1002,
+      "height": 546
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-009.webp",
+      "caption": "Table 3. Mashup Learning vs. training from scratch, leave-one-out setup. Average accuracy results across eight benchmarks over three seeds. The best result for each model is highlighted in bold.",
+      "page": 5,
+      "index": 9,
+      "width": 1008,
+      "height": 356
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10156v1/fig-010.webp",
+      "caption": "Figure 5. Gemma-3 1B: per-task learning rate sensitivity.",
+      "page": 16,
+      "index": 10,
+      "width": 1003,
+      "height": 965
+    }
+  ]
+}

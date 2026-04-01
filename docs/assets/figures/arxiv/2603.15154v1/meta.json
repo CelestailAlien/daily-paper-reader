@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.15154v1/fig-001.webp",
+      "caption": "Figure 1. Overview of the proposed three-stage source-aware multi-expert framework for multi-source COVID-19 CT classification. Stage 1 builds a lung-aware 3D expert for volumetric classification. Stage 2 introduces two MedSigLIP-based 2D experts for slice-wise probability learning and inter-slice context modeling. Stage 3 performs source discrimination and source-specific expert inference, where source 0 is handled by the 3D expert and source 1/2/3 are jointly inferred by multiple experts through fusion and voting.",
+      "page": 2,
+      "index": 1,
+      "width": 1036,
+      "height": 1025
+    }
+  ]
+}

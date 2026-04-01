@@ -1,0 +1,86 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-001.webp",
+      "caption": "Table 6: Comparison of MoE-style and LoRA-based composition methods for model merging. Memory overhead is relative to base model size.",
+      "page": 26,
+      "index": 1,
+      "width": 822,
+      "height": 442
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-002.webp",
+      "caption": "Table 3: Comparison of weight-space averaging and geometric interpolation methods for model merging.",
+      "page": 15,
+      "index": 2,
+      "width": 822,
+      "height": 492
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-003.webp",
+      "caption": "Table 4: Comparison of task vector arithmetic and sparsification-enhanced methods for model merging.",
+      "page": 22,
+      "index": 3,
+      "width": 822,
+      "height": 349
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-004.webp",
+      "caption": "Table 1: Overview of major open-weight foundation models (Brown et al., 2020; Team, 2024b) commonly used in model merging research. These models serve as the base for fine-tuning and subsequent merging experiments.",
+      "page": 3,
+      "index": 4,
+      "width": 822,
+      "height": 232
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-005.webp",
+      "caption": "Figure 1: Overview of the model merging pipeline. Task-specific models {θ1, . . . , θK}, obtained by fine-tuning a shared pretrained checkpoint θ0, are combined via one of several strategies (Sections 3–5) into a single model θmerged, which is then evaluated on all source tasks. Gray vertical bars represent the many-to-many mapping between model inputs and merging strategies.",
+      "page": 3,
+      "index": 5,
+      "width": 752,
+      "height": 198
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-006.webp",
+      "caption": "Figure 3: Four fundamental task vector operations. (a) Addition combines multiple task vectors into a single model. (b) Negation subtracts a task vector to remove unwanted behavior. (c) Scaling controls task influence via λ. (d) Analogy transfers the relationship between two tasks.",
+      "page": 18,
+      "index": 6,
+      "width": 826,
+      "height": 383
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-007.webp",
+      "caption": "Table 5: Unified comparison of representative model merging methods. Data-Free: no training/calibration data required. Interference: explicit handling of parameter conflicts. Shared Init: requires common pretrained initialization.",
+      "page": 23,
+      "index": 7,
+      "width": 822,
+      "height": 703
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-008.webp",
+      "caption": "Figure 4: Evolution of model merging techniques. The field progressed from foundational loss landscape theory (2018–2020), through weight-space averaging (2022) and interferenceaware task vectors (2023), to adaptive/evolutionary optimization and standardized ecosystem tooling (2024–2025). Arrows indicate the conceptual flow and inheritance of ideas across phases.",
+      "page": 40,
+      "index": 8,
+      "width": 822,
+      "height": 423
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-009.webp",
+      "caption": "Figure 2: The FUSE taxonomy. Foundations (§2): why merging works. Unification (§3–§5): how models are combined. Scenarios (§6): where merging applies. Ecosystem (§7): what supports deployment.",
+      "page": 4,
+      "index": 9,
+      "width": 832,
+      "height": 206
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09938v1/fig-010.webp",
+      "caption": "Table 2: Comparison of theoretical foundations and concepts in model merging.",
+      "page": 9,
+      "index": 10,
+      "width": 822,
+      "height": 371
+    }
+  ]
+}

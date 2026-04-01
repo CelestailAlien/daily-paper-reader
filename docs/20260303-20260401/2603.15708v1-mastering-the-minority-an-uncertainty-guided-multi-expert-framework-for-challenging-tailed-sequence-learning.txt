@@ -1,0 +1,562 @@
+Title: Mastering the Minority: An Uncertainty-guided Multi-Expert Framework for Challenging-tailed Sequence Learning
+
+URL Source: https://arxiv.org/pdf/2603.15708v1
+
+Published Time: Wed, 18 Mar 2026 00:04:31 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+> IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 1
+
+# Mastering the Minority: An Uncertainty-guided Multi-Expert Framework for Challenging-tailed Sequence Learning 
+
+Ye Wang, Zixuan Wu, Lifeng Shen, Jiang Xie, Xiaoling Wang, Hong Yu, and Guoyin Wang 
+
+Abstract —Imbalanced data distribution remains a critical chal-lenge in sequential learning, leading models to easily recognize frequent categories while failing to detect minority classes ade-quately. The Mixture-of-Experts model offers a scalable solution, yet its application is often hindered by parameter inefficiency, poor expert specialization, and difficulty in resolving prediction conflicts. To Master the Minority classes effectively, we pro-pose the Uncertainty-based Multi-Expert fusion network (UME) framework. UME is designed with three core innovations: First, we employ Ensemble LoRA for parameter-efficient modeling, significantly reducing the trainable parameter count. Second, we introduce Sequential Specialization guided by Dempster-Shafer Theory (DST), which ensures effective specialization on the challenging-tailed classes. Finally, an Uncertainty-Guided Fusion mechanism uses DST’s certainty measures to dynamically weigh expert opinions, resolving conflicts by prioritizing the most confident expert for reliable final predictions. Extensive experiments across four public hierarchical text classification datasets demonstrate that UME achieves state-of-the-art per-formance. We achieve a performance gain of up to 17.97% over the best baseline on individual categories, while reducing trainable parameters by up to 10.32%. The findings highlight that uncertainty-guided expert coordination is a principled strategy for addressing challenging-tailed sequence learning. Our code is available at https://github.com/CQUPTWZX/Multi-experts. 
+
+Index Terms —Sequence learning, Uncertainty-fusion, Multi-expert Learning, Hierarchical Text Classification. 
+
+I. I NTRODUCTION 
+
+# IN sequence learning, imbalanced data distributions pose a major challenge, leading to situations where some cate-gories are easily recognized while others are difficult to detect [1]. Consequently, models often achieve high accuracy on fre-quent categories but perform poorly on rare or minority ones. Overlooking these minority categories can have severe conse-quences. For example, in medical applications, rare diseases are typically underrepresented in data, and failing to detect them undermines the reliability of evidence-based diagnosis [2]. Similarly, in financial security, anomalous transactions and novel attack patterns occur infrequently, and neglecting their detection can expose systems to significant risks [3]. 
+
+This work was sponsored by the National Natural Science Foundation of China (62306056,62136002,62221005). Ye Wang, Zixuan Wu, Lifeng Shen, Jiang Xie, and Hong Yu are with Key Laboratory of Cyberspace Big Data Intelligent Security, Ministry of Education; School of Artificial Intelligence, Chongqing University of Post and Telecommunications, Chongqing 400065, China. Xiaoling Wang is with the School of Computer Science and Technology, East China Normal University, Shanghai, 200062, China. Guoyin Wang is with the Chongqing Key Laboratory of Brain-Inspired Cognitive Computing and Educational Rehabilitation for Children with Spe-cial Needs, Chongqing Normal University, Chongqing, 401331, China. Corresponding author: Hong Yu (yuhong@cqupt.edu.cn) and Lifeng Shen (shenlf@cqupt.edu.cn). Root     
+
+> Entertainment Business
+> Movie TV Policy Company
+> Finance Management Documentary Action
+> 2nd Level Category
+> 3rd Level Category
+> 1st Level Category
+
+(a) A three-level label tree is used in the news recommendation scene. 1st  Level       
+
+> Category 2nd Level Category 3rd Level Category
+
+(b) Long-tailed label distribution and challenging-tailed performance. 
+
+Fig. 1: As the classification hierarchy becomes deeper, the number of samples per label decreases significantly, leading to a pronounced challenging-tailed problem and a sharp drop in the classification performance of minority classes. The problem caused by imbalanced data distributions be-comes particularly pronounced in hierarchical classification tasks, where the data distribution is inherently long-tailed [4], [5]. Specifically, in Figure 1(a), a label tree of three levels is shown from the news recommendation scene, while in Figure 1(b), we show the corresponding distribution of hierarchical labels. The objective of sequence learning here is to predict the specific leaf nodes to which a given text belongs. Figure 1 clearly exhibits that the more specific categories are typically concentrated at the lower levels of the hierarchy, making them harder to learn due to limited training samples. If these categories are overlooked, many leaf nodes in the classification tree will not be correctly covered, which compromises the integrity of the hierarchy and causes the loss of critical fine-grained information [6]–[8]. The Mixture of Experts (MoE) framework has recently emerged as a key technique for addressing data imbalance [9], [10]. It leverages multiple specialized sub-models, each designed to capture distinct patterns or handle specific data subsets. However, the main challenge is to ensure the proper coordination among these experts, which encourages sufficient specialization while maintaining global consistency. Determin- 
+
+> arXiv:2603.15708v1 [cs.LG] 16 Mar 2026 IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 2
+
+ing how to assign data to the most suitable experts and how to aggregate their outputs remains a critical problem. We propose that an effective multi-expert system must address three fundamental challenges. First, parameter ineffi-ciency arises when combining several large experts, leading to a sharp increase in parameters and high training and memory costs. Second, expert specialization is difficult to achieve. Without an explicit mechanism for task allocation, experts may converge to similar patterns, causing redundancy, overfitting, and poor coverage of data diversity. Third, expert opinion conflict appears when experts give inconsistent predictions, requiring a reliable strategy to handle these differences and produce stable results [11]. To address these challenges, we propose the Uncertainty-based Multi-Expert fusion network (UME). First, we tackle parameter inefficiency with Ensemble LoRA, which leverages Low-Rank Adaptation (LoRA) to enable lightweight multi-expert modeling. Each expert is fine-tuned with only a small number of trainable parameters. Second, to promote expert specialization, we propose a Sequential Specialization strategy based on the Dempster-Shafer evidence theory (DST) [12]. In this strategy, experts are trained one by one rather than at the same time. This approach encourages a natural division of labor. Later experts are specifically trained to focus on samples that earlier experts fail to classify correctly. As a result, experts develop distinct uncertainty profiles: early-stage experts show high uncertainty on difficult samples, while late-stage experts exhibit low uncertainty on the same samples they have been trained to master. Finally, UME integrates these signals through an Uncertainty-Guided Fusion mechanism, which dynamically assigns decision weights based on expert confidence and resolves conflicts by prioritizing the most certain expert for each sample. The main contributions of this work are summarized as follows: (1) We propose an efficient and effective multi-expert fusion network named UME, which improves the recognition of challenging-tailed categories in sequential learning. (2) We introduce a sequential specialization mechanism to promote expert diversity. Later added experts focus more on challenging-tailed samples, identifying through their predictive uncertainty. (3) To alleviate conflicts among experts, we leverage DST theory to dynamically integrate multiple experts based on their uncertainty, ensuring consistent and reliable decision fusion. (4) To enhance parameter efficiency, we incorporate low-rank experts, significantly reducing the number of trainable parameters by 10.32% and 7.19% compared with recent competitive baselines HiTIN (ACL’23) and HiAdv (COL-ING’24). Extensive experiments on four public datasets demonstrate that UME achieves state-of-the-art perfor-mance, particularly on challenging-tailed categories. II. R ELATED WORK 
+
+A. Hierarchical Text Classification 
+
+Hierarchical Text Classification (HTC) is an important re-search topic in natural language processing, where collections of documents contain hierarchically structured concepts. Cur-rently, HTC methods evolve into two main approaches, as defined by Silla and Freitas [13]. The first is local methods, which train specialized classifiers for specific nodes or levels without considering the entire hierarchy [14]. The second is global methods, which utilize the full hierarchical structure through penalties or hierarchy-aware models [15]. Early re-search mainly focuses on capturing local information, while recent studies emphasize leveraging global information by transferring knowledge across the hierarchy and incorporating it into predictions [16]. Additionally, with the advancement of pretrained language models, recent work continues to enhance the overall classification accuracy of HTC models. For example, Zhang et al. [17] enhance hierarchical text classi-fication performance through multi-label negative supervision and asymmetric loss by constructing a Hierarchy-Aware and Label-Balanced model (HALB). To address the challenges of long-document classification, Liu et al. [18] utilized an interactive graph network to align local and discourse-level textual features with label structure information. In contrast, Zhu et al. [19] present a strategy called Hierarchy-aware In-formation Lossless contrastive Learning (HILL) that improves HTC performance by retaining both semantic and syntactic information. Even though previous techniques have achieved good performance in HTC, training classification models for tailed labels remains more challenging than for head labels due to the long-tail label distribution, leading to underfitting of tailed labels. Xu et al. [20] propose the Label-Specific Feature Augmentation (LSFA) framework for text classification to improve tail label representations. It enhances rare labels by generating positive feature-label pairs and transferring intra-class semantic variations from head labels using a prototype-based VAE. Furthermore, challenging the reliance on a fixed label order, Yan et al. [21] explored a random generative method to learn the label hierarchy, demonstrating that a predefined order may not always be optimal. However, their approach does not account for the impact of hierarchy in addressing the underfitting issue of tailed labels. The hierarchy leverages multi-level semantic aggregation to build semantic bridges, enabling tail labels to learn richer context from head labels and enhance their representations. Thus, we propose to leverage multi-expert ensembles to im-prove classification accuracy by allowing experts to specialize in different tasks. By incorporating uncertainty-based weight-ing among experts, our method provides better support for challenging tail-label samples at lower levels of the hierarchy. 
+
+B. Uncertainty-based Text Classification 
+
+In recent years, uncertainty-aware methods have been in-creasingly explored to enhance text classification performance. For example, Mukherjee et al. [22] leverage Bayesian deep learning to estimate uncertainty for few-shot text classification. Li et al. [23] propose uncertainty-based criteria to identify hard samples during training, while Hu et al. [24] introduce an ev-idential uncertainty network for out-of-distribution detection. These studies demonstrate the effectiveness of Bayesian or evidential uncertainty modeling in improving robustness. IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 3
+
+While Bayesian approaches provide a principled treatment of uncertainty, many sampling-based methods (e.g., Monte Carlo Dropout [25]) require repeated stochastic forward passes at inference time, leading to increased computational cost. In contrast, we employ Dempster–Shafer Theory to model uncertainty directly from output evidence. Crucially, DST explicitly represents conflict between experts, allowing us to distinguish ignorance from disagreement. This capability is essential for our sequential fusion strategy, yet remains underexplored in long-tailed hierarchical text classification. 
+
+C. Multi-Expert Text Classification 
+
+Multi-expert learning fuses multiple single experts’ clas-sification results to improve the final performance [9], [26]. For example, Zhao et al. [27] propose a multi-expert method that assigns different models to learn global and local features separately, allowing for better classification of long-tailed data using a hierarchical approach. Subsequently, the optimal deci-sion threshold within the multi-expert method [28] is proposed, introducing a gating network to enhance the performance in classification. The Divide, Conquer, and Combine paradigm has been explored in sequence learning. For instance, Wang et al. [29] utilize it for zero-shot dialogue tracking. They explicitly partition data into semantic clusters and combine experts via distance-based mapping. In contrast, our UME framework adapts this paradigm for long-tailed classification with dis-tinct mechanisms. Instead of semantic clustering, we employ Sequential Specialization to divide the problem by sample difficulty. Furthermore, rather than distance-based inference, we utilize Dempster-Shafer Theory to combine experts. This approach specifically addresses the issue of conflicting expert predictions in imbalanced scenarios. However, regarding multi-expert in HTC, the issue occurs when different experts have varying opinions on the classi-fication results, causing conflicts in the overall multi-expert ensemble outcomes. Compared to previous approaches, the proposed method provides a more flexible solution for HTC, particularly in addressing the challenge of long-tailed category classification. In multi-expert networks, experts may produce conflicting opinions, making it crucial to effectively integrate their predictions. To tackle this, we propose to introduce an uncertainty-based multi-expert fusion framework that lever-ages DST for dynamic expert weighting. III. M ETHODOLOGY 
+
+In this Section, we formally elaborate on the proposed Uncertainty-based Multi-Expert fusion network (UME). We first introduce the Task Definition and the formal definitions of Evidence and Uncertainty in Section 3.1 Preparation. Section 3.2 introduces how to obtain representations of Text and Label Hierarchy, while proposing the Low-rank Experts constructed in Section 3.3. In our multi-expert framework, each expert extracts evidence from the input and formulates a classification opinion. We then construct the Uncertainty-based Multi-Expert Fusion Network (UME) in Section 3.4. The main workflow is illustrated in Figure 2, with the fusion process compris-ing three key steps (detailed in Section 3.4): i) uncertainty quantification; ii) uncertainty combination; and iii) likelihood-based optimization. Section 3.5 presents our training objective, which demonstrates how experts dynamically participate dur-ing training. 
+
+A. Preliminaries 
+
+In the HTC task, we are given a label set L =
+
+{l11, l 12, · · · , l HK }. organized into a hierarchical structure, typ-ically represented as a label tree. Here, H is the height of the hierarchical label tree, and K denotes the total number of labels in the set. The goal of HTC is to predict a subset of this label set for a given input text S = {c1, c 2, · · · , c N }, where 
+
+ci(i = 1 , . . . , N ) represents the input tokens, and N is the total number of tokens in the text. The task aims to assign the appropriate labels to the input text based on its content while considering the hierarchical relationships between labels. In the following, we provide the formal definitions of Evidence and Uncertainty used in the proposed fusion framework. 
+
+Definition 1. Evidence. In neural networks, logits are the outputs of the final layer in classification tasks and represent the model’s raw predictions before applying functions like softmax. These logits reflect the model’s confidence in each class. In Dempster-Shafer Theory (DST), evidence refers to the degree of support for a specific proposition, such as a sample belonging to a particular category. We treat logits as evidence because they provide a quantifiable measure of support for each class. Formally, we define evidence e = logits where 
+
+e = [ e1, e 2, · · · , e K ] for a total of K classes. This mapping aligns well with DST’s requirement for quantifiable support, as the logits directly represent the model’s assessment of how likely a sample belongs to each category. By using logits as evidence, we bridge the outputs of neural networks with DST, enabling the integration of uncertainty modeling and evidence fusion into our framework. This allows the model to better handle challenging classification tasks, such as those involving long-tailed distributions. 
+
+Definition 2. Uncertainty. Subjective Logic (SL) formalizes DST’s notion of belief assignments over a frame of discern-ment as a Dirichlet Distribution [30]. Hence, it allows one to use the principles of evidential theory to quantify belief masses and uncertainty through a well-defined theoretical framework. SL considers a frame by assigning belief mass 
+
+bk to the k-th class, k = 1 , . . . , K , thereby determining the overall uncertainty mass u. These K + 1 mass values are all non-negative and sum to 1, ensuring a complete and consistent distribution of belief and uncertainty. Uncertainty quantifies the trustworthiness of the classification results by distributing belief mass bk = αk −1 
+
+> S
+
+across possible labels. Here, αk represents the Dirichlet parameters for the k-th class, and S = PKk=1 (ek + 1) is the Dirichlet strength, reflecting the total amount of evidence. A larger S indicates more accumulated evidence, reducing uncertainty and leading to more confident belief assignments. When no evidence is present ( ek = 0 for all k), the belief for each class is IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 4Frozen  
+
+> Trainable
+> Taxonomic Hierarchy Text
+> Fusion
+> Embedding
+> BERT Encoder
+> Uncertainty Fusion
+> Sigmoid
+> Predict Label
+> Attention Mask
+> Tokens Key Tokens
+> Multiplication
+
+e
+
+u
+
+> C
+> Evidence
+> Uncertainty
+> Conflict Metric
+
+H
+
+x x^
+
+> Dynamical weight
+
+w                              
+
+> Token Representation
+> Logits
+> Multi-Head attention
+> Add & Norm
+> FFN
+> Add & Norm
+> Dynamical Uncertainty
+> e=2e, ⋯ , e12k
+> 2
+> e=1e, ⋯ , e11k
+> 1e=3e, ⋯ , e13k
+> 3
+> u1u u 1− C
+> 112
+> Linear Linear Linear
+> w=m+1 wu1− Cm
+> 1mm
+> =e^exp{ w/η}∑m=1
+> Mm
+> exp{ w/η}⋅ e∑m=1
+> Mmm
+
+h Text Representation 
+
+Fig. 2: The structure of our proposed model UME. The uncertainty of every single expert is attained for multi-expert learning. Multi-expert Joint Uncertainty is dynamically ensembled by the degree of uncertainty among experts. 
+
+zero, and uncertainty reaches its maximum (i.e., u = 1 ). The Dirichlet parameters are calculated as αk = ek + 1 , where 
+
+ek is the evidence for the k-th class, adding 1 prevents zero belief when no evidence is observed and ensures a smooth uncertainty estimation. Evidence ek quantifies the model’s support for each class. A higher evidence value ek results in a larger Dirichlet parameter αk, leading to increased belief mass bk, which corresponds to greater confidence in the class prediction. Conversely, lower evidence implies greater uncertainty. The unallocated belief mass u, which represents uncertainty, is defined as: 
+
+u = 1 − XKk=1 bk = KS , (1) 
+
+where S = PKk=1 αk. This ensures that: 
+
+u + XKk=1 bk = 1 , (2) 
+
+where u captures the system’s lack of confidence in all categories. In summary, higher evidence leads to higher belief mass bk and lower uncertainty u, whereas lower evidence results in increased uncertainty. B. Representations of Text and Label Hierarchy 
+
+Text representation denoted by H is a hidden representation of the input text, while key tokens’ representation ˆH refer to the representation related to the hierarchical structure, obtained by combining it with the graph encoder. We first utilize the Embedding layer of BERT [31]: 
+
+H = Embedding( x), (3) where H ∈ Rn×dh represents hidden representation and dh
+
+describe the dimension of the hidden layer; x defines input token sequence. Meanwhile, [32] is used as the graph encoder with the guidance of labels. Here, key tokens are constructed by masking unimportant tokens. Combining and contrasting the two representations can inject hierarchical information into the BERT Encoder. Following the approach of HGCLR [33], we adopt Gumbel-Softmax [34] instead of the standard Soft-max function to make the sampling operation differentiable. Tokens for which the probability of belonging to label yi
+
+exceeds the threshold γ are constructed as key tokens ˆx:
+
+ˆx =
+
+xi, if X
+
+> j∈y
+
+Pij > γ ; else 0
+
+ , (4) where Pij represents the probability of sampling. Similarly, the key tokens undergo the same embedding layer to obtain its corresponding representation ˆH = Embedding(ˆ x).
+
+C. Low-rank Experts 
+
+For BERT Encoder, both H and ˆH are taken as inputs for calculating the token representations and hierarchy represen-tations. Note that ˆH is used to enhance H’s representation via contrastive learning that will be introduced in Equation IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 5
+
+(19). We freeze the parameters of the Transformer blocks in the BERT Encoder and subsequently apply uncertainty fusion using the LoRA technique in the last FFN layer of the BERT Encoder. Specifically, we fine-tune the FFN layer using M
+
+low-rank experts defined by: 
+
+hout = W0h + ∆ W h = W0h +
+
+> M
+
+X
+
+> m=1
+
+BmAmh, (5) where h denotes the input hidden state to the FFN layer. W0
+
+represents the original parameter matrix. ∆W is the matrix that needs to be updated in the original FFN layer. Am and 
+
+Bm denote the low-rank decomposition matrices of W0 for the 
+
+m-th expert. Am is initialized using random Gaussian values, while Bm is initialized to zero. 
+
+D. Uncertainty-based Multi-Expert Fusion Network 
+
+Given an input sample, each expert produces evidence scores for hierarchical labels. These scores are converted into uncertainty-aware representations using Dempster–Shafer Theory. We then compute prediction conflict and uncertainty between adjacent experts, which are used to dynamically deter-mine each expert’s contribution. Experts with high confidence dominate simple samples, while high-conflict samples are progressively routed to later experts for further refinement. Finally, weighted evidence from all experts is fused to produce the final prediction. 
+
+(i) Uncertainty quantification serves as the foundation for integrating multiple experts. We employ Dempster-Shafer Theory (DST) [30] to model hierarchical label prediction, dis-tinguishing between belief mass bk (evidence) and uncertainty 
+
+u [35]. Specifically, we model the belief mass using a Dirichlet distribution D (·) [36]: 
+
+D(p|α) = 
+
+( 1
+
+> B(α)
+
+QKk=1 pαk −1 
+
+> k
+
+for p ∈ SK
+
+0 ; otherwise , (6) where α represents the distribution parame-ters, B (·) is the beta function, and SK =n
+
+p| P k = 1 K pk = 1 , 0 ≤ pk ≤ 1
+
+o
+
+denotes the K-dimensional unit simplex. Based on this distribution, evidence-based uncertainty is quantified according to Definitions 1 and 2. 
+
+(ii) Uncertainty fusion combines the uncertainty u =
+
+{u1, . . . , u M } and evidence e = {e1, . . . , e M } from all experts to dynamically weight their contributions. This mechanism ad-justs expert influence based on sample complexity: prioritizing preceding experts for simple samples while leveraging the full ensemble for hard, long-tail categories. First, we sequentially fuse expert uncertainties u:
+
+u = u1 ⊕ u2 ⊕ · · · ⊕ uM =
+
+QMm=1 um
+
+QMm=1 (1 − Cm) , (7) where Cm = P 
+
+> i̸=j
+
+bmi bm−1 
+
+> j
+
+represents the conflict metric between adjacent experts (with C1 = 0 ), and bmi denotes the confidence of the m-th expert for the i-th category. A conflict metric of 0 indicates consistency. To promote diversity, we employ a Sequential Specialization strategy where subsequent experts explicitly focus on hard samples characterized by high predictive uncertainty. Based on the conflict Cm and uncertainty um, we define the dynamical weight for each expert: 
+
+wm+1 = wm ⊕ um = 11 − Cm wmum. (8) Here, wm quantifies the accumulated uncertainty passed from previous experts to expert m (initialized as w1 = 1 , w2 = u1). These dynamical weights are then applied to aggregate the evidence from all M experts: 
+
+ˆe =
+
+PMm=1 exp {wm/η } · em
+
+PMm=1 exp {wm/η } , (9) where η is a temperature factor used to scale the weights via a Softmax-like operation. During inference, the combined evidence ˆe is converted into probabilities using the Sigmoid function: 
+
+σ(ˆ e) = 11 + exp( −ˆe) . (10) Finally, labels with a probability σ(ˆ e) exceeding a predefined threshold are selected as predictions. The following section details how these dynamical weights guide the training pro-cess. 
+
+(iii) Likelihood-based Optimization. We propose to im-prove the uncertainties from each single expert and com-bined multi-expert via likelihood-based optimization within the multi-expert system. Before getting the evidence ei and the one-hot class vector yi, the adjusted Dirichlet distribu-tion eD(pi|ei) is used as a priori of the multiple likelihood 
+
+P (yi|pi). Then the negative logarithm of the marginal likeli-hood is given by 
+
+Lml = − log 
+
+"Z KY
+
+> k=1
+
+pyik 
+
+> ik
+
+1
+
+B (ei)
+
+> K
+
+Y
+
+> k=1
+
+peik −1 
+
+> ik
+
+dp i
+
+#
+
+(11) This means that the correct class can receive more evidence. Additionally, to solve the problem of high overall evidence of wrong labels, we introduce Levidence defined as 
+
+Levidence = KL (D (pi|˜αi) ∥ D (pi|1)) , (12) where ˜αi = 1+ (1 − yi) ⊙ ei indicates the adjusted Dirichlet parameter. By reducing the difference between the target distribution and the adjusted distribution, the evidence for incorrect classes is diminished. Thus, the objective goal of the single expert is given by : 
+
+Lsingle = Lml + λ (t) Levidence , (13) where λ(t) = min {1, t/T } is the annealing factor (t is the current epoch). Intuitively, when t is larger, the effect of KL divergence is fully applied. This ensures that experts can capture differentiated evidence in the early stages. Finally, the joint goal of dynamic learning evidence in the multi-expert network is given: 
+
+L =
+
+> N
+
+X
+
+> i=1
+> M
+
+X
+
+> m=1
+
+1 {wmi > ε }L single . (14) IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 6
+
+E. Training Objectives 
+
+Apart from the training loss of a single expert in Equation (14), we introduce two losses to enhance the optimization of the multi-expert fusion network. They are 1) Classification loss 
+
+LC ; and 2) Contrastive learning loss Lcon for enhanced text representation. 
+
+Classification loss LC . The probability of text xi appearing on label j is: 
+
+pij = sigmoid (Wchi + bc)j , (15) where WC ∈ Rk×dh and bc ∈ Rk illustrate weights and devi-ations, respectively. h = Enconder (H), ˆh = Enconder ( ˆH)
+
+represents the text representations and hierarchical represen-tations after passing through the Encoder layer. We employ a binary cross-entropy loss function: 
+
+LC 
+
+> ij
+
+= −yij log( pij ) − (1 − yij ) log(1 − pij ), (16) 
+
+LC =
+
+> N
+
+X
+
+> i=1
+> k
+
+X
+
+> j=1
+
+LC 
+
+> ij
+
+, (17) where yij is the real label; ˆhi is used instead of hi, and the classification loss of the key sample signifies ˆLC .
+
+Contrastive learning loss Lcl . To calculate the contrastive learning loss, we construct negative samples for tokens and key tokens: 
+
+ci = W2F (W1hi) , ˆci = W2F (W1 ˆhi). (18) Here, W1 ∈ Rdh×dh , W2 ∈ Rdh×dh , F takes the ReLU function and dh expresses the number of hidden layers. We define z ∈ { ci} ∪ { ˆci}, and the NT-Xent loss function [37] is used to force the distance between the positive and negative examples to become larger, and the NT-Xent loss of zi is calculated: 
+
+Lcl i = − log exp( sim (zi, z j )/τ )
+
+P2Nk=1 ,k ̸ =i exp( sim (zi, z k)/τ ) , (19) where sim is the cosine similarity function and τ is the temperature hyperparameter. zi and zj are mutually real and key tokens. Then, the contrast loss is averaged by: 
+
+Lcl = 12N
+
+> 2N
+
+X
+
+> m=1
+
+Lcl i . (20) Thus, the objective of a single expert is updated based on the previous equation 13 to: 
+
+˜Lsingle = Lml + λkl (t) Levidence + LC + ˆLC + Lcl . (21) Finally, the overall training objective is: 
+
+Lf inal =
+
+> N
+
+X
+
+> i=1
+> M
+
+X
+
+> m=1
+
+1 {wmi > ε } ˜Lsingle . (22) TABLE I: The statistical details of datasets. |Y | represents the number of unique labels in each dataset. Avg (yi) the average value of the labels for each entry across the dataset. 
+
+Depth indicates the depth of the hierarchical structure in the dataset. The last three columns of the table include the number of instances in the training, validation, and testing sets, respectively.                                 
+
+> Dataset |Y|Avg (yi)Depth # Train # Dev # Test WOS 141 2.0 230,070 7,518 9,397 RCV1-V2 103 3.24 418,520 4,629 781,265 AAPD 54 2.41 243,872 10,968 1,000 BGC 146 3.01 458,800 14,700 18,394
+
+IV. E XPERIMENTS 
+
+In this section, we conduct experiments to verify the effec-tiveness of the proposed multiple-expert fusion network for hierarchical text classification. Specifically, we will answer the following research questions: 
+
+RQ1 : Does the proposed UME outperform the recent strong baselines? 
+
+RQ2 : What is the performance on challenging-tailed samples? 
+
+RQ3 : What are the effects of the number of experts? 
+
+RQ4 : How multiple experts handle challenging-tailed samples? 
+
+RQ5 : What are the effects of components and fusion strategies in UME? 
+
+RQ6 : Is it still efficient by using multiple-expert fusion? 
+
+RQ7 : Can LLMs replace the proposed supervised framework in hierarchical text classification? 
+
+A. Datasets 
+
+We select four public HTC datasets in the experiments: Web of Science (WOS) [38], RCV1-V2 [39], AAPD [40], and BGC 1. Specifically, WOS and AAPD contain abstracts of papers published in the Web of Science database and Arxiv respectively, along with the corresponding subject categories. RCV1-V2 is a news classification corpus, while the BGC dataset consists of book introductions and metadata. WOS is used for single-path hierarchical text classification, while RCV1-V2, AAPD, and BGC include multi-path classification labels. Statistical details are listed in Table I. We conduct a statistical analysis on the class distributions of four benchmark datasets: AAPD, WOS, RCV1, and BGC. As illustrated in Figure 3, all datasets exhibit severe long-tailed characteristics with distinct degrees of imbalance. AAPD shows a moderate imbalance ratio (IR) of 49.0. In contrast, WOS and RCV1 reveal extreme data sparsity in tail classes, where the minimum sample count ( Nmin ) drops to 1, resulting in high IRs of 750.0 and 2682.0, respectively. BGC presents the most significant disparity, with an IR reaching 6854.0, where the head class contains over 34,000 samples while the tail class has only 5. These statistics quantitatively confirm the intrinsic difficulty and the severe class imbalance issue present in these datasets.       
+
+> 1BGC dataset is available at: www.inf.uni-hamburg.de/en/inst/ab/lt/ resources/data/blurb-genre-collection.html IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 7
+
+TABLE II: The comparison of different models on WOS, RCV1-V2, AAPD, BGC and NYT.                                                                                                                                                                     
+
+> Model WOS RCV1-V2 AAPD BGC NYT Micro-F1 Macro-F1 Micro-F1 Macro-F1 Micro-F1 Macro-F1 Micro-F1 Macro-F1 Micro-F1 Macro-F1
+> Hierarchy-Aware Models
+> HiAGM (ACL2020) 85.11 ±1.4 80.02 ±0.7 83.17 ±1.8 62.35 ±1.9 75.54 ±2.1 58.86 ±1.2 76.61 ±0.9 57.27 ±0.7 ——HTCInfoMax (NAACL2021) 84.86 ±0.6 79.12 ±0.2 83.26 ±0.8 60.66 ±1.5 77.42 ±0.7 57.72 ±0.7 74.26 ±0.4 56.81 ±1.0 ——HiMatch (ACL2021) 85.04 ±0.9 80.37 ±1.3 84.42 ±0.9 63.99 ±1.1 76.70 ±0.3 59.86 ±0.5 76.63 ±0.8 57.87 ±1.0 ——
+> Pretrained Language Models
+> T5(2019) 85.63 ±0.5 79.09 ±0.9 84.04 ±0.5 65.08 ±0.8 74.99 ±0.7 61.10 ±0.3 74.82 ±0.9 61.09 ±0.8 ——RoBERTa (2019) 84.76 ±0.8 79.11 ±0.3 83.45 ±0.2 65.01 ±0.9 75.08 ±0.6 60.31 ±0.8 74.16 ±0.9 60.49 ±1.0 ——HGCLR (ACL2022) 86.75 ±0.3 80.93 ±1.0 86.40 ±0.7 68.32 ±0.5 78.90 ±0.3 62.75 ±0.4 78.34 ±0.8 64.96 ±0.7 ——HPT (EMNLP2022) 86.83 ±1.1 81.24 ±0.6 86.51 ±1.2 69.16 ±0.9 77.83 ±0.5 62.94 ±0.6 79.98 ±1.0 65.30 ±0.4 ——HiTIN (ACL2023) 87.52 ±0.2 81.96 ±0.4 86.79 ±0.6 69.65 ±0.8 78.60 ±0.3 63.22 ±0.4 79.98 ±0.6 65.08 ±0.5 ——HJCL (EMNLP2023) 87.67 ±0.4 81.45 ±0.3 86.27 ±0.4 69.40 ±0.9 78.55 ±0.8 63.25 ±0.6 80.36 ±0.4 66.60 ±0.2 ——T5-InterMRC (IPM2024) 86.04 ±0.7 80.73 ±0.5 84.96 ±1.0 66.05 ±0.4 77.22 ±0.9 61.78 ±1.1 75.83 ±0.8 63.11 ±0.7 74.89 ±0.7 65.14 ±0.8 HiAdv (COLING2024) 87.05 ±0.2 80.97 ±1.0 86.71 ±0.2 69.29 ±0.4 78.94 ±0.3 62.52 ±0.8 79.60 ±0.9 65.63 ±0.8 79.05 ±0.3 69.13 ±0.5 HALB (KBS2024) 86.75 ±1.0 81.44 ±0.8 86.14 ±0.9 68.38 ±0.8 78.10 ±0.4 63.10 ±0.5 80.05 ±0.4 66.21 ±0.6 79.09 ±0.2 69.20 ±0.3 HILL (NAACL2024) 87.44 ±0.2 81.83 ±0.5 86.23 ±0.4 69.50 ±0.6 79.02 ±0.3 63.24 ±0.4 79.97 ±0.3 65.84 ±0.7 79.25 ±0.6 69.54 ±0.6 HiGen (EACL2024) 87.39 ±0.2 81.65 ±0.2 86.53 ±0.4 69.24 ±0.3 78.71 ±0.5 63.09 ±0.5 80.39 ±0.3 66.54 ±0.6 78.62 ±0.5 68.81 ±0.6 UME (Ours) 87.71 ±0.4 82.29 ±0.3 86.88 ±0.4 69.70 ±0.2 79.21 ±0.2 63.46 ±0.3 80.46 ±0.6 66.74 ±0.4 79.41 ±0.3 69.76 ±0.5
+
+(a) WOS (b) RCV1-V2 
+
+(c) AAPD (d) BGC 
+
+Fig. 3: Class distribution analysis across four benchmark datasets. The histograms use a logarithmic scale to visualize the severe long-tailed nature and extreme class imbalance ratios (IR) present in WOS, RCV1-V2, AAPD, and BGC. 
+
+B. Baseline and Parameter Settings 
+
+We select 14 competitive baseline models for comparisons, including HiAGM [15], HTCInfoMax [41], HiMatch [4], T5 [42], RoBERTa [43], HGCLR [33], HPT [44], HJCL [45], HiTIN [46], T5-InterMRC [47], HiAdv [48], HALB [17], HILL [19] and HiGen [49]. Specifically, HiAGM uses label-dependent prior probability to aggregate node information for global-level awareness. HTCInfoMAX addresses the issues by utilizing information maximization to optimize text-label relationships and label representations. HiMatch maps text and tags to a common embedded space for better matching. The above three models all belong to hierarchy-aware models and don’t use pretrained language models. In addition, T5 unifies natural language tasks into a text-to-text format, simplifying TABLE III: Parameter description and details 
+
+Parameters Description r LoRA Rank. Default: 64 lr Learning rate batch Batch size epoch Default: 10 early-stop Epoch before early stop update Gradient accumulate steps warmup Warm-up steps graph Whether to use graph encoder. Default: True multi Whether the task is multi-label classification. Should keep default since all datasets are multi-label classifications. Default: True thre Threshold for keeping tokens. Denoted as gamma in the paper wandb Use wandb for logging ta If prefix weight ≤ ε, the loss of expert m on the sample will be eliminated eta Eta is a temperature factor that adjusts the sensitivity of prefix weights 
+
+the fine-tuning process. RoBERTa improves the performance of BERT by increasing the model size and enhancing training methods. T5-InterMRC proposes an interpretable model based on T5 that enhances the explainability of evidence in the task. HiGen optimizes HTC performance through dynamic text representation and level-oriented loss functions. As shown in Table III, we present the detailed training parameters, including LoRA rank, the number of epochs, and other hy-perparameters, along with their meanings. Additionally, we conduct experiments to reflect the impact of different LoRA rank sizes on performance. Furthermore, we specify the use of BERT as the backbone for text and Graphormer as the classification hierarchy. Please refer to our GitHub repository for the complete implementation and reproducibility details. 
+
+C. Main Results on Hierarchical Text Classification (RQ1) 
+
+The main average results by five-fold cross-validation are summarized in Table II. Particularly, UME achieves the high-IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 8
+
+TABLE IV: The performance of different models on challenging-tailed categories in the RCV1-V2 dataset. We report results regarding Win-Lose numbers.                                                                                                             
+
+> Category Count Ours HiTIN HJCL HGCLR HPT g157 1991 55.6 5% 55.25% 51.28% 49.42% 50.77% c16 1871 58.04 %54.62% 57.96% 53.82% 55.41% gwelf 1818 48.01% 51.65 %49.87% 45.21% 45.21% e311 1658 79.79 %61.46% 58.74% 61.82% 59.18% c331 1179 77.26% 67.77% 79.55 %54.20% 74.36% e143 1172 77.39 %65.61% 66.20% 65.87% 65.31% c313 1074 47.21% 42.64% 49.27 %39.11% 29.23% e132 922 58.79% 64.97 %59.01% 57.92% 64.22% gobit 831 72.20 %57.16% 58.18% 47.65% 54.11% gtour 657 66.33% 59.06% 67.06 %54.49% 64.51% e61 376 69.41 %66.76% 58.67% 64.10% 64.36% e141 364 58.52% 61.54 %60.38% 39.56% 59.92% gfas 307 2.61 %0.00% 0.00% 0.00% 0.00% e142 192 50.93% 46.35% 51.25 %46.88% 49.98% e313 108 4.63 %0.00% 2.78% 0.00% 0.00% e312 52 3.85 %0.00% 0.00% 0.00% 0.00% Result Win-Lose 9-7 3-13 4-12 0-16 0-16
+
+est performance across all datasets and overall averages. Compared to HiMatch, the model with the highest average performance among Hierarchy-Aware models without using pretrained models, UME achieves improvements of 3.83% in Micro-F1 and 8.87% in Macro-F1 on BGC. On one hand, UME leverages the rich semantic information from pretrained models, which enhances its generalization ability. On the other hand, the propagation of uncertainty across multiple experts helps in identifying challenging samples at the lower levels. Additionally, among the baselines, HJCL shows the best average performance. It uses supervised contrastive learning to provide more comprehensive training for classes with a larger number of samples. In contrast, UME focuses on fewer experts that handle all samples. When encountering challenging minority samples, it activates more experts for ensemble classification. As a result, UME achieves an average improvement of 0.36% in Micro-F1 and 0.37% in Macro-F1 across the four datasets. Overall, UME consistently out-performs other strong baselines in all F1-related evaluations, demonstrating the effectiveness of using multiple low-rank experts in hierarchical text classification (HTC). In Table ?? ,we repeat the experiments for the proposed method and the baseline HiTIN five times (using different random seeds). We conduct experiments on the WOS and RCV1-V2 datasets. It can be seen that these improvements are statistically significant based on the paired t-test at the 95% significance level. 
+
+D. Results on Challenging-tailed Categories (RQ2) 
+
+We discuss the performance of the models on those challenging-tailed categories. Specifically, we intentionally pick up the categories of less than 2000 samples in RCV1-V2 as shown in Table IV. Compared with HiTIN, HJCL, HGCLR and HPT, our proposed UME outperforms them regarding the overall win-lose numbers, achieving the best performance in 9/16 challenging-tailed categories. In detail, for categories such as “e311”, “gtour”, and “e61”, UME achieves the best performance with much higher accuracy percentages than others. In the “e311” category, UME achieves an impres-sive accuracy of 79.79%, surpassing the accuracy of others. TABLE V: The Macro-F1 performance on tailed labels for the Top N least frequent labels across five datasets.                                                                                                  
+
+> Datasets Top N Tailed Labels HGCLR HPT HiTIN HJCL HILL Ours WOS N=8 28.47 27.78 37.83 41.67 42.08 46.60
+> N=16 48.67 49.04 53.16 57.67 51.78 62.66
+> N=32 61.49 65.36 61.43 71.62 68.44 74.70
+> RCV1-V2 N=8 18.92 16.88 20.24 22.40 18.38 26.93
+> N=16 41.83 41.37 47.21 43.22 46.72 50.45
+> N=32 56.67 54.77 57.98 57.20 61.46 63.69
+> AAPD N=8 28.35 36.50 38.95 37.60 40.46 41.71
+> N=16 45.47 44.69 51.90 49.83 49.97 53.49
+> N=32 54.76 54.82 57.69 56.59 57.63 59.11
+> BGC N=8 20.12 26.45 21.88 27.96 21.30 32.40
+> N=16 45.83 45.33 41.68 37.89 36.27 46.78
+> N=32 54.29 52.90 51.16 54.05 50.58 56.16
+> NYT N=8 9.38 12.83 13.52 12.82 14.31 15.36
+> N=16 22.43 21.21 28.70 34.39 35.31 35.78
+> N=32 48.36 45.21 47.39 50.53 50.23 50.75
+
+(a) HGCLR (b) UME 
+
+Fig. 4: The confusion matrix highlights the contrast between HGCLR and multi-experts in terms of prediction accuracy. Moreover, we find that all other baselines cannot correctly classify samples from categories of “gfas” and “e312” (all baselines’ are 0’s on these categories), UME still works in these categories. In addition, we test the Macro-F1 of the samples corresponding to the top N least frequent tail labels across five datasets, as shown in Table V. Compared with HiTIN, HJCL, HGCLR, HPT, and HILL, we achieve state-of-the-art performance on the tail classes. On the WOS dataset, we achieve an average improvement of 11.03%, 10.60%, and 9.03% on the Top 8, Top 16, and Top 32 least frequent tail labels, respectively. This demonstrates that the use of uncertainty-based multi-expert fusion can alleviate the issue of challenging-tailed label distributions in HTC tasks. In Figure 5, we present two real examples from the BGC dataset. One is a simple sample and the other is a challeng-ing sample. Compared to the baseline, UME demonstrates higher softmax classification probabilities and produces the correct prediction results. We further illustrate the reliability of the proposed UME by applying Dempster Shafer Evidence Theory. This framework helps multiple experts reach accurate uncertainty estimates. We specifically analyzed the Conflict Metrics to understand expert disagreement. For the simple sample, the conflict scores C2 and C3 remain low at 0.08 and 0.14 respectively. This indicates a high consensus among experts. In contrast, the challenging sample exhibits a slight increase in C2 to 0.11 and a sharp spike in C3 to 0.42. IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 9
+
+Fig. 5: Two examples illustrate the effectiveness of uncertainty-based multi-expert fusion. Compared with base-lines, our classification results are more reliable. 
+
+Fig. 6: The classification error rate distribution across different Conflict Metric ( Cm) intervals. N denotes the number of samples in each bin. This significant disagreement correctly signals the semantic ambiguity of the text. The fusion mechanism effectively han-dles this conflict to output confident and reliable classification results. As illustrated by our binning analysis in Figure 6, the classification error rate exhibits a strong positive correlation with the conflict metric Cm beyond the initial interval, where the error rate sharply escalates from 4.9% in low-conflict regions to over 50% in high-conflict buckets ( Cm > 0.6). The relatively higher error rate in the 0.0-0.2 range (26.8%) reflects a confidently wrong phenomenon, where experts reach a unanimous but incorrect consensus due to shared biases or misleading features. This overall performance trend em-pirically validates Cm as a reliable indicator of prediction risk and justifies our use of Dempster-Shafer Theory. By identifying these challenging samples where expert evidence diverges—typically occurring in fine-grained or long-tailed categories—the UME framework can dynamically resolve con-flicts and enhance decision reliability through its uncertainty-guided fusion mechanism. 
+
+(a) WOS (b) RCV1-V2 
+
+(c) AAPD (d) BGC 
+
+Fig. 7: Bar charts show the different performances with varying numbers of experts among four datasets. TABLE VI: Analysis of expert capacity and utilization on the WOS dataset with expert numbers ( M ). The metrics include Tail Micro-F1 (computed on the bottom 20% least frequent classes), the Average Conflict of the final expert ( Clast ), and the proportion of samples routed to the final expert (defined as weight > 0.5).              
+
+> Experts ( M)Tail Micro-F1 Avg. Conflict ( Clast )Last Expert Util.
+> 376.21 0.1724 20.26
+> 475.32 0.1597 1.80 574.05 0.1175 1.28
+
+E. Effects of the Number of Experts? (RQ3) 
+
+We further observe that increasing the number of experts leads to higher average conflict and fewer samples routed to later experts. In Figure 7, we present an analysis with different numbers of experts. Clearly, as the number of experts increases, the Micro-F1 score performance initially rises to its highest with three experts and then gradually decreases. Furthermore, the observed improvements are consistent across multiple runs, as reflected by the reported standard deviations, suggesting these differences represent meaningful shifts in predictive capability rather than random chance. We attribute the peak at three experts to our Sequential Specialization strategy : since the datasets possess a hierarchical depth of only 2 to 4 levels, three experts naturally align with the Head, Medium, and Tail categories, effectively saturating the model’s capacity to capture valid semantic distinctions. Consequently, adding experts beyond this point forces the model to overfit to residual noise or ambiguous outliers. These redundant experts introduce high conflict values during the DST fusion process, which slightly degrades global inference quality rather than providing further benefit. As illustrated in Table VI, the model achieves optimal IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 10 
+
+Fig. 8: The participation percentage among experts in the head, medium, and tail categories on RCV1-V2. performance at M = 3. To investigate the performance degradation at M > 3, we analyzed the Last Expert Utilization 
+
+(the proportion of samples where the final expert’s weight exceeds 0.5) and the Average Conflict Metric (Clast ), which quantifies the prediction discrepancy between the final expert and its predecessor. At M = 3 , the final expert is utilized for 20.26 of the samples, maintaining a significant conflict signal between the second and third experts ( Clast = 0 .1724 ). This indicates that the final expert receives sufficient discordant samples to learn effective representations for tail classes, resulting in the highest Tail Micro-F1 of 76.21. However, as M increases to 4 and 5, the utilization rate of the final expert drops precipitously to 1.80 and 1.28, respectively. Simultaneously, the conflict between the last two experts diminishes to 0.1175. The preceding experts have already resolved the majority of semantic ambiguities, leaving the final expert with minimal conflict signals and insufficient training data. Consequently, the additional experts fail to capture meaningful patterns and instead introduce parameter noise, leading to a decline in tail performance. Thus, M = 3 represents the optimal trade-off between expert specialization and data sufficiency. 
+
+F. Experts Participation Percentages (RQ4) 
+
+To analyze the involvement of each expert in the proposed model, we visualize the percentage of dynamical weights 
+
+{wm} assigned to different experts in Equation (8). These weights are used to predict samples from the head, medium, and tail of the hierarchy classes in the RCV1-V2 dataset. The head, medium, and tail samples correspond to the 1st, 2nd, and 3rd level categories, respectively. Figure 8 illustrates that the initial experts exhibit relatively balanced participation across the classes. However, as we gradually increase the number of experts, they tend to focus more on the challenging-tailed samples at the bottom level. This observation aligns with our initial design concept, where uncertainty is propagated from preceding experts to later experts, leading to increased attention on the challenging-tailed samples. 
+
+(a) Impact of tempera-ture factor η
+
+(b) Impact of conflict met-ric threshold ϵ
+
+Fig. 9: Sensitivity analysis on WOS and RCV1-V2. 
+
+G. Component Analysis (RQ5) 
+
+We first analyze the contribution of each component. Specif-ically, we compare the full UME model against three variants. These include: i) without Levidence ; ii) without Levidence &
+
+Lml ; and iii) without Levidence & Lml & cLC & Lcl .Ablation results are summarized in Table VII. As shown, each component plays a distinct role. The cLC & Lcl component is the most influential because it integrates hierarchical structure information. Additionally, the Lml component significantly bolsters the model. It leverages prior evidence to delineate objectives through marginal likelihood. Conversely, Levidence 
+
+yields a modest impact. It improves performance by dimin-ishing the evidence of incorrect labels and instilling greater uncertainty in erroneous classifications. Crucially, we verified whether the gains stem from our specific fusion design or merely from ensemble capacity. We further verify whether the performance gains stem from uncertainty-aware fusion rather than ensemble capacity. The first is Direct Integration, which simply averages expert outputs. The second is Gated MoE, which employs a learnable gating network for expert routing. As shown in the bottom section of Table VII, both methods consistently underperform compared to UME across all datasets. For example, Gated MoE achieves 86.74 on WOS versus 87.71 for UME. This decline indicates that standard routing mechanisms or simple averaging fail to coordinate sequentially trained experts effec-tively. They struggle to account for the specific uncertainty patterns of residual experts handling hard tail samples. In contrast, UME’s DST guided fusion dynamically prioritizes experts based on confidence. This indicates that the uncertainty aware mechanism is the key driver of performance, not just the number of experts. To evaluate the robustness of UME, we conduct a com-prehensive sensitivity analysis on the temperature factor η
+
+and the conflict metric threshold ϵ, which regulate the trade-off between early confident decisions and deeper expert in-volvement. As illustrated by our experiments in Figure 9a, the temperature factor η modulates the sharpness of the fusion weights, achieving peak performance at η = 0 .9 with Micro-F1 scores of 87.69 on WOS and 86.90 on RCV1-V2, while maintaining high stability across the entire interval. Similarly, the conflict threshold ϵ analyzed in Figure 9b deter-mines when accumulated uncertainty triggers the participation of subsequent experts through our Sequential Specialization IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 11 
+
+TABLE VII: Ablation study results for Micro-F1.                                 
+
+> Ablation Study WOS RCV1-V2 AAPD BGC w/o Levidence 87.52 86.61 78.86 79.66 w/o ( Levidence &Lml )86.98 86.37 78.15 79.27 w/o ( Levidence &Lml
+> & ˆLC&Lcl )85.91 85.72 77.28 78.51 -r.p. Direct Integration 87.18 85.73 78.53 79.51 -r.p. Gated MoE 86.74 86.12 77.91 79.08
+> UME 87.71 86.88 79.21 80.46
+
+Fig. 10: Compare model parameters, training time and Macro-F1 scores on the WOS dataset. mechanism. Optimal results for this parameter are observed at ϵ = 0.5, yielding peak scores of 87.72 for WOS and 86.92 for RCV1-V2, with minimal performance fluctuations across tested ranges. These findings empirically validate that the conflict metric Cm serves as a stable indicator for expert coordination, ensuring that UME achieves state-of-the-art re-sults without the need for exhaustive fine-tuning. 
+
+H. Computational Costs (RQ6) 
+
+In this section, we report the number of parameters, Macro-F1 scores, and classification accuracies of UME compared to T5 [42], HPT [44], HiTIN [46], and HiAdv [48] on the RCV1-V2 dataset. As shown in Figure 10, we show the number of trainable parameters and training time for the model with three experts, demonstrating that this configuration achieves the best and most stable performance. UME contains fewer parameters than the other models but achieves the best performance. This is mainly because we modify only the FFN layer of the BERT encoder to design a multi-expert architecture. Furthermore, we use LoRA to freeze most of the expert parameters and fine-tune the multi-expert model with low-rank matrices. Compared to T5, UME reduces parameters by 39.49% while improving the Macro-F1 score by 3.20%. Parameter explosion in multi-expert fusion networks typically prevents the direct fusion of expert networks. To address this, we employ low-rank experts to improve efficiency, increasing parameters by only 1.18% for each additional expert while achieving competitive performance. For total training time, UME is shorter than all models except HiTIN. Although our training time increases by 2.78%, we reduce parameters by 10.37% while achieving higher performance. Additionally, we measure inference speed and find no significant differences between models. TABLE VIII: Performance comparison between LLMs and our UME framework on WOS and RCV1-V2 datasets. The LLMs are evaluated using the zero-shot prompt templates shown.                  
+
+> Model WOS RCV1-V2 Micro-F1 Macro-F1 Micro-F1 Macro-F1 GPT-4 59.74 37.80 56.12 36.54 LlaMa-3 61.91 27.33 54.67 28.50 UME (Ours) 87.71 82.29 86.88 69.70
+
+TABLE IX: Prompt template for hierarchical text classifica-tion.                    
+
+> Prompt Template
+> You are an expert hierarchical text classifier. Your task is to classify the given text into the correct category path from the predefined taxonomy.
+> [Taxonomy Definition]
+> The categories are defined in ahierarchy formatted as: Level 1> Level 2> Level 3
+> - The symbol “ >” represents the parent-child relationship. - You must output the full path from the root to the specific leaf category.
+> [Allowed Category Paths]
+> (Insert your full list of category paths here, e.g., Technology >AI >NLP)
+> [Constraints]
+> 1. Output ONLY the category path. No explanation, no preamble. 2. If the text fits multiple paths, output the most specific and relevant one. 3. Use the exact string format provided in the [Allowed Category Paths].
+> [Input Text]
+> {{ text content }}
+> [Prediction]
+
+I. Comparison with LLMs (RQ7) 
+
+We further investigate the performance of Large Language Models (LLMs) on the HTC task to evaluate their zero-shot reasoning capabilities against our supervised approach. Table VIII presents the results of GPT-4 and Llama3, evaluated using the standardized prompt templates detailed in Table IX. As shown in Table VIII, GPT-4 achieves a Micro-F1 of 59.74 and Macro-F1 of 37.80 on the WOS dataset, with similar results on RCV1-V2 where it records 56.12 Micro-F1 and 36.54 Macro-F1. Llama3 demonstrates comparable performance, recording 61.91 Micro-F1 and 27.33 Macro-F1 on WOS, and 54.67 Micro-F1 and 28.50 Macro-F1 on RCV1-V2. These results indicate that instruction-tuned LLMs still significantly underperform compared to supervised fine-tuning models like UME, as UME achieves a Micro-F1 score exceeding 87 on WOS. The primary limitation is that the general reasoning capabilities of LLMs struggle to fully com-prehend and align with the complex, structured dependencies of hierarchical label trees. They often fail to strictly adhere to the parent-child constraints required in HTC. Consequently, our proposed UME framework, which explicitly models hier-IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 12 
+
+archy and uncertainty, proves to be both necessary and highly effective for achieving state-of-the-art precision. V. C ONCLUSION 
+
+This work proposes the Uncertainty-based Multi-Expert fu-sion network (UME) for challenging-tailed sequence learning. By integrating Ensemble LoRA, Sequential Specialization, and Uncertainty-Guided Fusion under Dempster–Shafer Theory, UME improves tail-class performance while maintaining a compact parameter footprint. Although sequential special-ization introduces a modest increase in training time due to reduced parallelism, this overhead represents a deliberate efficiency–performance trade-off that enables experts to focus on progressively harder samples. Experimental results demon-strate that this design yields substantial gains on minority classes with reduced trainable parameters. In future work, we plan to further optimize training effi-ciency by exploring dynamic expert selection strategies that selectively activate experts based on uncertainty. Such mech-anisms may alleviate sequential latency while preserving the effectiveness of uncertainty-guided specialization in resource-constrained scenarios. REFERENCES [1] Y. Zhang, B. Kang, B. Hooi, S. Yan, and J. Feng, “Deep long-tailed learning: A survey,” IEEE transactions on pattern analysis and machine intelligence , vol. 45, no. 9, pp. 10 795–10 816, 2023. [2] O. Rennie, “Navigating the uncommon: challenges in applying evidence-based medicine to rare diseases and the prospects of artificial intelligence solutions,” Medicine, Health Care and Philosophy , vol. 27, no. 3, pp. 269–284, 2024. [3] M. U. Hassan, M. H. Rehmani, and J. Chen, “Anomaly detection in blockchain networks: A comprehensive survey,” IEEE Communications Surveys & Tutorials , vol. 25, no. 1, pp. 289–318, 2022. [4] H. Chen, Q. Ma, Z. Lin, and J. Yan, “Hierarchy-aware label semantics matching network for hierarchical text classification,” in Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics , 2021, pp. 4370–4379. [5] E. Yu, W. Han, Y. Tian, and Y. Chang, “Tohre: A top-down classification strategy with hierarchical bag representation for distantly supervised relation extraction,” in Proceedings of the COLING , 2020, pp. 1665– 1676. [6] T.-Y. Wu, P. Morgado, P. Wang, C.-H. Ho, and N. Vasconcelos, “Solving long-tailed recognition with deep realistic taxonomic classifier,” in 
+
+Computer Vision–ECCV 2020 . Springer, 2020, pp. 171–189. [7] L. Xiao, X. Zhang, L. Jing, C. Huang, and M. Song, “Does head label help for long-tailed multi-label text classification,” in Proceedings of the AAAI Conference on Artificial Intelligence , 2021, pp. 14 103–14 111. [8] Y. Cao, J. Kuang, M. Gao, A. Zhou, Y. Wen, and T.-S. Chua, “Learning relation prototype from unlabeled texts for long-tail relation extraction,” 
+
+IEEE Transactions on Knowledge & Data Engineering , vol. 35, no. 02, pp. 1761–1774, 2023. [9] Y. Liu, K. Zhang, Z. Huang, K. Wang, Y. Zhang, Q. Liu, and E. Chen, “Enhancing hierarchical text classification through knowledge graph in-tegration,” in Findings of the Association for Computational Linguistics: ACL 2023 , 2023, pp. 5797–5810. [10] W.-C. Chang, H.-F. Yu, K. Zhong, Y. Yang, and I. S. Dhillon, “Taming pretrained transformers for extreme multi-label text classification,” in 
+
+Proceedings of the 26th ACM SIGKDD international conference on knowledge discovery & data mining , 2020, pp. 3163–3171. [11] O. Yaghubi Agreh and A. Ghaffari-Hadigheh, “Application of dempster-shafer theory in combining the experts’ opinions in dea,” Journal of the Operational Research Society , vol. 70, no. 6, pp. 915–925, 2019. [12] K. Zhao, L. Li, Z. Chen, R. Sun, G. Yuan, and J. Li, “A survey: Optimization and applications of evidence fusion algorithm based on dempster–shafer theory,” Applied Soft Computing , vol. 124, p. 109075, 2022. [13] C. N. Silla and A. A. Freitas, “A survey of hierarchical classification across different application domains,” Data mining and knowledge discovery , vol. 22, pp. 31–72, 2011. [14] S. Banerjee, C. Akkaya, F. Perez-Sorrosal, and K. Tsioutsiouliklis, “Hierarchical transfer learning for multi-label text classification,” in Pro-ceedings of the 57th annual meeting of the association for computational linguistics , 2019, pp. 6295–6300. [15] J. Zhou, C. Ma, D. Long, G. Xu, N. Ding, H. Zhang, P. Xie, and G. Liu, “Hierarchy-aware global model for hierarchical text classification,” in 
+
+Proceedings of the 58th Annual Meeting of the Association for Compu-tational Linguistics , 2020, pp. 1106–1117. [16] R. Plaud, M. Labeau, A. Saillenfest, and T. Bonald, “Revisiting hierar-chical text classification: Inference and metrics,” in Proceedings of the 28th Conference on Computational Natural Language Learning , 2024, pp. 231–242. [17] J. Zhang, Y. Li, F. Shen, C. Xia, H. Tan, and Y. He, “Hierarchy-aware and label balanced model for hierarchical text classification,” Knowledge-Based Systems , p. 112153, 2024. [18] T. Liu, Y. Hu, J. Gao, Y. Sun, and B. Yin, “Hierarchical multi-granularity interaction graph convolutional network for long document classification,” IEEE/ACM Transactions on Audio, Speech, and Lan-guage Processing , vol. 32, pp. 1762–1775, 2024. [19] H. Zhu, J. Wu, R. Liu, Y. Hou, Z. Yuan, S. Li, Y. Pan, and K. Xu, “Hill: Hierarchy-aware information lossless contrastive learning for hierarchical text classification,” in Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) ,2024, pp. 4731–4745. [20] P. Xu, L. Xiao, B. Liu, S. Lu, L. Jing, and J. Yu, “Label-specific feature augmentation for long-tailed multi-label text classification,” in 
+
+Proceedings of the AAAI conference on artificial intelligence , vol. 37, no. 9, 2023, pp. 10 602–10 610. [21] J. Yan, P. Li, H. Chen, J. Zheng, and Q. Ma, “Does the order matter? a random generative way to learn label hierarchy for hierarchical text classification,” IEEE/ACM Transactions on Audio, Speech, and Language Processing , vol. 32, pp. 276–285, 2023. [22] S. Mukherjee and A. Awadallah, “Uncertainty-aware self-training for few-shot text classification,” Advances in Neural Information Processing Systems , vol. 33, pp. 21 199–21 212, 2020. [23] B. Li, Z. Han, H. Li, H. Fu, and C. Zhang, “Trustworthy long-tailed classification,” pp. 6970–6979, 2022. [24] Y. Hu and L. Khan, “Uncertainty-aware reliable text classification,” in Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery & Data Mining , 2021, pp. 628–636. [25] Y. Gal and Z. Ghahramani, “Dropout as a bayesian approximation: Representing model uncertainty in deep learning,” in international conference on machine learning . PMLR, 2016, pp. 1050–1059. [26] J. T. Pintas, L. A. Fernandes, and A. C. B. Garcia, “Feature selection methods for text classification: a systematic literature review,” Artificial Intelligence Review , vol. 54, no. 8, pp. 6149–6200, 2021. [27] H. Zhao, S. Guo, and Y. Lin, “Hierarchical classification of data with long-tailed distributions via global and local granulation,” Information Sciences , vol. 581, pp. 536–552, 2021. [28] A. Guti´ errez-L´ opez, F.-J. Gonz´ alez-Serrano, and A. R. Figueiras-Vidal, “Optimum bayesian thresholds for rebalanced classification problems using class-switching ensembles,” Pattern Recognition , vol. 135, p. 109158, 2023. [29] Q. Wang, L. Ding, Y. Cao, Y. Zhan, Z. Lin, S. Wang, D. Tao, and L. Guo, “Divide, conquer, and combine: Mixture of semantic-independent ex-perts for zero-shot dialogue state tracking,” in Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , 2023, pp. 2048–2061. [30] A. Jsang, Subjective Logic: A formalism for reasoning under uncertainty .Springer Publishing Company, Incorporated, 2018. [31] J. D. M.-W. C. Kenton and L. K. Toutanova, “Bert: Pre-training of deep bidirectional transformers for language understanding,” in Proceedings of NAACL-HLT , vol. 1, 2019, p. 2. [32] C. Ying, T. Cai, S. Luo, S. Zheng, G. Ke, D. He, Y. Shen, and T.-Y. Liu, “Do transformers really perform badly for graph representation?” Ad-vances in Neural Information Processing Systems , vol. 34, pp. 28 877– 28 888, 2021. [33] Z. Wang, P. Wang, L. Huang, X. Sun, and H. Wang, “Incorporating hier-archy into text encoder: a contrastive learning approach for hierarchical text classification,” in Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics , 2022, pp. 7109–7119. IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 13 
+
+[34] E. Jang, S. Gu, and B. Poole, “Categorical reparameterization with gumbel-softmax,” in International Conference on Learning Represen-tations , 2017. [35] M. Sensoy, L. Kaplan, and M. Kandemir, “Evidential deep learning to quantify classification uncertainty,” Advances in neural information processing systems , vol. 31, 2018. [36] S. Kotz, N. Balakrishnan, and N. L. Johnson, Continuous multivariate distributions, Volume 1: Models and applications . John Wiley & Sons, 2004, vol. 1. [37] T. Chen, S. Kornblith, M. Norouzi, and G. Hinton, “A simple framework for contrastive learning of visual representations,” in International conference on machine learning . PMLR, 2020, pp. 1597–1607. [38] K. Kowsari, D. E. Brown, M. Heidarysafa, K. J. Meimandi, M. S. Gerber, and L. E. Barnes, “Hdltex: Hierarchical deep learning for text classification,” in ICMLA . IEEE, 2017, pp. 364–371. [39] D. D. Lewis, Y. Yang, T. Russell-Rose, and F. Li, “Rcv1: A new bench-mark collection for text categorization research,” Journal of machine learning research , vol. 5, no. Apr, pp. 361–397, 2004. [40] P. Yang, X. Sun, W. Li, S. Ma, W. Wu, and H. Wang, “Sgm: Sequence generation model for multi-label classification,” in Proceedings of the 27th International Conference on Computational Linguistics , 2018, pp. 3915–3926. [41] Z. Deng, H. Peng, D. He, J. Li, and S. Y. Philip, “Htcinfomax: A global model for hierarchical text classification via information maximization,” in Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics , 2021, pp. 3259–3265. [42] C. Raffel, N. Shazeer, A. Roberts, K. Lee, S. Narang, M. Matena, Y. Zhou, W. Li, and P. J. Liu, “Exploring the limits of transfer learning with a unified text-to-text transformer,” Journal of machine learning research , vol. 21, no. 140, pp. 1–67, 2020. [43] Y. Liu, “Roberta: A robustly optimized bert pretraining approach,” arXiv preprint arXiv:1907.11692 , 2019. [44] Z. Wang, P. Wang, T. Liu, B. Lin, Y. Cao, Z. Sui, and H. Wang, “Hpt: Hierarchy-aware prompt tuning for hierarchical text classification,” in 
+
+Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing , 2022, pp. 3740–3751. [45] S. C. L. Yu, J. He, V. G. Basulto, and J. Z. Pan, “Instances and labels: Hierarchy-aware joint supervised contrastive learning for hierarchical multi-label text classification,” in The 2023 Conference on Empirical Methods in Natural Language Processing , 2023. [46] H. Zhu, C. Zhang, J. Huang, J. Wu, and K. Xu, “Hitin: Hierarchy-aware tree isomorphism network for hierarchical text classification,” in Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics , 2023, p. 7809–7821. [47] B. Guan, X. Zhu, and S. Yuan, “A t5-based interpretable reading com-prehension model with more accurate evidence training,” Information Processing & Management , vol. 61, no. 2, p. 103584, 2024. [48] Z. Wang, P. Wang, and H. Wang, “Utilizing local hierarchy with adversarial training for hierarchical text classification,” in Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING 2024) , 2024, pp. 17 326–17 336. [49] V. Jain, M. Rungta, Y. Zhuang, Y. Yu, Z. Wang, M. Gao, J. Skolnick, and C. Zhang, “Higen: Hierarchy-aware sequence generation for hier-archical text classification,” in Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics (Volume 1: Long Papers) , 2024, pp. 1354–1368. 
+
+Ye Wang Ye Wang received the B.S. degree in Microelectronics from Chongqing University of Posts and Telecommunications, Chongqing, China in 2011, the M.S. degree in Electrical Engineering from the University of Texas at Dallas, Richardson, TX, USA in 2014, and the Ph.D. degree in Computer Engineering from Texas A&M University, College Station, TX, USA in 2019. He joined the School of Artificial Intelligence at Chongqing University of Posts and Telecommunications since 2020. His cur-rent research is mainly focused on natural language processing and computer vision. 
+
+Zixuan Wu Zixuan Wu received the B.S. de-gree in Information and Computing Science from Chongqing University of Posts and Telecommunica-tions, Chongqing, China in 2022, and is pursuing the M.S. degree in Computer Science and Technology from the same university, with an expected gradu-ation in 2025. His research is mainly focused on natural language processing and autonomous driv-ing. 
+
+Lifeng Shen Lifeng Shen (Member, IEEE) received the PhD degree in Artificial Intelligence from the Hong Kong University of Science and Technology, in 2024. He is an associate professor with the Department of Computer Science and Engineering, Chongqing University of Posts and Telecommu-nications (CQUPT). His current research interests include machine learning, deep learning, granular computing and time-series modeling and their ap-plications. 
+
+Jiang Xie received the MS and PhD degrees in com puter science from Chongqing University, in 2015 and 2019, respectively. He is currently a lec-turer with the College of Computer Science and Technology at Chongqing University of Posts and Telecommu nications. His research interests include clustering analysis and data mining. 
+
+Xiaoling Wang (Member, IEEE) received the B.E., M.S. and Ph.D. degrees from Southeast University in 1997, 2000 and 2003, respectively. She is currently a Professor with the School of Computer Science at East China Normal University. Her research interests mainly include graph data processing and intelligent data analysis. 
+
+Hong Yu Hong Yu (Member, IEEE) received the BE degree in physics from Nanchang Hangkong University, Nanchang, China, in 1994, the MS de-gree in signal and information processing from the Chongqing University of Posts and Telecom-munications, Chongqing, China, in 1997, and the PhD degree in computer software and theory from Chongqing University, Chongqing, China, in 2003. She worked with the University of Regina, Canada, as a visiting scholar during 2007–2008. She is cur-rently a full professor with the Chongqing Univer-sity of Posts and Telecommunications, Chongqing, China. She received a Chongqing Natural Science and Technology Award. She has published several books and some peer-reviewed research articles. Her paper was selected as one of Top Articles in Outstanding S&T Journal of China. Her research interests include rough sets, industrial Big Data, data mining, knowledge discovery, granular computing, three-way clustering, three-way decisions and intelligent recommendation. IEEE TRANSACTIONS ON AUDIO, SPEECH AND LANGUAGE PROCESSING. 14 
+
+Guoyin Wang Guoyin Wang (Senior Member, IEEE) received the BS, MS, and PhD degrees from Xi’an Jiaotong University, Xian, China, in 1992, 1994, and 1996, respectively. He worked with the University of North Texas, and the University of Regina, Canada, as a visiting scholar during 1998–1999. He had worked with the Chongqing University of Posts and Telecommunications during 1996–2024, where he was a professor, the vice-president with the University, the director of the Chongqing Key Laboratory of Computational Intel-ligence, the director of the Key Laboratory of Cyberspace Big Data Intelligent Security, Ministry of Education. He has been serving as the president of Chongqing Normal University since June 2024. He is the author of more than 10 books, the editor of dozens of proceedings of international and national conferences and has more than 300 reviewed research publications. His research interests include rough sets, granular computing, machine learning, knowledge technology, data mining, neural network, cognitive computing, etc. He was the president of International Rough Set Society (IRSS) 2014–2017, and a council member of the China Computer Federation (CCF) 2008–2023. He is a vice-president with the Chinese Association for Artificial Intelligence (CAAI). He is a fellow of IRSS, CAAI and CCF.

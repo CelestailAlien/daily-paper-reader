@@ -1,0 +1,1557 @@
+Title: ACE-Merging: Data-Free Model Merging with Adaptive Covariance Estimation
+
+URL Source: https://arxiv.org/pdf/2603.02945v1
+
+Published Time: Wed, 04 Mar 2026 02:03:00 GMT
+
+Number of Pages: 21
+
+Markdown Content:
+# ACE-Merging: Data-Free Model Merging with Adaptive Covariance Estimation 
+
+Bo Xu 1 Haotian Wu 1 Hehai Lin 1 Weiquan Huang 1 Beier Zhu 2 Yao Shu 1 Chengwei Qin 11The Hong Kong University of Science and Technology (Guangzhou) 
+
+> 2
+
+University of Science and Technology of China 
+
+Abstract 
+
+Model merging aims to combine multiple task-specific ex-pert models into a single model while preserving general-ization across diverse tasks. However, interference among experts, especially when they are trained on different ob-jectives, often leads to significant performance degrada-tion. Despite recent progress, resolving this interference without data access, retraining, or architectural modifica-tion remains a fundamental challenge. This paper provides a theoretical analysis demonstrating that the input covari-ance of each task, which is a key factor for optimal merging, can be implicitly estimated from the parameter differences of its fine-tuned model, even in a fully data-free setting. Building on this insight, we introduce ACE-Merging ,an Adaptive Covariance Estimation framework that effec-tively mitigates inter-task interference. Our approach fea-tures a principled, closed-form solution that contrasts with prior iterative or heuristic methods. Extensive experiments on both vision and language benchmarks demonstrate that 
+
+ACE-Merging sets a new state-of-the-art among data-free methods. It consistently outperforms existing baselines; for example, ACE-Merging achieves an average absolute improvement of 4% over the previous methods across seven tasks on GPT-2. Owing to its efficient closed-form formula-tion, ACE-Merging delivers superior performance with a modest computational cost, providing a practical and theo-retically grounded solution for model merging. 
+
+1. Introduction 
+
+Driven by advanced architectures like the Transformer [1], the pre-training and fine-tuning paradigm [2] has led to a proliferation of highly specialized expert models. Consoli-dating the knowledge from these disparate experts is a criti-cal need, yet traditional multi-task training [3] from scratch is often prohibitively expensive or simply infeasible, as or-ganizations frequently release only model weights without the corresponding training data. Recently, model merg-ing [4, 5] has emerged as a promising solution, enabling the integration of multiple expert models into a single uni-fied multi-task model without the need for costly retrain-ing on multi-task datasets. By directly operating on the weights of fine-tuned experts, model merging provides an efficient and data-free alternative for consolidating knowl-edge across tasks. Despite its practical appeal, model merging is fundamen-tally challenged by inter-task interference . Existing efforts to mitigate this issue can be grouped into three categories. 
+
+Data-dependent methods [6–8] leverage input statistics to guide the merge, but their reliance on original task data is often impractical due to privacy and accessibility con-straints. Test-time adaptive methods [9, 10] adjust mod-els during inference, sacrificing the “merge-once, deploy-anywhere” efficiency and introducing substantial compu-tational overhead. This leaves data-free merging as the most general and appealing solution: by operating solely on model parameters, it offers maximum flexibility and ef-ficiency. However, this paradigm is fundamentally con-strained, as it aims to solve an optimization problem without its most critical input: the statistical structure of task data. Consequently, approaches ranging from the foundational Task Arithmetic [4] to recent sophisticated variants [11– 14] remain parameter-space heuristics, addressing only the 
+
+symptoms of interference rather than its root cause in the mismatched data distributions. In this work, we revisit this long-standing challenge from a theoretical perspective. We show that, under a mild lin-ear approximation, the input covariance of each task is im-plicitly encoded in the parameter changes of its fine-tuned model, providing a previously overlooked bridge between data-level structure and parameter-space behavior. This ob-servation motivates a new formulation of data-free model merging that explicitly accounts for inter-task covariance, enabling principled fusion without requiring any access to task data. This formulation admits to an analytical closed-form solution, which we instantiate as ACE-Merging . To ensure robustness across diverse tasks and model architec-tures, ACE-Merging includes two key components: (1) an adaptive regularization scheme that accounts for task heterogeneity, and (2) a spectral refinement step that cor-rects inherent biases in the merging process. Therefore, 
+
+> arXiv:2603.02945v1 [cs.CL] 3 Mar 2026
+
+ACE-Merging provides a principled and efficient solution that achieves strong performance while maintaining compu-tational efficiency in the data-free setting. Our main contri-butions are summarized as follows: • Foundational theory. We establish a formal relationship between the parameter changes induced by fine-tuning and the task’s input covariance matrix, providing a prin-cipled basis for purely data-free model merging. • Unified explanatory framework. We show that some prior methods, from simple averaging to complex heuris-tics, can be recast as implicit, often coarse, estimators of the input covariance, which clarifies their disparate em-pirical behavior. • Comprehensive state-of-the-art performance. Exten-sive experiments on both language and vision bench-marks demonstrate that ACE-Merging consistently achieves state-of-the-art performance among data-free methods, improving average accuracy by 4% on GPT-2 across seven tasks and by 5% on RoBERTa-base, while maintaining competitive efficiency. On several vi-sion benchmarks, ACE-Merging further surpasses data-dependent and test-time adaptation baselines, highlight-ing its strong generalization and practical scalability. 
+
+2. Related work 
+
+2.1. Data-dependent model merging 
+
+Data-dependent model merging formulates the fusion as an optimization problem that relies on input-level statis-tics. Representative approaches exploit feature covariances or Fisher information to weight parameters during aggrega-tion [6–8, 15]. Although effective, their dependence on task data for estimating importance weights limits their applica-bility in fully data-free settings. 
+
+2.2. Test-time adaptive model merging 
+
+Test-time adaptive methods perform dynamic fusion dur-ing inference rather than constructing a single static model. They adjust merging coefficients or lightweight modules on the fly according to the current input or task con-text [9, 10, 13, 16, 17]. Such approaches often minimize prediction uncertainty or employ routing mechanisms to specialize the merged model for unseen data. While these strategies can yield higher task-specific performance, they introduce additional inference overhead or rely on access to representative test data, limiting their practicality for static deployment. 
+
+2.3. Data-free model merging 
+
+In practical scenarios, access to task data is often lim-ited due to privacy or scalability constraints, making data-free model merging the most general and desirable solu-tion. However, the absence of data also removes the sta-tistical signals that reveal task relationships, forcing meth-ods to rely on parameter-space heuristics to approximate the underlying data geometry. Early data-free methods rely on mitigate interference through heuristic operations such as sign alignment or parameter pruning [11, 14, 18]. While efficient, these Euclidean-space operations fail to capture deeper structural misalignments between models. More recent work seeks a superior basis for merging, primarily through SVD-based decompositions that isolate shared and task-specific subspaces [19–22]. Concurrently, optimization-inspired methods like WUDI-Merging [23] derive analytical solutions but often rely on iterative gra-dient descent for their implementation, sacrificing the sta-bility of a true closed-form solution. In summary, data-free merging still lacks a unified and efficient closed-form for-mulation that captures inter-task structure. ACE-Merging 
+
+fulfills this need through covariance estimation and spec-trally adaptive fusion, achieving superior stability and effi-ciency over SVD- and gradient-based methods. 
+
+3. Background and motivation 
+
+In this section, we formalize the data-free model merging problem and revisit the optimal objective under a linear as-sumption, which forms the theoretical basis of our method. 
+
+3.1. Preliminary of model merging 
+
+Notation. Let M0 denote a pretrained model with layer weights {W l
+
+> 0
+
+}l∈[L],1 where l indexes one of the L layers. Fine-tuning M0 on a downstream task t yields a specialized model with weights Wt. Following Task Arithmetic [4], we define the task vector as the weight displacement ∆Wt =
+
+Wt −W0, which captures the task-specific parameter update relative to the pretrained model. 
+
+Model merging objective. Given T fine-tuned expert mod-els {M t}t∈[T ] with parameters {Wt}t∈[T ], our goal is to obtain a unified merged model ¯M with parameters ¯W that best preserves the behaviors of all experts across their re-spective datasets {D t}. Formally, we minimize the ex-pected output discrepancy between the merged model and each expert: 
+
+min 
+
+> ¯W
+
+X 
+
+> t∈[T]
+
+Ex∼D t f ( ¯W , x ) − f (Wt, x ) 22 . (1) Here, f (W, x ) denotes the layer-wise transformation performed with parameters W on input feature x.
+
+3.2. Optimal linear merging 
+
+To derive a closed-form solution, we linearize the forward mapping as f (W, x ) ≈ W x , a widely adopted approxima-  
+
+> 1As our algorithm is applied independently to each layer, we omit the layer index lin subsequent derivations for clarity..
+
+tion supported by empirical studies [24]. Under this as-sumption, Eq. (1) reduces to a tractable quadratic form: 
+
+L( ¯W ) = X 
+
+> t∈[T]
+
+Tr ( ¯W − Wt) Σ t ( ¯W − Wt)⊤ , (2) where Σt = Ex∼D t [xx ⊤] denotes the input covariance of task t. Minimizing Eq. (2) with respect to ¯W yields the closed-form solution: 
+
+¯W =
+
+ X  
+
+> t∈[T]
+
+WtΣt
+
+ X  
+
+> t∈[T]
+
+Σt
+
+−1
+
+. (3) This expression exposes covariance as the key factor un-derlying different merging strategies, motivating a unified reinterpretation of prior methods. 
+
+3.3. Revisiting baselines through covariance 
+
+In this section, we use Eq. (3) to analyze two representa-tive data-free merging methods: Weight-averaging [5] and WUDI-Merging [23]. 
+
+Weight averaging. The simplest baseline assumes uni-form and isotropic task covariances, i.e., bΣt = kI for some constant k > 0. Substituting this assumption into Eq. (3) yields ¯W = 1
+
+> T
+
+PTt=1 Wt, indicating that arithmetic averag-ing is only optimal under the restrictive condition that all task data distributions share identical statistics. 
+
+Task-specific covariance from task vectors. Beyond the uniform assumption, a more expressive approach is to estimate the task-specific covariance directly from the task vector ∆Wt. A simple data-free proxy for the in-put second-moment matrix is the outer product of the task vector with itself: bΣt ∝ (∆ Wt)⊤∆Wt. Interest-ingly, the recent WUDI-Merging method, though derived from a different objective and optimized via gradient de-scent, can be interpreted within our framework as implic-itly using a norm-weighted version of this proxy: bΣt ∝∥∆Wt∥−2 
+
+> F
+
+(∆ Wt)⊤∆Wt. This perspective suggests that the success of WUDI-Merging arises from employing a more informative, task-specific covariance proxy. However, its reliance on iterative optimization introduces computational overhead and sensitivity to hyperparameters, which further motivates the development of our principled, closed-form estimator presented in the next section. 
+
+4. Methodology 
+
+4.1. Estimating input covariance without data 
+
+We first establish the theoretical connection between input covariance and fine-tuning updates. 
+
+Theorem 1. The input covariance of task t is proportional to the covariance of its weight displacements: 
+
+Σt ∝ Cov Dt
+
+∆Wt
+
+. (4) 
+
+Proof sketch. We view fine-tuning as a gradient-based tran-sition from the pretrained weights W0 to the task-specific weights Wt:
+
+∆Wt = − η
+
+> Nt
+
+X
+
+> i=1
+
+∇W Lt(xi, W (i−1)  
+
+> t
+
+),
+
+where η is the learning rate and Lt is the task-specific loss. Since fine-tuning updates are typically small in mag-nitude [25], the gradients can be linearized around the ini-tialization W0, which simplifies the expression to: 
+
+∆Wt ≈ − 2ηN tE(x,y )∼D t
+
+(W0x − y)x⊤ .
+
+The stated proportionality follows from this approximation. A complete derivation is provided in Appendix A. □
+
+Eq. (4) is powerful but involves expectations over Dt,which are unavailable in data-free settings. To obtain a prac-tical estimator, we treat the rows of ∆Wt as independent samples and compute the empirical covariance: 
+
+bΣt ∝ (∆ Wt − 1μ⊤ 
+
+> t
+
+)⊤(∆ Wt − 1μ⊤ 
+
+> t
+
+), (5) where μt = 1 
+
+> din
+
+1⊤∆Wt is the column-wise mean. The proportionality constant only affects scale and thus cancels out in the final solution. However, directly using this empirical estimator intro-duces several challenges, including scale imbalance, covari-ance degeneracy, and instability in heterogeneous task set-tings. To address these issues, we propose ACE-Merging ,which comprises three key components: (1) an adaptive co-variance normalization scheme that balances task energy scales and stabilizes inversion; (2) a robust covariance esti-mator with a collective structural prior; and (3) an optional spectral refinement step that corrects structural imbalances in highly diverse task sets. The following sections detail each component in turn. 
+
+4.2. Adaptive covariance normalization 
+
+A central challenge in model merging lies in the large het-erogeneity of energy scales across tasks. When computing the aggregated covariance P 
+
+> t
+
+bΣt, high-energy tasks tend to dominate the sum, biasing the merged model toward their representations while suppressing the contributions of low-energy tasks. To mitigate this imbalance, we introduce an adaptive reg-ularization scheme. Instead of adjusting the regularization coefficient ϵ, we normalize each covariance matrix before Figure 1. Comparison of inter-task heterogeneity ( γ) across architectures. ViT-B/16 shows relatively uniform scaling ( γ < 0.25 ), while RoBERTa-Base exhibits much stronger variance ( γ > 0.3) across layers. This cross-architecture contrast motivates our adaptive scaling mechanism. Q K V Out Up Down           
+
+> Layer Type
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> Heterogeneity Metric ( )
+> (a) Distribution Across Layer Types
+> Layer Types
+> Attn-Q
+> Attn-K
+> Attn-V
+> Attn-Out
+> FFN-Up
+> FFN-Down
+> 0714 21 28 35 42 49 56 63 70
+> Layer Index
+> (b) Layer-wise Profile
+> = 0.3
+
+(a) RoBERTa-Base on 8 tasks. Emb QKV A-Out Fc Proj            
+
+> Layer Type
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> Heterogeneity Metric ( )
+> (a) Distribution Across Layer Types
+> Layer Types
+> Embedding
+> Attn-In
+> Attn-Out
+> MLP-Fc
+> MLP-Proj
+> 0510 15 20 25 30 35 40 45 50
+> Layer Index
+> (b) Layer-wise Profile
+> = 0.3
+
+(b) ViT-B/16 on 14 tasks. 
+
+aggregation to equalize task scales. The decision to nor-malize is guided by a heterogeneity metric γ, defined as: 
+
+γ = Var t
+
+ log ∥∆Wt∥2
+
+> F
+
+
+
+(Et[ log ∥∆Wt∥2 
+
+> F
+
+]) 2 . (6) A high γ indicates significant scale divergence, triggering our normalization policy. This heterogeneity varies sub-stantially across architectures (Figure 1), underscoring the need for an adaptive approach. When strong task heterogeneity is detected ( γ > τ ), each covariance matrix is first normalized by its trace to balance energy scales: 
+
+bΣt, scaled = bΣt
+
+Tr( bΣt) . (7) We then apply Tikhonov regularization using an energy-adjusted coefficient to ensure stable inversion: 
+
+bΣt, reg = bΣt, scaled + ϵ
+
+Tr( bΣt) I. (8) For homogeneous task sets ( γ ≤ τ ), both steps are skipped, and bΣt is used directly. This adaptive scaling prevents high-energy tasks from dominating the merged covariance while maintaining numerical stability. 
+
+4.3. Collective structural prior 
+
+While the adaptive regularization strategy in Section 4.2 ef-fectively balances task contributions and stabilizes covari-ance inversion, it still treats all feature dimensions uni-formly. The fundamental limitation of this approach lies in its isotropic nature, which penalizes every direction equally and ignores the underlying geometry of the input space. In essence, although the ϵI term ensures numerical stability, it remains a structure-blind safeguard rather than an informa-tive prior. To overcome this limitation, we introduce a data-driven 
+
+anisotropic regularizer that captures the collective feature geometry across tasks. We define the Collective Structural Prior (CSP) , denoted Cagg , constructed from column-wise statistics of the aggregated task covariances: 
+
+Cagg = 1
+
+ 1
+
+din 
+
+1⊤ X 
+
+> t∈[T]
+
+bΣt, scaled 
+
+ . (9) where 1 ∈ Rdin is the all-ones vector that broadcasts the mean column energy across rows. This yields a low-rank, consensus-driven correction that selectively amplifies di-mensions of shared importance. The final close-form so-lution is: 
+
+¯Wpre =
+
+ X  
+
+> t∈[T]
+
+Wt bΣt, reg 
+
+ X  
+
+> t∈[T]
+
+bΣt, reg + Cagg 
+
+−1
+
+. (10) Unlike isotropic regularization, the CSP serves as a geometry-aware inductive bias that integrates inter-task structural consensus into the optimization, transforming regularization from a purely numerical device into an infor-mative prior that promotes robustness and generalization. 
+
+4.4. Spectral refinement 
+
+Figure 2 illustrates a crucial phenomenon observed across high-heterogeneity benchmarks: even after trace normaliza-tion and the collective prior Cagg , the preliminary closed-form solution ¯Wpre often remains spectrally ill-conditioned .As shown in the left panel of the figure, the top 5% singular values of ¯Wpre can carry more than 99% of the total Frobe-nius energy, indicating extreme spectral concentration and a condition number exceeding 8.7 × 10 5. Such spike-shaped spectra make the fused model highly sensitive to noise, sug-gesting that the matrix inversion in the closed-form update Figure 2. Comparison between the preliminary closed-form solution ¯Wpre and the final merged model ¯W . Left: The singular value spectrum of ¯Wpre is extremely concentrated: the top 5% singular values capture more than 99% of the total energy, indicating severe spectral ill-conditioning. In contrast, ¯W exhibits a substantially flatter spectrum. Right: Despite this spectral imbalance, their leading eigenvectors are nearly identical (cosine similarity ≈ 1), showing that ¯Wpre already identifies the correct structural subspace. Spectral Refinement preserves this subspace while restoring a stable and expressive energy distribution. 10 0 10 1 10 2 10 3                 
+
+> Singular value index
+> 10 7
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> Singular value (log scale)
+> Singular Value Decay: roberta.encoder.layer.8.output.dense.weight
+> Wpre
+> W
+> Machine
+> (Wpre ) = 8.71 e+ 05
+> (W) = 7.95 e+ 04
+> 010 20 30 40 50 60
+> Wbasis
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> Wpre  basis
+> Cosine Similarity of Top-64 Bases
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0 |cos(  )|
+
+unevenly suppresses the dominant consensus directions of the aggregated covariance. However, the right panel reveals an important comple-mentary fact: the principal directions of ¯Wpre are nearly identical to those of the final merged model ¯W . The leading eigenvectors exhibit cosine similarities close to 1, demon-strating that ¯Wpre already identifies the correct structural subspace; its deficiency lies not in direction but in its highly unbalanced spectral distribution. This observation moti-vates a refinement step that preserves the subspace geome-try while restoring a more stable and expressive energy pro-file. To achieve this, we first compute the structural residual: 
+
+∆res = X 
+
+> t∈[T]
+
+Wt
+
+ bΣt, scaled −Σ, Σ = 1
+
+> T
+
+X 
+
+> t∈[T]
+
+bΣt, reg . (11) which acts as a first-order correction to the closed-form so-lution, recovering structural variance that may be oversup-pressed by the inversion. We then fuse this residual with the preliminary solution: ¯Wfused = ¯Wpre + ∆ res . Ap-plying SVD to the fused matrix, Wfused = USV ⊤, where 
+
+S = diag( σ1, σ 2, . . . ), and re-weight the top-k principal directions with their mean singular value, σiso :
+
+∆Wrefine = σiso U:,1: kV⊤
+
+> :,1: k
+
+, σiso = 1
+
+> kk
+
+X
+
+> i=1
+
+σi. (12) The final merged weight is obtained as: 
+
+¯W = ¯Wpre + ∆ Wrefine . (13) 
+
+Algorithm 1 ACE-Merging 
+
+Require: Pretrained weights W0; Expert weights 
+
+{Wt}t∈[T ]; Regularization strength ϵ; Heterogeneity threshold τ ; Rank fraction kfrac .
+
+Ensure: Merged weights ¯W .
+
+1: for each layer l to be merged do 
+
+▷ Stage 1: Adaptive Scaling 
+
+2: Compute task vectors ∆Wt for all t.
+
+3: Compute metric γ, average trace Tr avg Eq. (6) 
+
+4: Compute scaled covariances {bΣt, scaled } Eq. (7) 
+
+5: Compute regularized covariances {bΣt, reg } Eq. (8) 
+
+▷ Stage 2: Structural Prior 
+
+6: Compute aggregate prior Cagg Eq. (9) 
+
+7: if γ > τ then 
+
+8: Normalize: Cagg ← Cagg / Tr avg .
+
+9: end if 
+
+▷ Stage 3: Fusion and Refinement 
+
+10: Compute preliminary merge ¯Wpre Eq. (10) 
+
+11: if γ > τ then 
+
+12: Compute low-rank ∆Wrefine Eq. (12) 
+
+13: ¯W ← ¯Wpre + ∆ Wrefine .
+
+14: else 
+
+15: ¯W ← ¯Wpre .
+
+16: end if 
+
+17: end for 
+
+18: return ¯W ← { ¯W (l)}lTable 1. Main results on visual benchmarks. We report the average absolute accuracy (%) across three ViT backbones (ViT-B/32, ViT-B/16, ViT-L/14) on task sets of increasing cardinality (8, 14, and 20). ”Zero-shot” and ”Fine-tuned” results serve as reference lower and upper bounds, respectively. The best performance among merging methods in each setting is highlighted in bold .                                                                                                                                                           
+
+> Method ViT-B-32 ViT-B-16 ViT-L-14 8 tasks 14 tasks 20 tasks 8 tasks 14 tasks 20 tasks 8 tasks 14 tasks 20 tasks
+> Zero-shot 48.3 57.2 56.1 55.3 61.3 59.7 64.7 68.2 65.2 Fine-tuned 92.8 90.9 91.3 94.6 92.8 93.2 95.8 94.3 94.7 Weight Averaging [5] 66.3 64.3 61.0 72.2 69.5 65.3 79.6 76.7 71.6 Task Arithmetic [4] 70.8 65.3 60.5 75.4 70.5 65.8 84.9 79.4 74.0 Consensus TA [26] 75.0 70.4 65.4 79.4 74.4 69.8 86.3 82.2 79.0 CART [27] 84.7 79.5 76.3 88.3 84.1 80.5 92.6 88.7 87.9 TSV-M [19] 85.9 80.1 77.1 89.0 84.6 80.6 93.0 89.2 87.7
+> ACE-Merging (Ours) 87.9 82.3 78.8 90.6 86.1 82.1 94.6 91.1 89.5
+> Table 2. Performance on the GLUE benchmark for various merging methods applied to GPT-2. All scores are reported as accuracy, except for CoLA (Matthews Correlation). ”Individual” represents the upper bound from single-task fine-tuned models.
+> Method CoLA MNLI MRPC QNLI QQP RTE SST-2 Avg.
+> Individual 76.8 82.1 80.4 88.3 89.6 65.3 91.2 82.0 Weight Averaging [5] 55.0 55.1 51.0 57.6 76.7 44.8 52.5 56.1 Fisher Merging [6] 54.8 58.0 39.5 63.3 81.5 49.1 64.7 58.7 RegMean [7] 61.7 70.4 65.4 69.7 78.8 56.0 79.7 68.8 Task Arithmetic [4] 68.7 68.6 69.6 70.5 81.8 47.3 83.6 70.0 Ties-Merging [11] 68.4 71.4 68.4 69.6 82.4 47.7 81.8 70.0 TSV-M [19] 65.6 75.4 58.6 64.4 86.2 55.6 85.7 70.2
+> ACE-Merging (Ours) 70.3 69.9 71.8 76.72 79.0 62.5 88.5 74.1
+
+4.5. The ACE-Merging algorithm 
+
+The complete ACE-Merging procedure is summarized in Algorithm 1. For each layer, it operates in three main stages: first, it estimates the task heterogeneity to determine the merging strategy. Second, it computes a robust prelim-inary solution via our MAP framework. Finally, if signifi-cant heterogeneity is detected, it performs a targeted spec-tral refinement to correct for the inherent shrinkage bias. 
+
+5. Experiments 
+
+5.1. Experimental setup 
+
+Datasets. For vision tasks, we evaluate on three vision benchmarks with cardinalities of 8, 14, and 20. These benchmarks are constructed by progressively extending the task selection protocol of [19]. The 8-task benchmark serves as our base setting and includes Cars [28], DTD [29], EuroSAT [30], GTSRB [31], MNIST [32], RESISC45 [33], SUN397 [34], and SVHN [35]. The 14-task benchmark adds CIFAR100 [36], STL10 [37], Flowers102 [38], Ox-fordIIITPet [39], PCAM [40], and FER2013 [41]. The 20-task benchmark further adds EMNIST [42], CIFAR10 [36], Food101 [43], FashionMNIST [44], RenderedSST2 [45], and KMNIST [46]. For language tasks, our evaluation is based on the widely used GLUE benchmark [47], and we report results on its eight core tasks: CoLA, SST-2, MRPC, STS-B, QQP, QNLI, MNLI, and RTE. 
+
+Models. For vision tasks, we adopt CLIP-derived Vision Transformers (ViTs) [48, 49], evaluating models at mul-tiple scales including ViT-B/32, ViT-B/16, and ViT-L/14. The corresponding fine-tuned checkpoints are taken from the TSVM suite [19]. For language tasks, we consider both the RoBERTa [50] and GPT-2 [51] model families, conducting experiments on RoBERTa-Base, RoBERTa-Large, and GPT-2. RoBERTa checkpoints are sourced from the Twin-Merging bench-mark [52], while GPT-2 checkpoints are obtained from the FusionBench benchmark [53]. Additionally, we also eval-uate our method on the Llama-3B-Instruct [54] and report the results in the Appendix B. 
+
+Baselines. Our evaluation includes comparisons with nu-merous recent approaches reported across different tasks. For consistency and brevity, we restrict our detailed com-parisons to the state-of-the-art data-free methods most com-Table 3. Normalized performance on the GLUE benchmark for RoBERTa-Base and RoBERTa-Large. The average score is reported, with the red triangle indicating the improvement over the best baseline (Ties-Merging w/ DARE). Best results in each column are in bold .                                                                                                                                                                            
+
+> Model Method CoLA SST-2 MRPC STS-B QQP QNLI MNLI RTE Avg.
+> RoBERTa-Base Pre-trained 0.0 53.8 85.0 4.0 37.5 53.1 37.1 71.2 41.7 Individual 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 Weight Averaging [5] 0.0 59.2 85.8 47.0 45.4 63.9 48.0 71.2 52.6 Task Arithmetic [4] 8.4 88.3 89.6 32.8 82.0 85.4 75.5 80.4 67.8 Ties-Mergin [11] g 31.8 88.9 86.2 10.9 61.1 85.9 83.0 69.6 64.7 Task Arithmetic (w/ DARE) [14] 0.0 88.1 86.6 30.2 84.3 79.1 64.0 77.2 63.7 Ties-Merging (w/ DARE) [14] 11.8 95.5 85.8 9.4 86.8 88.7 83.1 65.6 65.6 WUDI-Merging [23] 81.8 98.3 78.7 60.5 92.7 90.5 93.3 86.4 85.3
+> ACE-Merging (Ours) 97.3 97.6 93.9 71.1 88.3 88.2 91.5 95.1 90.4
+> RoBERTa-Large Pre-trained 0.0 51.5 40.9 20.9 36.4 56.0 37.6 62.4 38.2 Individual 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 Weight Averaging 7.4 55.1 84.2 46.3 56.7 73.8 35.8 66.7 53.3 Task Arithmetic 7.4 86.1 86.8 78.0 90.7 77.0 73.3 67.6 70.9 Ties-Merging 42.7 78.1 85.2 51.7 89.9 81.9 79.7 70.0 72.4 Task Arithmetic (w/ DARE) 4.1 85.2 85.8 71.6 91.3 85.6 75.2 68.1 70.9 Ties-Merging (w/ DARE) 2.9 90.4 86.8 75.4 92.4 86.4 79.0 69.1 72.8 WUDI-Merging 82.2 98.7 87.3 81.4 94.6 96.6 93.4 77.1 88.8
+> ACE-Merging (Ours) 87.1 99.2 92.3 82.1 95.6 97.9 92.6 86.7 91.7
+
+monly used as baselines in prior studies. This enables a fair and representative assessment while keeping the benchmark analysis compact. 
+
+Experiment details. For our method, we use consistent hyperparameters across all experiments. The heterogeneity threshold is fixed to τ = 0 .3, and we set the rank frac-tion kfrac = 0 .3, indicating that the spectral refinement step retains the top k = kfrac × min( din , d out ) singular compo-nents. The regularization strength ϵ is adapted to the model family, set to 4 × 10 −2 for GPT-2, 2 × 10 −4 for RoBERTa-Base, and 1 × 10 −5 for all other models. 
+
+5.2. Main results 
+
+We comprehensively evaluate ACE-Merging across a suite of vision and language benchmarks. As shown in Ta-ble 1, Table 2, and Table 3, our method consistently outper-forms various baseline methods in all evaluation settings. 
+
+Vision task performance. Table 1 summarizes the av-erage absolute accuracy on the 8-, 14-, and 20-task visual benchmarks. The results clearly indicate that 
+
+ACE-Merging achieves state-of-the-art (SOTA) perfor-mance across all nine settings. Notably, the performance gap between ACE-Merging and prior SOTA methods, such as CART and TSV-M, widens as both model scale (from ViT-B/32 to ViT-L/14) and task cardinality increase. For instance, in the most challenging 20-task setting on ViT-L/14, our method achieves 89.5 accuracy, surpassing the next best method by nearly 2 absolute points. This strongly demonstrates that ACE-Merging provides robust and scalable performance gains, regardless of model capac-ity or task complexity. 
+
+Language task performance. Our experiments on lan-guage models further corroborate the superiority and gen-eralization capabilities of ACE-Merging .On GPT-2 (Table 2), ACE-Merging achieves an aver-age score of 74.1%, decisively outperforming all baselines, including Ties-Merging 70.0% and the SVD-based TSV-M 70.2, by a large margin of over 4 absolute points. The results on RoBERTa models (Table 3) are equally impressive. On RoBERTa-Base, our method attains a nor-malized average score of 90.4%, which is over 5 points higher than the strong WUDI-Merging baseline (85.3%). This advantage is sustained on RoBERTa-Large, where 
+
+ACE-Merging achieves 91.7%, nearly 3 points ahead of WUDI-Merging (88.8%). These consistent SOTA results across diverse language architectures and scales confirm that our method is not a model-specific optimization but a fundamental and broadly applicable solution to the model merging problem. 
+
+5.3. Ablation study 
+
+To understand the contribution of each component within 
+
+ACE-Merging , we conduct a detailed ablation study. Table 4. Ablation study of ACE-Merging components. We re-port the average score (%) on RoBERTa-Large (GLUE), GPT-2 (GLUE), and ViT-B/16 (8 tasks). The best performing configura-tion for each model is marked in bold. # Method Configuration RoBERTa-L GPT-2 ViT-B/16 E1 Basic Closed-form 80.05 68.72 89.91 E2 + Adaptive ϵ 88.04 71.50 89.91 E3 + Aggregate Prior ( Λagg ) 86.79 71.51 90.60                      
+
+> E4 + Spectral Refinement 91.68 74.09 90.60
+> Table 5. Effect of the heterogeneity threshold γ(fixed kfrac =0.3). Average accuracy (%) on RoBERTa-Large (GLUE) and GPT-2 (FusionBench).
+> γRoBERTa-Large GPT-2 0.1 92.22 73.96 0.2 92.21 73.96 0.3 91.68 74.09
+> 0.4 89.07 71.74 0.5 88.09 69.35
+
+Starting from a basic closed-form baseline (E1), we pro-gressively add three modules: adaptive regularization (E2), the empirical Bayes aggregate prior (E3), and the spectral refinement stage (E4). Table 4 summarizes the results on RoBERTa-Large, GPT-2, and ViT-B/16 (8 tasks). 
+
+Analysis on language models. On both RoBERTa-Large and GPT-2, the results show clear cumulative improve-ments. The introduction of adaptive regularization (E2) gives the largest gain, improving RoBERTa-Large by al-most eight points. This confirms that adjusting the effective regularization according to task heterogeneity is essential. Adding the aggregate prior (E3) produces a small fluctua-tion, which is resolved when the spectral refinement stage (E4) is included. The final configuration achieves the best performance on all models. This result indicates that the three modules complement each other and together produce a stable and accurate closed-form solution. 
+
+Analysis on vision models. For ViT-B/16, the measured heterogeneity γ across the eight tasks stays below the ac-tivation threshold τ = 0.3 for all layers. As a result, 
+
+ACE-Merging correctly skips the adaptive and spectral stages. This behavior is consistent with Table 4, where E2 matches E1 and E4 matches E3. The results confirm that the 
+
+γ-based gate works as an effective switch that activates cor-rection only when large task differences are detected. The improvement from E2 to E3 shows that the aggregate prior still provides a steady benefit even when heterogeneity is low.                      
+
+> Table 6. Effect of the spectral rank fraction kfrac under fixed heterogeneity threshold γ=0.3.Average accuracy (%) on RoBERTa-Large (GLUE) and GPT-2 (FusionBench).
+> kfrac RoBERTa-Large GPT-2 0.1 90.71 74.17
+> 0.2 91.55 73.88 0.3 91.68 74.09 0.4 91.61 74.06 0.5 91.45 73.78 0.6 91.17 73.71
+
+Sensitivity analysis. Tables 5 and 6 show the sensitivity of ACE-Merging to the heterogeneity threshold γ and the spectral rank fraction kfrac . The performance remains sta-ble for γ between 0.1 and 0.3 and for kfrac between 0.1 and 0.5. This indicates that the method is robust to moderate changes in these parameters. The regularization strength ϵ
+
+plays a more critical role because it directly controls the bal-ance between stability and fidelity. A possible direction for future work is to design an automatic procedure to estimate an optimal ϵ from model statistics. 
+
+Summary. The ablation and sensitivity results show that each module in ACE-Merging has a distinct and comple-mentary function. Adaptive regularization improves numer-ical stability. The aggregate prior enforces consistent struc-ture across tasks. Spectral refinement restores balanced sin-gular spectra and alignment. At the same time, the frame-work is robust to a wide range of γ and kfrac values, con-firming its reliability and scalability in practice. 
+
+6. Conclusion 
+
+In this work, we tackle the challenge of data-free model merging under substantial inter-task heterogeneity. We introduce ACE-Merging , a unified framework that in-tegrates adaptive normalization, a collective structural prior, and a spectral refinement stage to effectively syn-thesize shared knowledge while preserving salient task-specific structure. Extensive experiments across di-verse vision and language benchmarks demonstrate that 
+
+ACE-Merging consistently achieves state-of-the-art per-formance. Its advantages become increasingly pronounced as model scale and task diversity grow, highlighting the robustness and scalability of the proposed approach. Apromising direction for future work is to make the reg-ularization strength ϵ input-aware rather than a single global constant. We hope that ACE-Merging serves both as a practical tool and as a conceptual foundation for advancing research in scalable, data-free model fu-sion. References 
+
+[1] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko-reit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems , 30, 2017. 1 [2] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional trans-formers for language understanding. In Proceedings of the 2019 conference of the North American chapter of the asso-ciation for computational linguistics: human language tech-nologies, volume 1 (long and short papers) , pages 4171– 4186, 2019. 1 [3] Rich Caruana. Multitask learning. Machine learning ,28(1):41–75, 1997. 1 [4] Gabriel Ilharco, Marco Tulio Ribeiro, Mitchell Wortsman, Ludwig Schmidt, Hannaneh Hajishirzi, and Ali Farhadi. Editing models with task arithmetic. In The Eleventh Inter-national Conference on Learning Representations , 2023. 1, 2, 6, 7 [5] Mitchell Wortsman, Gabriel Ilharco, Samir Yitzhak Gadre, Rebecca Roelofs, Raphael Gontijo-Lopes, Ari S. Morcos, Hongseok Namkoong, Ali Farhadi, Yair Carmon, Simon Kornblith, and Ludwig Schmidt. Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time. ArXiv , abs/2203.05482, 2022. 1, 3, 6, 7 [6] Michael S Matena and Colin A Raffel. Merging models with fisher-weighted averaging. Advances in Neural Information Processing Systems , 35:17703–17716, 2022. 1, 2, 6 [7] Xisen Jin, Xiang Ren, Daniel Preotiuc-Pietro, and Pengxiang Cheng. Dataless knowledge fusion by merging weights of language models. arXiv preprint arXiv:2212.09849 , 2022. 6 [8] The-Hai Nguyen, Dang Huu-Tien, Takeshi Suzuki, and Le-Minh Nguyen. Regmean++: Enhancing effectiveness and generalization of regression mean for model merging. arXiv preprint arXiv:2508.03121 , 2025. 1, 2 [9] Enneng Yang, Zhenyi Wang, Li Shen, Shiwei Liu, Guibing Guo, Xingwei Wang, and Dacheng Tao. Adamerging: Adap-tive model merging for multi-task learning. arXiv preprint arXiv:2310.02575 , 2023. 1, 2 [10] Chenyu Huang, Peng Ye, Tao Chen, Tong He, Xiangyu Yue, and Wanli Ouyang. Emr-merging: Tuning-free high-performance model merging. Advances in Neural Informa-tion Processing Systems , 37:122741–122769, 2024. 1, 2 [11] Prateek Yadav, Derek Tam, Leshem Choshen, Colin A Raf-fel, and Mohit Bansal. Ties-merging: Resolving interference when merging models. Advances in Neural Information Pro-cessing Systems , 36:7093–7115, 2023. 1, 2, 6, 7 [12] Chongjie Si, Kangtao Lv, Jingjing Jiang, Yadao Wang, Yong-wei Wang, Xiaokang Yang, Wenbo Su, Bo Zheng, and Wei Shen. Nan: A training-free solution to coefficient estimation in model merging. arXiv preprint arXiv:2505.16148 , 2025. [13] Shenghe Zheng and Hongzhi Wang. Free-merging: Fourier transform for efficient model merging. In Proceedings of the IEEE/CVF International Conference on Computer Vi-sion , pages 3863–3873, 2025. 2 [14] Le Yu, Bowen Yu, Haiyang Yu, Fei Huang, and Yongbin Li. Language models are super mario: Absorbing abilities from homologous models as a free lunch. In Forty-first Interna-tional Conference on Machine Learning , 2024. 1, 2, 7 [15] Sanwoo Lee, Jiahao Liu, Qifan Wang, Jingang Wang, Xun-liang Cai, and Yunfang Wu. Dynamic fisher-weighted model merging via bayesian optimization. arXiv preprint arXiv:2504.18992 , 2025. 2 [16] Ryo Bertolissi, Jonas H¨ ubotter, Ido Hakimi, and An-dreas Krause. Local mixtures of experts: Essentially free test-time training via model merging. arXiv preprint arXiv:2505.14136 , 2025. 2 [17] Zihuan Qiu, Yi Xu, Chiyuan He, Fanman Meng, Linfeng Xu, Qingbo Wu, and Hongliang Li. Mingle: Mixtures of null-space gated low-rank experts for test-time continual model merging. arXiv preprint arXiv:2505.11883 , 2025. 2 [18] Pala Tej Deep, Rishabh Bhardwaj, and Soujanya Po-ria. Della-merging: Reducing interference in model merg-ing through magnitude-based sampling. arXiv preprint arXiv:2406.11617 , 2024. 2 [19] Antonio Andrea Gargiulo, Donato Crisostomi, Maria Sofia Bucarelli, Simone Scardapane, Fabrizio Silvestri, and Emanuele Rodola. Task singular vectors: Reducing task in-terference in model merging. In Proceedings of the Com-puter Vision and Pattern Recognition Conference , pages 18695–18705, 2025. 2, 6, 7 [20] Daniel Marczak, Simone Magistri, Sebastian Cygert, Bartłomiej Twardowski, Andrew D. Bagdanov, and Joost van de Weijer. No task left behind: Isotropic model merging with common and task-specific subspaces. In Forty-second International Conference on Machine Learning , 2025. [21] George Stoica, Pratik Ramesh, Boglarka Ecsedi, Leshem Choshen, and Judy Hoffman. Model merging with svd to tie the knots. arXiv preprint arXiv:2410.19735 , 2024. [22] Aniello Panariello, Daniel Marczak, Simone Magistri, An-gelo Porrello, Bartłomiej Twardowski, Andrew D. Bag-danov, Simone Calderara, and Joost van de Weijer. Accurate and efficient low-rank model merging in core space. ArXiv ,abs/2509.17786, 2025. 2 [23] Runxi Cheng, Feng Xiong, Yongxian Wei, Wanyun Zhu, and Chun Yuan. Whoever started the interference should end it: Guiding data-free model merging via task vectors. arXiv preprint arXiv:2503.08099 , 2025. 2, 3, 7 [24] Anton Razzhigaev, Matvey Mikhalchuk, Elizaveta Gon-charova, Nikolai Gerasimenko, Ivan Oseledets, Denis Dim-itrov, and Andrey Kuznetsov. Your transformer is secretly linear. arXiv preprint arXiv:2405.12250 , 2024. 3 [25] Wei Huang, Anda Cheng, and Yinggui Wang. Mitigat-ing catastrophic forgetting in large language models with forgetting-aware pruning. ArXiv , abs/2509.08255, 2025. 3 [26] Ke Wang, Nikolaos Dimitriadis, Guillermo Ortiz-Jim´ enez, Franccois Fleuret, and Pascal Frossard. Localizing task in-formation for improved model merging and compression. 
+
+ArXiv , abs/2405.07813, 2024. 6 [27] Jiho Choi, Donggyun Kim, Chanhyuk Lee, and Seunghoon Hong. Revisiting weight averaging for model merging. 
+
+ArXiv , abs/2412.12153, 2024. 6 [28] Jonathan Krause, Michael Stark, Jia Deng, and Li Fei-Fei. 3d object representations for fine-grained categorization. In 
+
+Proceedings of the IEEE international conference on com-puter vision workshops , pages 554–561, 2013. 6 [29] Mircea Cimpoi, Subhransu Maji, Iasonas Kokkinos, Sammy Mohamed, and Andrea Vedaldi. Describing textures in the wild. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 3606–3613, 2014. 6 [30] Patrick Helber, Benjamin Bischke, Andreas Dengel, and Damian Borth. Eurosat: A novel dataset and deep learning benchmark for land use and land cover classification. IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing , 12(7):2217–2226, 2019. 6 [31] Johannes Stallkamp, Marc Schlipsing, Jan Salmen, and Christian Igel. The german traffic sign recognition bench-mark: a multi-class classification competition. In The 2011 international joint conference on neural networks , pages 1453–1460. IEEE, 2011. 6 [32] Yann LeCun, L´ eon Bottou, Yoshua Bengio, and Patrick Haffner. Gradient-based learning applied to document recog-nition. Proceedings of the IEEE , 86(11):2278–2324, 2002. 6[33] Gong Cheng, Junwei Han, and Xiaoqiang Lu. Remote sens-ing image scene classification: Benchmark and state of the art. Proceedings of the IEEE , 105(10):1865–1883, 2017. 6 [34] Jianxiong Xiao, Krista A Ehinger, James Hays, Antonio Tor-ralba, and Aude Oliva. Sun database: Exploring a large col-lection of scene categories. International Journal of Com-puter Vision , 119(1):3–22, 2016. 6 [35] Yuval Netzer, Tao Wang, Adam Coates, Alessandro Bis-sacco, Baolin Wu, Andrew Y Ng, et al. Reading digits in natural images with unsupervised feature learning. In NIPS workshop on deep learning and unsupervised feature learn-ing , volume 2011, page 7. Granada, 2011. 6 [36] Alex Krizhevsky and Geoffrey Hinton. Learning multiple layers of features from tiny images. Technical Report TR-2009, University of Toronto, Toronto, Ontario, 2009. 6 [37] Adam Coates, Andrew Ng, and Honglak Lee. An analysis of single-layer networks in unsupervised feature learning. In 
+
+Proceedings of the fourteenth international conference on artificial intelligence and statistics , pages 215–223. JMLR Workshop and Conference Proceedings, 2011. 6 [38] Maria-Elena Nilsback and Andrew Zisserman. Automated flower classification over a large number of classes. In 2008 Sixth Indian conference on computer vision, graphics & im-age processing , pages 722–729. IEEE, 2008. 6 [39] Omkar M Parkhi, Andrea Vedaldi, Andrew Zisserman, and CV Jawahar. Cats and dogs. In 2012 IEEE conference on computer vision and pattern recognition , pages 3498–3505. IEEE, 2012. 6 [40] Bastiaan S Veeling, Jasper Linmans, Jim Winkens, Taco Co-hen, and Max Welling. Rotation equivariant cnns for digital pathology. In International Conference on Medical image computing and computer-assisted intervention , pages 210– 218. Springer, 2018. 6 [41] Ian J Goodfellow, Dumitru Erhan, Pierre Luc Carrier, Aaron Courville, Mehdi Mirza, Ben Hamner, Will Cukierski, Yichuan Tang, David Thaler, Dong-Hyun Lee, et al. Chal-lenges in representation learning: A report on three machine learning contests. In International conference on neural in-formation processing , pages 117–124. Springer, 2013. 6 [42] Gregory Cohen, Saeed Afshar, Jonathan Tapson, and Andre Van Schaik. Emnist: Extending mnist to handwritten letters. In 2017 international joint conference on neural networks (IJCNN) , pages 2921–2926. IEEE, 2017. 6 [43] Lukas Bossard, Matthieu Guillaumin, and Luc Van Gool. Food-101–mining discriminative components with random forests. In European conference on computer vision , pages 446–461. Springer, 2014. 6 [44] Han Xiao, Kashif Rasul, and Roland Vollgraf. Fashion-mnist: a novel image dataset for benchmarking machine learning algorithms. arXiv preprint arXiv:1708.07747 , 2017. 6[45] Richard Socher, Alex Perelygin, Jean Wu, Jason Chuang, Christopher D Manning, Andrew Y Ng, and Christopher Potts. Recursive deep models for semantic compositional-ity over a sentiment treebank. In Proceedings of the 2013 conference on empirical methods in natural language pro-cessing , pages 1631–1642, 2013. 6 [46] Tarin Clanuwat, Mikel Bober-Irizar, Asanobu Kitamoto, Alex Lamb, Kazuaki Yamamoto, and David Ha. Deep learning for classical japanese literature. arXiv preprint arXiv:1812.01718 , 2018. 6 [47] Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel Bowman. Glue: A multi-task benchmark and analysis platform for natural language un-derstanding. In Proceedings of the 2018 EMNLP workshop BlackboxNLP: Analyzing and interpreting neural networks for NLP , pages 353–355, 2018. 6 [48] Alexey Dosovitskiy. An image is worth 16x16 words: Transformers for image recognition at scale. arXiv preprint arXiv:2010.11929 , 2020. 6 [49] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from natural language supervi-sion. In International conference on machine learning , pages 8748–8763. PmLR, 2021. 6 [50] Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Levy, Mike Lewis, Luke Zettle-moyer, and Veselin Stoyanov. Roberta: A robustly optimized bert pretraining approach. ArXiv , abs/1907.11692, 2019. 6 [51] Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya Sutskever, et al. Language models are unsu-pervised multitask learners. OpenAI blog , 1(8):9, 2019. 6 [52] Zhenyi Lu, Chenghao Fan, Wei Wei, Xiaoye Qu, Dangyang Chen, and Yu Cheng. Twin-merging: Dynamic integration of modular expertise in model merging. Advances in Neural Information Processing Systems , 37:78905–78935, 2024. 6 [53] Anke Tang, Li Shen, Yong Luo, Han Hu, Bo Du, and Dacheng Tao. Fusionbench: A comprehensive benchmark of deep model fusion. arXiv preprint arXiv:2406.03280 , 2024. 6[54] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timoth´ ee Lacroix, Bap-tiste Rozi` ere, Naman Goyal, Eric Hambro, Faisal Azhar, Aur’elien Rodriguez, Armand Joulin, Edouard Grave, and Guillaume Lample. Llama: Open and efficient foundation language models. ArXiv , abs/2302.13971, 2023. 6 A. Theoretical Derivations 
+
+A.1. Derivation of the Quadratic Objective 
+
+In this section, we provide the full derivation showing how the objective in Eq. (1) of the main paper reduces to the quadratic form in Eq. (2) under the standard linearization assumption. Recall that the merging objective is 
+
+min 
+
+> ¯W
+
+X 
+
+> t∈[T]
+
+Ex∼Dt ∥f ( ¯W , x ) − f (Wt, x )∥22.
+
+Let us first consider the inner term of the summation for a single task t. Following common practice and our analysis in Section 3.2, we linearize the forward pass as f (W, x ) ≈ W x . This approximation, supported by the local linearity of Transformer layers during fine-tuning, allows us to simplify the term as follows: 
+
+Ex∼Dt ∥f ( ¯W , x ) − f (Wt, x )∥22 ≈ Ex∼Dt ∥( ¯W − Wt)x∥22. (14) For any matrix A and vector x, we have the identity ∥Ax ∥22 = x⊤A⊤Ax . Applying this within the expectation yields: 
+
+Ex∼Dt ∥( ¯W − Wt)x∥22 = Ex∼Dt
+
+x⊤( ¯W − Wt)⊤( ¯W − Wt)x. (15) Let us analyze the dimensions of the term inside the expectation. The weight matrices are ¯W , W t ∈ Rdout ×din , and the input vector is x ∈ Rdin ×1. Let ∆W = ¯W − Wt. The dimensions are as follows: 
+
+x⊤
+
+|{z} 
+
+> 1×din
+
+(∆ W )⊤
+
+| {z }
+
+> din ×dout
+
+(∆ W )
+
+| {z } 
+
+> dout ×din
+
+x|{z} 
+
+> din ×1
+
+.
+
+The resulting product has dimensions (1 × din ) · (din × dout ) · (dout × din ) · (din × 1) = (1 × 1) , which is a scalar. The key insight is that any scalar is equal to its own trace. Using this fact, along with the linearity of both trace and expectation and the cyclic property of the trace ( Tr( ABC ) = Tr( CAB )), we can rewrite the expression: 
+
+Ex∼Dt
+
+ . . .  = Ex∼Dt
+
+h
+
+Tr  x⊤( ¯W − Wt)⊤( ¯W − Wt)xi
+
+= Tr 
+
+
+
+Ex∼Dt
+
+( ¯W − Wt)xx ⊤( ¯W − Wt)⊤
+
+= Tr 
+
+
+
+( ¯W − Wt)Ex∼Dt [xx ⊤]( ¯W − Wt)⊤
+
+. (16) By applying the cyclic property one final time, Tr( ABC ) = Tr( CAB ), we arrive at the symmetric form: 
+
+Ex∼Dt
+
+ . . .  = Tr 
+
+h
+
+( ¯W − Wt)
+
+
+
+Ex∼Dt [xx ⊤]
+
+
+
+( ¯W − Wt)⊤i
+
+. (17) Define the input covariance matrix of task t as 
+
+Σt = Ex∼Dt [xx ⊤].
+
+We obtain 
+
+Ex∼Dt ∥( ¯W − Wt)x∥22 = Tr ( ¯W − Wt)Σ t( ¯W − Wt)⊤. (18) Summing over all tasks t ∈ [T ], we arrive at 
+
+L( ¯W ) = 
+
+> T
+
+X
+
+> t=1
+
+Tr ( ¯W − Wt)Σ t( ¯W − Wt)⊤, (19) which is exactly Eq. (2) in the main paper. A.2. Derivation of the Closed-Form Solution 
+
+In this section, we derive the closed-form solution for the optimal merged weights ¯W by minimizing the quadratic objective function from Eq. (2). To find the minimum, we compute the gradient of L( ¯W ) with respect to the matrix ¯W and set it to zero. First, let’s expand the term inside the trace: 
+
+( ¯W − Wt)Σ t( ¯W − Wt)⊤ = ( ¯W − Wt)Σ t( ¯W ⊤ − W ⊤ 
+
+> t
+
+)= ¯W Σt ¯W ⊤ − ¯W ΣtW ⊤ 
+
+> t
+
+− WtΣt ¯W ⊤ + WtΣtW ⊤ 
+
+> t
+
+. (20) Using the linearity of the trace and the sum, we can differentiate the loss term by term with respect to ¯W . We use the following standard matrix calculus identities for the gradient of a trace: • ∇X Tr( XAX ⊤) = X(A + A⊤)
+
+• ∇X Tr( XB ) = B⊤
+
+• ∇X Tr( AX ⊤) = A
+
+Given that the covariance matrix Σt is symmetric (i.e., Σt = Σ ⊤ 
+
+> t
+
+), the first identity simplifies to ∇X Tr( XΣtX⊤) = 2 XΣt.Applying these rules, the gradient of the loss function is: 
+
+∇ ¯W L( ¯W ) = ∇ ¯W
+
+X 
+
+> t∈[T]
+
+Tr  ¯W Σt ¯W ⊤ − ¯W ΣtW ⊤ 
+
+> t
+
+− WtΣt ¯W ⊤ + WtΣtW ⊤
+
+> t
+
+
+
+= X 
+
+> t∈[T]
+
+∇ ¯W Tr  ¯W Σt ¯W ⊤ − ¯W ΣtW ⊤ 
+
+> t
+
+− WtΣt ¯W ⊤
+
+= X 
+
+> t∈[T]
+
+ 2 ¯W Σt − (Σ tW ⊤ 
+
+> t
+
+)⊤ − WtΣt
+
+
+
+= X 
+
+> t∈[T]
+
+ 2 ¯W Σt − WtΣ⊤ 
+
+> t
+
+− WtΣt
+
+
+
+= X 
+
+> t∈[T]
+
+ 2 ¯W Σt − 2WtΣt
+
+ (since Σt = Σ ⊤ 
+
+> t
+
+)= 2 X 
+
+> t∈[T]
+
+( ¯W Σt − WtΣt). (21) Setting the gradient to zero to find the minimum: 
+
+2 X 
+
+> t∈[T]
+
+( ¯W Σt − WtΣt) = 0 
+
+X 
+
+> t∈[T]
+
+¯W Σt = X 
+
+> t∈[T]
+
+WtΣt. (22) Since ¯W is common to all terms in the left-hand summation, we can factor it out: 
+
+¯W
+
+ X 
+
+> t∈[T]
+
+Σt
+
+ = X 
+
+> t∈[T]
+
+WtΣt. (23) Finally, to isolate ¯W , we right-multiply both sides by the inverse of the aggregated covariance matrix: 
+
+¯W =
+
+ X 
+
+> t∈[T]
+
+WtΣt
+
+ X 
+
+> t∈[T]
+
+Σt
+
+
+
+> −1
+
+. (24) This gives us the closed-form solution for the optimal merged weights, as presented in the main paper. A.3. Proof of Theorem 1 
+
+We restate the setting and make our assumptions explicit. Let W0 ∈ Rdout ×din be the pretrained weights, and let Wt denote the task-specific weights obtained by fine-tuning on task t over the dataset Dt = {(xi, y i)}Nt
+
+> i=1
+
+. We write the total weight displacement as ∆Wt = Wt − W0.
+
+Assumptions. We use the following assumptions throughout the derivation: (A1) Linearized squared-loss gradient. The loss is Lt(x, y ; W ) = ∥W x − y∥22, and the fine-tuning trajectory stays in a neighborhood of W0 so that 
+
+∇W Lt(x, y ; W0) = 2 ( W0x − y) x⊤ = 2 e x ⊤,
+
+where e = W0x − y is the residual. (A2) i.i.d. samples. Training pairs (xi, y i) are drawn i.i.d. from Dt.(A3) Locally unbiased pretrained model. The pretrained model satisfies 
+
+E(x,y )∼D t [ e x ⊤ ] = 0 .
+
+(A4) Factorized second-order structure. The residual energy e⊤e is uncorrelated with xx ⊤:
+
+E(e⊤e) xx ⊤ = E[e⊤e] E[xx ⊤] = σ2
+
+> e, total
+
+Σt,
+
+where Σt = E[xx ⊤].Assumption (A1) is standard for local analysis of squared loss; (A2) is the usual sampling assumption; (A3) corresponds to W0 being a local stationary point for task t; and (A4) is a mild independence assumption aligning the second moment of the updates with the input covariance. 
+
+Step 1: Linearized expression for ∆Wt. Under (A1), a single SGD step on (xi, y i) with learning rate η yields 
+
+∆W (i) = − η∇W Lt(xi, y i; W0) = − 2η e ix⊤ 
+
+> i
+
+,
+
+with ei = W0xi − yi. Summing over all Nt samples gives 
+
+∆Wt =
+
+> Nt
+
+X
+
+> i=1
+
+∆W (i) = − 2η
+
+> Nt
+
+X
+
+> i=1
+
+eix⊤ 
+
+> i
+
+.
+
+Let c = −2η and define Gi = eix⊤ 
+
+> i
+
+. Then 
+
+∆Wt = c
+
+> Nt
+
+X
+
+> i=1
+
+Gi. (25) 
+
+Empirical Support for Assumptions (A3) and (A4). Across all architectures we evaluate (RoBERTa, GPT-2, ViT), the fine-tuning displacements ∆Wt exhibit a striking empirical regularity: their entries are extremely close to zero-mean and follow a tightly concentrated Gaussian distribution. Figure 3 illustrates representative layers across the three model families, each showing near-perfect symmetry and Gaussian shape. Under the linearized model ∆Wt = c PNt 
+
+> i=1
+
+Gi with Gi = eix⊤ 
+
+> i
+
+, the sample mean satisfies 
+
+E[∆ Wt] = cN t E[G].
+
+The empirical observation that ∆Wt is zero-mean therefore implies E[G] ≈ 0, and consequently 
+
+E[ex ⊤] ≈ 0,
+
+which is precisely the statement of Assumption (A3). Thus, (A3) is not an idealized mathematical simplification but a compact representation of the experimentally observed behavior of the fine-tuning updates. A second empirical observation is that the covariance structure of ∆Wt aligns spectrally with the input covariance Σt =
+
+E[xx ⊤]. Combining this with the identity 
+
+G⊤G = ( e⊤e) xx ⊤,
+
+the simplest statistically consistent parametrization is 
+
+E[G⊤G] = E[( e⊤e) xx ⊤] ≈ E[e⊤e] E[xx ⊤] = σ2
+
+e, total Σt,
+
+exactly matching Assumption (A4). In this sense, (A4) can be interpreted as formalizing the experimental observation that the variability of the update directions is proportional to the input covariance structure, where the constant of proportionality is a scalar residual-energy factor. 0.00075 0.00050 0.00025 0.00000 0.00025 0.00050 0.00075 
+
+Weight Value 
+
+0
+
+2500 
+
+5000 
+
+7500 
+
+10000 
+
+12500 
+
+15000 
+
+17500 
+
+20000 
+
+> Frequency
+
+Mean: 0.0000 
+
+Std: 0.0002 
+
+Min: -0.0009 
+
+Max: 0.0009 
+
+roberta.encoder.layer.6.attention.output.dense.weight Weight Distribution 
+
+Gaussian Fit 
+
+= 0.0000, = 0.0002 
+
+(a) RoBERTa-Base (Attention Out Layer) 0.00100 0.00075 0.00050 0.00025 0.00000 0.00025 0.00050 0.00075 0.00100 
+
+Weight Value 
+
+0
+
+20000 
+
+40000 
+
+60000 
+
+80000 
+
+> Frequency
+
+Mean: -0.0000 
+
+Std: 0.0002 
+
+Min: -0.0009 
+
+Max: 0.0009 
+
+roberta.encoder.layer.6.intermediate.dense.weight Weight Distribution 
+
+Gaussian Fit 
+
+= 0.0000, = 0.0002 (b) RoBERTa-Base (MLP Layer) 0.00075 0.00050 0.00025 0.00000 0.00025 0.00050 0.00075 
+
+Weight Value 
+
+0
+
+10000 
+
+20000 
+
+30000 
+
+40000 
+
+50000 
+
+60000 
+
+70000 
+
+80000 
+
+> Frequency
+
+Mean: -0.0000 
+
+Std: 0.0002 
+
+Min: -0.0009 
+
+Max: 0.0009 
+
+roberta.encoder.layer.6.output.dense.weight Weight Distribution 
+
+Gaussian Fit 
+
+= 0.0000, = 0.0002 (c) RoBERTa-Base (MLP Out Layer) 0.010 0.005 0.000 0.005 0.010 
+
+Weight Value 
+
+0
+
+10000 
+
+20000 
+
+30000 
+
+40000 
+
+50000 
+
+60000 
+
+70000 
+
+80000 
+
+> Frequency
+
+Mean: 0.0000 
+
+Std: 0.0020 
+
+Min: -0.0112 
+
+Max: 0.0114 
+
+transformer.h.6.attn.c_attn.weight Weight Distribution 
+
+Gaussian Fit 
+
+= 0.0000, = 0.0020 
+
+(d) GPT-2 (Attention Layer) 0.0100 0.0075 0.0050 0.0025 0.0000 0.0025 0.0050 0.0075 0.0100 
+
+Weight Value 
+
+0
+
+20000 
+
+40000 
+
+60000 
+
+80000 
+
+100000 
+
+> Frequency
+
+Mean: -0.0000 
+
+Std: 0.0019 
+
+Min: -0.0098 
+
+Max: 0.0098 
+
+transformer.h.6.mlp.c_fc.weight Weight Distribution 
+
+Gaussian Fit 
+
+= 0.0000, = 0.0019 (e) GPT-2 (MLP Layer) 0.0100 0.0075 0.0050 0.0025 0.0000 0.0025 0.0050 0.0075 0.0100 
+
+Weight Value 
+
+0
+
+5000 
+
+10000 
+
+15000 
+
+20000 
+
+25000 
+
+> Frequency
+
+Mean: -0.0000 
+
+Std: 0.0019 
+
+Min: -0.0101 
+
+Max: 0.0093 
+
+transformer.h.6.attn.c_proj.weight Weight Distribution 
+
+Gaussian Fit 
+
+= 0.0000, = 0.0019 (f) GPT-2 (Attention Proj Layer) 0.0020 0.0015 0.0010 0.0005 0.0000 0.0005 0.0010 0.0015 
+
+Weight Value 
+
+0
+
+10000 
+
+20000 
+
+30000 
+
+40000 
+
+50000 
+
+60000 
+
+70000 
+
+80000 
+
+> Frequency
+
+Mean: 0.0000 
+
+Std: 0.0003 
+
+Min: -0.0019 
+
+Max: 0.0018 
+
+model.visual.transformer.resblocks.6.attn.in_proj_weight Weight Distribution 
+
+Gaussian Fit 
+
+= 0.0000, = 0.0003 
+
+(g) ViT-B/16 (Attention In Layer) 0.0015 0.0010 0.0005 0.0000 0.0005 0.0010 0.0015 0.0020 
+
+Weight Value 
+
+0
+
+20000 
+
+40000 
+
+60000 
+
+80000 
+
+100000 
+
+120000 
+
+> Frequency
+
+Mean: 0.0000 
+
+Std: 0.0003 
+
+Min: -0.0018 
+
+Max: 0.0019 
+
+model.visual.transformer.resblocks.6.mlp.c_fc.weight Weight Distribution 
+
+Gaussian Fit 
+
+= 0.0000, = 0.0003 (h) ViT-B/16 (MLP Layer) 0.0015 0.0010 0.0005 0.0000 0.0005 0.0010 0.0015 
+
+Weight Value 
+
+0
+
+5000 
+
+10000 
+
+15000 
+
+20000 
+
+25000 
+
+> Frequency
+
+Mean: 0.0000 
+
+Std: 0.0003 
+
+Min: -0.0015 
+
+Max: 0.0016 
+
+model.visual.transformer.resblocks.6.attn.out_proj.weight Weight Distribution 
+
+Gaussian Fit 
+
+= 0.0000, = 0.0003 (i) ViT-B/16 (Attention Out Layer) 
+
+Figure 3. Empirical distributions of ∆Wt across architectures, layer types, and tasks. Each subplot shows the histogram of the entries of ∆Wt for one representative layer from RoBERTa-Base, GPT-2, and ViT-B/16. All distributions exhibit near-zero means and closely resemble Gaussian profiles, providing strong empirical support for our theoretical assumptions (A3) and (A4). 
+
+Step 2: Covariance of ∆Wt. We define the covariance of the random matrix ∆Wt in the Frobenius sense as 
+
+Cov(∆ Wt) = E(∆ Wt − E[∆ Wt]) ⊤(∆ Wt − E[∆ Wt])  . (26) Our goal is to express this covariance in terms of the single-sample update matrices Gi.Using the representation 
+
+∆Wt = c
+
+> Nt
+
+X
+
+> i=1
+
+Gi from (25) ,
+
+and applying the standard identity that the covariance of a sum of independent random variables (here applied to vec(∆ Wt))is the sum of their individual covariances, we obtain 
+
+Cov(∆ Wt) = c2
+
+> Nt
+
+X
+
+> i=1
+
+Cov( Gi) = c2Nt Cov( G), (27) where G is a generic copy of Gi. The covariance of the single-sample update matrix G is 
+
+Cov( G) = E[G⊤G] − E[G]⊤E[G]. (28) Under Assumption (A3), 
+
+E[G] = E[ex ⊤] = 0 ,
+
+so the covariance simplifies to 
+
+Cov( G) = E[G⊤G]. (29) Substituting this back yields the compact expression 
+
+Cov(∆ Wt) = c2Nt E[G⊤G]. (30) 
+
+Step 3: Single-sample second-order structure. Recall that each update matrix is of the form G = ex ⊤ with e = W0x−y.A direct computation shows that 
+
+G⊤G = ( ex ⊤)⊤(ex ⊤) = xe ⊤e x ⊤ = ( e⊤e) xx ⊤.
+
+Taking expectations and applying Assumption (A4), 
+
+E[G⊤G] = E(e⊤e) xx ⊤
+
+= E[e⊤e] E[xx ⊤]= σ2 
+
+> e, total
+
+Σt. (31) Substituting (31) into (30), we obtain 
+
+Cov(∆ Wt) = c2Nt E[G⊤G]= c2Nt σ2 
+
+> e, total
+
+Σt. (32) Since c2Ntσ2 
+
+> e, total
+
+is a scalar depending only on the learning rate and the aggregate residual energy, we conclude that 
+
+Cov Dt [∆ Wt] ∝ Σt. (33) This completes the proof under Assumptions (A1)–(A4). □
+
+Step 4: Discussion on the Role of the Mean Update. The population expression for the covariance of the displacement can be written in the more general form 
+
+Cov(∆ Wt) = c2Nt
+
+
+
+E[G⊤G] − E[G]⊤E[G]
+
+
+
+, (34) where the second term E[G]⊤E[G] captures the squared mean update and represents systematic (rather than stochastic) drift during fine-tuning. In practice, we consistently observe that the empirical displacement ∆Wt is extremely close to zero-mean (Fig. 3), im-plying that E[G] = E[ex ⊤] is negligible. This is expected: modern pretrained models already provide strong representations for downstream tasks, so the fine-tuning trajectory consists predominantly of small zero-mean fluctuations rather than large consistent shifts. Consequently, 
+
+E[G]⊤E[G] ≪ E[G⊤G],
+
+and the contribution of the mean update term can be ignored at leading order. Under this empirically justified simplification, Eq. (34) reduces to 
+
+Cov(∆ Wt) ≈ c2Nt E[G⊤G],
+
+which, by Step 3, yields 
+
+Cov(∆ Wt) ≈ (c2Ntσ2
+
+> e, total
+
+) Σ t.
+
+Hence, the covariance of the weight displacement is governed primarily by the input covariance structure, even without strictly imposing Assumption (A3). This completes the argument that 
+
+Cov Dt [∆ Wt] ∝ Σt.
+
+□
+
+Remark on Practical Estimation. The proportionality Cov(∆ Wt) ∝ Σt is a population-level relation, where the expec-tation is taken over the stochasticity of fine-tuning (data sampling, minibatch order, and initialization noise). In practice, however, we only observe a single realization of ∆Wt per task. As a result, the estimator used in the main paper does not attempt to reconstruct the full population covariance; instead, it extracts a second-order proxy from the observed weights: 
+
+bΣt ∝ (∆ Wt − 1μ⊤ 
+
+> t
+
+)⊤(∆ Wt − 1μ⊤ 
+
+> t
+
+),
+
+where μt is the column-wise mean and (1μ⊤ 
+
+> t
+
+) is a practical debiasing step. Importantly, both the centered and uncentered quadratic forms differ only by a rank-one correction and share the same eigenvectors. Since ACE-Merging relies only on the spectral structure of bΣt, the empirical estimator provides a faithful proxy whose principal directions are aligned with those of Σt, up to a global scaling factor. Since the empirical second-order profile extracted from ∆Wt suffices for our closed-form merging procedure, exact covariance recovery is unnecessary. 
+
+A.4. Additional statistics for adaptive covariance normalization 
+
+In practice, we compute the Frobenius norm via its trace identity, ∥∆Wt∥2 
+
+> F
+
+= Tr(∆ W ⊤ 
+
+> t
+
+∆Wt). Thus the heterogeneity coefficient introduced in Sec. 4.2 is implemented equivalently as: 
+
+γ = Var t
+
+log Tr  ∆W ⊤ 
+
+> t
+
+∆Wt
+
+  Et
+
+log Tr  ∆W ⊤ 
+
+> t
+
+∆Wt
+
+ 2 . (35) Since ∥∆Wt∥2 
+
+> F
+
+≡ Tr(∆ W ⊤ 
+
+> t
+
+∆Wt), Eq. (35) is mathematically identical to the original definition, and aligns exactly with our implementation. As a lightweight measure for detecting the degree of mismatch among task-specific covariance matrices {Ct}. We reported results for RoBERTa-Base (8 tasks) and ViT-B/16 (14 tasks), where γ reliably separates homogeneous from heterogeneous task sets. To provide more comprehensive evidence for the behavior of γ across architectures and numbers of tasks, we present additional statistics below. 
+
+RoBERTa-Large on 8 tasks. Fig. 4 shows the distribution of {τt} and the resulting γ for RoBERTa-Large across the same 8 GLUE-style tasks used in the main paper. Similar to RoBERTa-Base, the heterogeneity score is high ( γ > 0.3), confirming a significant degree of task specificity. 
+
+GPT-2 on 7 tasks. Fig. 5 reports the corresponding values for GPT-2, where we observe noticeably larger spread in {τt}
+
+and a higher γ compared to RoBERTa. This aligns with the empirical difficulty of merging GPT-2 task vectors (Sec. 5), as greater heterogeneity destabilizes simple isotropic corrections and motivates adaptive normalization. Q K V Out Up Down           
+
+> Layer Type
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> Heterogeneity Metric ( )
+> (a) Distribution Across Layer Types
+> Layer Types
+> Attn-Q
+> Attn-K
+> Attn-V
+> Attn-Out
+> FFN-Up
+> FFN-Down
+> 014 28 42 56 70 84 98 112 126 140
+> Layer Index
+> (b) Layer-wise Profile
+> = 0.3
+
+Figure 4. RoBERTa-Large (8 tasks). Trace statistics {τt} and heterogeneity coefficient γ.QKV Up Down Proj             
+
+> Layer Type
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> Heterogeneity Metric ( )
+> (a) Distribution Across Layer Types
+> Layer Types
+> Attn-QKV
+> FFN-Up
+> FFN-Down
+> Attn-Proj
+> 04812 16 20 24 28 32 36 40 44 48
+> Layer Index
+> (b) Layer-wise Profile
+> = 0.3
+
+Figure 5. GPT-2 (7 tasks). Larger heterogeneity γ compared to RoBERTa, indicating stronger mismatch among task covariances. 
+
+Effect of increasing number of tasks (ViT-L/14). To examine how heterogeneity evolves as more tasks are included, we evaluate γ for ViT-L/14 under multiple task-set sizes. In Fig. 6 and Fig. 7, we show the results for 8 and 20 tasks, representing the low- and high-diversity extremes. The heterogeneity coefficient increases noticeably when moving from 8 to 20 tasks, consistent with the overall monotonic trend observed across all task counts. This behavior supports our claim that task diversity naturally grows as more datasets are merged, reinforcing the need for the adaptive scaling mechanism introduced in Sec. 4.2. Emb QKV A-Out Fc Proj           
+
+> Layer Type
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> 0.12
+> 0.14
+> Heterogeneity Metric ( )
+> (a) Distribution Across Layer Types
+> Layer Types
+> Embedding
+> Attn-In
+> Attn-Out
+> MLP-Fc
+> MLP-Proj
+> 010 20 30 40 50 60 70 80 90 100
+> Layer Index
+> (b) Layer-wise Profile
+> = 0.3
+
+Figure 6. ViT-L/14 (8 tasks). Moderate heterogeneity γ, indicat-ing manageable variation across task covariances at smaller task scales. Emb QKV A-Out Fc Proj           
+
+> Layer Type
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> Heterogeneity Metric ( )
+> (a) Distribution Across Layer Types
+> Layer Types
+> Embedding
+> Attn-In
+> Attn-Out
+> MLP-Fc
+> MLP-Proj
+> 010 20 30 40 50 60 70 80 90 100
+> Layer Index
+> (b) Layer-wise Profile
+> = 0.3
+
+Figure 7. ViT-L/14 (20 tasks). Substantially larger heterogeneity 
+
+γ, showing increasing mismatch among task covariances as the number of merged tasks grows. 
+
+Summary. Across all architectures, γ reliably captures the heterogeneity of the task set: • small γ indicates well-aligned task covariances, allowing simple merging procedures; • large γ reveals strong variability, requiring the adaptive covariance normalization of ACE-Merging .These results reinforce the robustness of γ as a criterion for activating heterogeneity-aware strategies. 
+
+B. Computational Complexity of ACE-Merging and Baselines 
+
+We briefly compare the computational complexity of ACE-Merging with two representative baselines: the SVD-based TSV-M method [19] and the gradient-based WUDI-merging approach [23]. We use the following notation: let T be the number of task vectors and L be the number of merged layers. Let each linear layer weight matrix ∆Wt have the shape 
+
+dout × din . For simplicity in big-O notation, we let n = max( dout , d in ) and report per-layer complexities in terms of n.
+
+TSV-M. TSV-M performs multiple singular value decompositions per layer, the complexity per layer is calculated by: • T SVDs on the (dout × din ) task matrices, costing O(T · min( d2out din , d out d2in )) = O(T n 3).• Two additional SVDs on aggregated matrices, adding a lower-order cost of O(n3).The total complexity per layer is therefore O(T n 3). Across all L layers, the overall complexity of TSV-M is 
+
+O(TSV -M) = O(L · T n 3) = O(LT n 3). (36) 
+
+Gradient-based merging (WUDI-merging). In contrast, WUDI-merging optimizes the merged weights by iterative gra-dient descent. Let K denote the number of optimization steps. Each step requires evaluating the loss and its gradient by aggregating information across all T task vectors. The dominant computation in each forward-backward pass involves element-wise operations on tensors of size (T × dout × din ), costing O(T d out din ) = O(T n 2) per layer. The total complexity is thus multiplicative in K, L, and T :
+
+O(WUDI) = O(K · L · T · n2) = O(KLT n 2). (37) In practice, K must be sufficiently large for convergence (e.g., hundreds of steps), making this approach computationally intensive compared to closed-form alternatives, especially for large models where n is substantial. 
+
+ACE-Merging. ACE-Merging avoids iterative optimization and computes the solution in closed form. Its complexity can be analyzed by its main computational steps on a per-layer basis: • Covariance Aggregation. The algorithm iterates through all T task vectors to compute aggregated matrices. For each task, the dominant step is the matrix multiplication ∆W ⊤ 
+
+> t
+
+∆Wt to form the covariance proxy. This operation has a cost of 
+
+O(dout d2in ). The loop over T tasks makes this stage’s complexity O(T d out d2in ).• Closed-form Solution. After the loop, the algorithm solves for the merged weights. This is dominated by a single inversion of a (din × din ) matrix, which costs O(d3in ).• Spectral Refinement (Optional). If applied, this step performs a single SVD on a (dout × din ) matrix, adding a cost of 
+
+O(min( d2out din , d out d2in )) .Summing these costs and using n = max( dout , d in ), the per-layer complexity is dominated by the aggregation step, resulting in O(T n 3). The total complexity over all L layers is therefore: 
+
+O(ACE-Merging ) = O(L · T n 3) = O(LT n 3). (38) In summary, ACE-Merging matches the asymptotic complexity of SVD-based methods like TSV-M while being a closed-form solution. It offers a significant theoretical efficiency advantage over iterative methods like WUDI-merging, whose complexity scales with the number of optimization steps K, making them potentially less practical for large-scale problems. 
+
+B.1. Analysis of Limiting Cases and Hyperparameters 
+
+We analyze how ACE-Merging behaves under limiting values of its key hyperparameters. These limits reveal how the method interpolates between simple averaging, weighted averaging, and full spectral refinement. 
+
+Limit ϵ → ∞ (strong Tikhonov regularization). The hyperparameter eps (ϵ) controls the amount of Tikhonov regular-ization added to each covariance proxy: 
+
+Σt ← Σt + ϵtI. 
+
+As ϵ → ∞ , the regularizer dominates the raw covariance estimates. Two regimes arise depending on whether heterogeneity is detected. • Low heterogeneity ( γ ≤ γthresh ). In this mode, each task uses the same ϵt = ϵ, giving Σt ≈ ϵI . Therefore 
+
+W0 =
+
+> T
+
+X
+
+> t=1
+
+WtΣt
+
+! TX
+
+> t=1
+
+Σt
+
+!−1
+
+−−−→
+
+> ϵ→∞
+
+1
+
+T
+
+> T
+
+X
+
+> t=1
+
+Wt.
+
+Thus, ACE-Merging reduces to simple averaging (task arithmetic) when the covariances are made infinitely isotropic. • High heterogeneity ( γ > γ thresh ). In this mode, ϵt = ϵ/ tr( W ⊤ 
+
+> t
+
+Wt), giving Σt ≈ (ϵ/τ t)I with τt = tr( W ⊤ 
+
+> t
+
+Wt). Then 
+
+W0 −−−→
+
+> ϵ→∞
+
+PTt=1 1 
+
+> τt
+
+Wt
+
+PTt=1 1
+
+> τt
+
+,
+
+i.e. a weighted average where tasks with larger Frobenius norms receive smaller weights. Table 7. ACE-Merging accuracy (%) on ViT-B/32, ViT-B/16, and ViT-L/14 across increas-ing numbers of tasks. ViT-B/32 ViT-B/16 ViT-L/14 Dataset 8 14 20 8 14 20 8 14 20 
+
+MNIST 99.46 99.22 92.65 99.44 99.32 96.40 99.58 99.59 96.65 Cars 71.67 68.59 61.90 81.54 78.24 72.40 90.34 88.46 85.37 DTD 89.63 82.45 75.80 90.69 83.19 76.33 96.97 93.19 88.67 EuroSAT 95.81 88.37 83.70 97.78 96.96 94.56 99.52 99.30 98.22 GTSRB 92.44 85.49 76.43 92.94 88.20 80.74 97.34 97.42 93.49 RESISC45 86.79 81.51 77.92 90.73 88.75 85.97 94.76 93.25 92.11 SUN397 73.06 70.75 68.63 76.57 74.04 72.07 81.83 78.62 76.72 SVHN 94.19 90.10 82.89 95.08 93.22 88.40 96.20 95.61 91.80 PCAM — 84.09 83.75 — 86.14 85.02 — 85.82 85.77 CIFAR100 — 72.77 68.79 — 78.41 75.64 — 86.64 83.75 STL10 — 97.50 96.73 — 98.15 97.58 — 99.41 99.34 Oxford-IIIT Pet — 90.54 88.20 — 93.98 92.86 — 96.43 96.18 Flowers102 — 73.04 70.19 — 79.07 76.24 — 87.32 84.57 FER2013 — 67.62 63.46 — 68.04 63.81 — 73.92 69.95 CIFAR10 — — 93.54 — — 95.55 — — 98.05 Food101 — — 80.71 — — 88.47 — — 93.98 RenderedSST2 — — 72.43 — — 77.10 — — 85.56 EMNIST — — 98.07 — — 97.82 — — 99.52 Fashion-MNIST — — 83.50 — — 88.07 — — 91.15 KMNIST — — 57.27 — — 37.23 — — 78.95 
+
+Average 87.88 82.29 78.83 90.60 86.12 82.11 94.57 91.07 89.49 
+
+Role of the heterogeneity threshold γthresh . This threshold determines whether trace normalization and spectral refine-ment are activated. • If γthresh is very large, the condition γ > γ thresh is almost never met, so ACE-Merging behaves like a regularized multi-task regression method without any task-specific normalization. • If γthresh → 0, the high-heterogeneity branch is always selected, enabling trace normalization and spectral refinement for all task sets. 
+
+Role of the spectral fraction kfrac . This hyperparameter determines the rank of the spectral refinement term added to the closed-form solution W0. As implemented, 
+
+∆spec = σiso UkV ⊤ 
+
+> k
+
+, σiso = 1
+
+> kk
+
+X
+
+> i=1
+
+Si,
+
+where Si are the top singular values of the fused residual. • As kfrac → 0, k → 0 and the refinement term vanishes, giving the pure closed-form solution W0.• As kfrac → 1, the correction uses all singular vectors, producing a full-rank spectral adjustment whose singular values are replaced by their mean. This yields a uniform spectral correction added to W0, rather than a full isotropization. Thus, kfrac provides a continuous control over how much shared spectral structure is reintroduced after the adaptive merging step. 
+
+C. ACE-Merging Performance on ViT Models with Increasing Task Coverage 
+
+We report the full performance of ACE-Merging on three vision transformer backbones: ViT-B/32, ViT-B/16, and ViT-L/14, evaluated under increasing numbers of downstream tasks. These results complement the heterogeneity analysis in Sec. 4.2 and empirically demonstrate that ACE-Merging remains stable as task diversity grows. All values are test classifi-cation accuracies unless otherwise specified. Each table presents side-by-side results for 8, 14, and 20 tasks, and includes the average accuracy over all tasks for each backbone and setting. Table 8. LLaMA-3 merging results (raw scores). Single-task fine-tuning experts and merged models evaluated on five benchmarks.                                                              
+
+> Tasks xquad zh xquad vi gsm8k cot mathqa humaneval
+> multilingual 27.24 42.20 –––coding –––34.30 49.39 math ––74.00 ––Average 8.40 32.72 73.62 34.24 46.34 Task Arithmetic 8.06 32.88 73.09 34.14 46.34 ACE (ours) 16.42 37.68 69.75 34.57 50.61 Table 9. Normalized performance on LLaMA-3 (%). Each value is the ratio between the merged model and the best single-task fine-tuning expert for that benchmark.
+> Method xquad zh xquad vi gsm8k cot mathqa humaneval Avg.
+> Average 30.84 77.54 99.49 99.83 93.82 80.30 Task Arithmetic 29.59 77.91 98.77 99.53 93.82 79.92 ACE (ours) 60.28 89.29 94.26 100.79 102.47 89.42
+
+C.1. Additional results on LLaMA-3 and out-of-domain generalization 
+
+We further evaluate ACE-Merging on a LLaMA-3 backbone fine-tuned on three specialized expert task groups: multilin-gual QA ( multilingual ), code generation ( coding ), and mathematical reasoning ( math ). Each expert is fine-tuned on a disjoint subset of benchmarks and then merged using different weight-space fusion strategies. The merged models are evaluated jointly on five downstream benchmarks: xquad zh , xquad vi , gsm8k cot , mathqa , and humaneval . The raw scores are reported in Tab. 8. To normalize for the different intrinsic difficulty and scale of each benchmark, we further report in Tab. 9 the performance of the merged models as a percentage of their corresponding single-task fine-tuning expert. For each column, we divide the merged score by the score of the relevant expert ( multilingual for xquad zh and xquad vi , math for gsm8k cot ,and coding for mathqa and humaneval ) and multiply by 100. The normalized results highlight the out-of-domain behavior of ACE-Merging . On the multilingual benchmarks 
+
+xquad zh and xquad vi , which are out-of-domain for both the coding and math experts, ACE-Merging recovers 60 .28% 
+
+and 89 .29% of the corresponding single-task fine-tuning performance, substantially outperforming both simple averaging and task arithmetic (which remain around 30 –78% ). On the code benchmark humaneval , ACE-Merging even slightly ex-ceeds the coding expert, achieving 102 .47% of the fine-tuned score, while maintaining competitive accuracy on gsm8k cot 
+
+and mathqa . Overall, ACE-Merging attains the highest normalized average score ( 89 .42% ), indicating that it effectively aggregates heterogeneous experts and exhibits strong out-of-domain generalization across multilingual, coding, and mathe-matical reasoning tasks.

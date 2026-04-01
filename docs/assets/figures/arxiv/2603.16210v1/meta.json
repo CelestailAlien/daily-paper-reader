@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.16210v1/fig-001.webp",
+      "caption": "Table 2: Comparison of performance across task orders on MMLU.",
+      "page": 6,
+      "index": 1,
+      "width": 439,
+      "height": 283
+    },
+    {
+      "url": "assets/figures/arxiv/2603.16210v1/fig-002.webp",
+      "caption": "Figure 7: Prompt for judgement",
+      "page": 11,
+      "index": 2,
+      "width": 452,
+      "height": 367
+    },
+    {
+      "url": "assets/figures/arxiv/2603.16210v1/fig-003.webp",
+      "caption": "Figure 4: Ablation Study. N-token uses only the control tokens of N subset categories during inference.",
+      "page": 7,
+      "index": 3,
+      "width": 447,
+      "height": 294
+    },
+    {
+      "url": "assets/figures/arxiv/2603.16210v1/fig-004.webp",
+      "caption": "Figure 5: Performance on Llama-3.1-8B under different negative-to-positive ratio.",
+      "page": 7,
+      "index": 4,
+      "width": 444,
+      "height": 306
+    },
+    {
+      "url": "assets/figures/arxiv/2603.16210v1/fig-005.webp",
+      "caption": "Figure 2: Overview of the proposed MOSAIC approach, showing the sampling strategy in the upper panel and the training objective in the lower panel.",
+      "page": 3,
+      "index": 5,
+      "width": 846,
+      "height": 409
+    },
+    {
+      "url": "assets/figures/arxiv/2603.16210v1/fig-006.webp",
+      "caption": "Table 1: Performance comparison of various safety-alignment methods. # Params denotes the number of trainable parameters for optimization-based methods (SFT, ORPO) or the additional parameter overhead per category for prompt-based approaches (In-context, MOSAIC). The suffix /C indicates that the overhead scales linearly with the number of target categories (C). MOSAIC-N indicates that the number of control tokens per category is set to N. K-order refers to the optimization and usage of control token combinations across K categories.",
+      "page": 5,
+      "index": 6,
+      "width": 846,
+      "height": 283
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-001.webp",
+      "caption": "Table 1: Performance comparison of ES-Merging with the base LLM with and without task-specific fine-tuning, specialized MLLMs, and merging methods on the instance-varying interaction prediction tasks. We report accuracy and macro-F1 across each subset. Bold and underline indicate the best and second best performances, respectively.",
+      "page": 6,
+      "index": 1,
+      "width": 950,
+      "height": 427
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-002.webp",
+      "caption": "Table 5: Case study on Molecule-Protein Interaction prediction.",
+      "page": 15,
+      "index": 2,
+      "width": 938,
+      "height": 768
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-003.webp",
+      "caption": "Figure 9: Element-wise merging coefficients of the LoRA parameters for self_attn.q/k/v/o_proj modules at layers 0, 10, 20, and 30. Rows correspond to LoRA-A and LoRA-B, and columns correspond to Molecule, Protein, and Cell modalities.",
+      "page": 21,
+      "index": 3,
+      "width": 945,
+      "height": 914
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-004.webp",
+      "caption": "Table 2: Performance comparison of ES-Merging on the target-fixed functionality prediction tasks. We report accuracy and macro-F1 across each subset. Bold indicates the best and underline indicates the second best.",
+      "page": 7,
+      "index": 4,
+      "width": 950,
+      "height": 375
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-005.webp",
+      "caption": "Figure 10: Element × Layer merging coefficients of the LoRA parameters for self_attn.q/k/v/o_proj modules at Layers 0, 10, 20, and 30, respectively.",
+      "page": 22,
+      "index": 5,
+      "width": 945,
+      "height": 873
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-006.webp",
+      "caption": "Figure 7: Label distribution across datasets. Each panel shows positive and negative sample counts for MoleculeProtein Interaction, CYP Inhibition, CYP Substrate, and Molecule-Cell Interaction tasks.",
+      "page": 14,
+      "index": 6,
+      "width": 936,
+      "height": 191
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-007.webp",
+      "caption": "Figure 6: Computed element-wise merging coefficient visualization of each module in the third layer of molecule LLM derived by Eq. 3.",
+      "page": 8,
+      "index": 7,
+      "width": 453,
+      "height": 340
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-008.webp",
+      "caption": "Figure 3: Overview of ES-Merging. (A) Layer-wise global merging coefficients are computed from the coarsegrained embedding signals, which are the layer-wise differences of distribution distances between mean pooled representations of the base LLM and a specialized MLLM. (B) Element-wise local merging coefficients are assigned based on the fine-grained embedding signals by computing the gradients from the embedding-wise distances.",
+      "page": 4,
+      "index": 8,
+      "width": 937,
+      "height": 327
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-009.webp",
+      "caption": "Table 9: In-context learning prompt templates for the Molecule-Protein Interaction and CYP prediction task. Angle-bracketed tokens are replaced with the corresponding encoder embeddings: <protein> and <mol> for the target pair, and <protein k> and <molecule k> for each of the k few-shot examples. The <label> token is replaced with the ground-truth prediction string for each example pair in the few-shot context.",
+      "page": 19,
+      "index": 9,
+      "width": 950,
+      "height": 1206
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-010.webp",
+      "caption": "Figure 8: Embedding visualization of the last transformer block for each specialized LLM and the merged model with our method for (a) molecule, (b) protein, and (c) cell tokens.",
+      "page": 17,
+      "index": 10,
+      "width": 940,
+      "height": 266
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-011.webp",
+      "caption": "Table 10: In-context learning prompt template for the Molecule-Cell Interaction prediction task. Angle-bracketed tokens are replaced as follows: target molecule token <mol> and <molecule k> for each of the k few-shot examples are substituted with the corresponding encoder embedding, while the gene tokens <gene> are replaced with the corresponding cell line string. The <label> token is replaced with the ground-truth prediction string for each example pair in the few-shot context.",
+      "page": 20,
+      "index": 11,
+      "width": 950,
+      "height": 964
+    },
+    {
+      "url": "assets/figures/arxiv/2603.14405v1/fig-012.webp",
+      "caption": "Table 6: Case study on Molecule-Cell Interaction prediction.",
+      "page": 16,
+      "index": 12,
+      "width": 946,
+      "height": 767
+    }
+  ]
+}

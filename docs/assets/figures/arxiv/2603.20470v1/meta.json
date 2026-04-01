@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.20470v1/fig-001.webp",
+      "caption": "Table 1. Quantitative comparisons of different methods on T2I generation quality on the DABench and DiffusionDB datasets. ∗ denotes methods equipped with our modified ESA module.",
+      "page": 7,
+      "index": 1,
+      "width": 429,
+      "height": 286
+    },
+    {
+      "url": "assets/figures/arxiv/2603.20470v1/fig-002.webp",
+      "caption": "Figure 1. Overview of our proposed method. Our DiffGraph framework consists of three key components: the Graph Construction Agent (GCA), the Expert Selection Agent (ESA), and the Merging Planner (MP). In the Universal Graph Construction stage, for ease of understanding, we illustrate a simplified example in which GCA collects and organizes N = 8 online experts (indexed as 1–8), and evaluates them on Nr = 3 reference prompts for node calibration. During the Dynamic Subgraph Activation stage, ESA parses user requirements and selects a subset of experts, for example {3, 4, 5, 7}, to participate in the merging process. MP then activates the corresponding subgraph and generates the merging coefficients, which are used to produce the final merged model for image generation.",
+      "page": 3,
+      "index": 2,
+      "width": 471,
+      "height": 335
+    }
+  ]
+}

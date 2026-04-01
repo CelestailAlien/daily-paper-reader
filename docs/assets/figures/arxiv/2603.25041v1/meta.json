@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.25041v1/fig-001.webp",
+      "caption": "Figure 2: Layer-wise Dynamics: Dual vs. Single Task Vectors. Blue line: Proposed dual-vector ASR. Orange line: Dual-vector SER. Green line: Only-ASR setup. Red line: Only-SER setup.",
+      "page": 3,
+      "index": 1,
+      "width": 453,
+      "height": 342
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25041v1/fig-002.webp",
+      "caption": "Table 1: Performance comparison of different ASR integration strategies and merging configurations on the MSP-Podcast dataset. All metrics are reported in (%). Best results for our proposed paradigm are in bold. Pre.: Precision; MaF1: Macro-F1. We report the 95% confidence interval (CI) for each SER result using the toolkit [23].",
+      "page": 3,
+      "index": 2,
+      "width": 789,
+      "height": 496
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25041v1/fig-003.webp",
+      "caption": "Figure 3: Impact of Domain Consistency on Task Vector Merging. Blue line: In-domain ASR vector. Orange line: In-domain SER vector. Green line: Out-domain ASR vector. Red line: Outdomain SER vector.",
+      "page": 4,
+      "index": 3,
+      "width": 460,
+      "height": 341
+    }
+  ]
+}

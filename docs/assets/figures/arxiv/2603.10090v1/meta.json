@@ -1,0 +1,78 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.10090v1/fig-001.webp",
+      "caption": "Figure 3 | Taxonomy of foundational components and representative works for weight space learning.",
+      "page": 6,
+      "index": 1,
+      "width": 983,
+      "height": 1317
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10090v1/fig-002.webp",
+      "caption": "Figure 5 | Weight Space Representation Methods: Overview and Comparison. (a) Model-based approaches. All take raw weight space 𝜃 as input but differ in how they handle symmetry. Symmetryagnostic methods learn representations directly from weight distributions without explicitly encoding neuron permutation symmetry. Symmetry-aware methods incorporate dedicated equivariant modules to respect permutation invariance. Graph-based symmetry approaches leverage GNNs to automatically capture structural symmetries among neurons. (b) Model-free approaches. Probe-based behavioral learning infers representations from functional responses to designed probes, enabling embeddings that encode behavioral properties and functional symmetries of the underlying network.",
+      "page": 15,
+      "index": 2,
+      "width": 808,
+      "height": 468
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10090v1/fig-003.webp",
+      "caption": "Table 2 | Comparison of Hypernetworks and generative models. ✓ indicates full satisfaction, × indicates the condition is not satisfied, and P denotes partial satisfaction.",
+      "page": 21,
+      "index": 3,
+      "width": 983,
+      "height": 361
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10090v1/fig-004.webp",
+      "caption": "Table 3 | Applications of Weight space learning to Related Domains.",
+      "page": 30,
+      "index": 4,
+      "width": 973,
+      "height": 574
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10090v1/fig-005.webp",
+      "caption": "Figure 4 | Weight space symmetry and its induced functional manifestations. (a) illustrates the invariance under group action: applying a transformation 𝜌𝑖𝑛 to weights 𝜃 in weight space does not alter the induced function in quotient space1. (b) illustrates the equivariance under group action: transforming weights 𝜃 by 𝜌𝑖𝑛 in weight space induces a corresponding transformation 𝜌𝑜𝑢𝑡 in quotient space.",
+      "page": 7,
+      "index": 5,
+      "width": 696,
+      "height": 334
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10090v1/fig-006.webp",
+      "caption": "Table 4 | Representative model zoos used in weight space research, covering diverse architectures, parameters, datasets, and scales.",
+      "page": 34,
+      "index": 6,
+      "width": 983,
+      "height": 975
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10090v1/fig-007.webp",
+      "caption": "Table 1 | Illustrative examples of functional invariance and equivariance induced by weight space symmetry. Under weight space symmetry transformations, invariance means that the realized function remains unchanged, while equivariance means that the realized function changes in a predictable, structured manner. These relations explain that many different parameter configurations correspond to the same or systematically related functions. See Zhao et al. [2025b] for a theoretical discussion.",
+      "page": 9,
+      "index": 7,
+      "width": 983,
+      "height": 398
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10090v1/fig-008.webp",
+      "caption": "Figure 6 | Weight Space Generation Methods: Overview and Comparison. (a) Hypernetworks. A conditioning prompt is processed by a hypernetwork 𝐻 (·) to generate the parameters 𝜃 of a target model 𝑓 (·). The hypernetwork is trained end-to-end using the downstream task loss Ltask( 𝑓𝜃), enabling fast and conditional weight generation. (b) Generative models. Taking a diffusion-based approach as an example, the process begins by sampling from a noise distribution in weight space. Through iterative denoising steps, the model progressively refines the noisy initialization toward a structured representation of network parameters. This forward–reverse diffusion mechanism learns the underlying distribution of weights and enables conditional generation, producing diverse and task-aligned neural network configurations without explicit gradient-based optimization.",
+      "page": 20,
+      "index": 8,
+      "width": 856,
+      "height": 255
+    },
+    {
+      "url": "assets/figures/arxiv/2603.10090v1/fig-009.webp",
+      "caption": "Figure 2 | Conceptual overview of weight space learning. (a) Weight space understanding analyzes symmetries in weight space and introduces quotient spaces to reduce redundancy and clarify functional equivalence. (b) Weight space representation learns compact embeddings of neural weights, discriminating symmetry in weight space well. (c) Weight space generation synthesizes network weights, supporting efficient model creation and adaptation.",
+      "page": 5,
+      "index": 9,
+      "width": 917,
+      "height": 338
+    }
+  ]
+}

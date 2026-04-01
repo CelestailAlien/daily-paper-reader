@@ -1,0 +1,1078 @@
+Title: Preference-Aligned LoRA Merging: Preserving Subspace Coverage and Addressing Directional Anisotropy
+
+URL Source: https://arxiv.org/pdf/2603.26299v1
+
+Published Time: Mon, 30 Mar 2026 01:01:33 GMT
+
+Number of Pages: 26
+
+Markdown Content:
+# Preference-Aligned LoRA Merging: Preserving Subspace Coverage and Addressing Directional Anisotropy 
+
+# Wooseong Jeong ∗
+
+# KAIST 
+
+> stk14570@kaist.ac.kr
+
+# Wonyoung Lee ∗
+
+# KAIST 
+
+> wylee@kaist.ac.kr
+
+# Kuk-Jin Yoon KAIST 
+
+> kjyoon@kaist.ac.kr
+
+# Abstract 
+
+Merging multiple Low-Rank Adaptation (LoRA) modules is promising for constructing general-purpose systems, yet challenging because LoRA update directions span different subspaces and contribute unevenly. When merged naively, such mismatches can weaken the directions most critical to certain task losses while overemphasizing relatively less im-portant ones, ultimately reducing the model’s ability to rep-resent all tasks faithfully. We revisit this problem through two perspectives: subspace coverage, which captures how broadly LoRA directions cover diverse representational di-rections, and anisotropy, which reflects the imbalance of in-fluence across those directions. We propose TARA-Merging (Task-Rank Anisotropy Alignment ), which aligns merging weights using a preference-weighted cross-entropy pseudo-loss while preserving task-relevant LoRA subspaces. This ensures broad subspace coverage and mitigates anisotropy via direction-wise reweighting. Across eight vision and six NLI benchmarks, TARA-Merging consistently outperforms vanilla and LoRA-aware baselines, demonstrating strong robustness and generalization, and highlighting the impor-tance of addressing both subspace coverage and anisotropy in LoRA merging. Code is available at https : / / github.com/wooseong97/TARA-Merge .
+
+# 1. Introduction 
+
+Low-Rank Adaptation (LoRA) [29] is widely used to adapt large foundation models to downstream tasks, including large language models and vision-language models such as CLIP [72]. By introducing lightweight low-rank adapters, LoRA enables efficient fine-tuning with far fewer train-able parameters and reduced memory overhead, while mit-igating the risk of overfitting when only limited data are available. This efficiency has encouraged training separate LoRA adapters on many different datasets, each capturing distinct aspects of vision or language understanding. Com-
+
+> *Equal contribution to this work.
+
+bining task-specific LoRA modules into a single network falls under the paradigm of model merging [102], which provides an attractive alternative to costly multi-task train-ing [35–38] and enables the construction of general-purpose models that flexibly integrate knowledge across tasks and reflect different task preferences. Recent research has explored various model merging. Early baselines such as task arithmetic [32, 39, 68] treat fine-tuned models as linear updates and combine them through a linear combination. Ties-merging [99] and DARE [107] reduces interference by dropping parameters, while AdaMerging [101] adapts merging coefficients us-ing gradients derived from an entropy-based surrogate loss. Recent work has targeted model merging specifically for LoRA. KnOTS [79] aligns adapters using a shared SVD ba-sis, and LoRA-LEGO [114] clusters rank-wise units to pre-serve modularity. Focusing on LoRA adapters is promising, as LoRA fine-tuning has become standard practice for mod-ern LLMs and VLMs. Moreover, operating at the adapter level substantially reduces memory and compute overhead compared to merging full model weights, enabling even gradient-based approaches such as AdaMerging to scale to foundation models. In addition, While several approaches have been proposed, they often overlook at least one of the two fundamental challenges we emphasize in this work, namely preserving subspace coverage and addressing direc-tional anisotropy. LoRA produces a low-rank update that we decompose into rank-wise components for analysis. We collectively term these directions as LoRA directions . With this setup, two aspects are essential for successful merging: subspace coverage and anisotropy . Subspace coverage captures how widely the LoRA directions collectively span the represen-tational subspace, so preserving coverage ensures access to diverse task-relevant information. Anisotropy refers to di-rectional sensitivity imbalance. Even with sufficient cov-erage, task losses can be unequally sensitive to different LoRA directions, which can distort trade-offs if ignored. Furthermore, when task preferences are specified, effec-tive merging must preserve coverage while aligning merg-1
+
+> arXiv:2603.26299v1 [cs.CV] 27 Mar 2026
+
+ing weights with those preferences. Most merging meth-ods address only one side of the problem. Task arithmetic and pruning reduce interference but erode subspace cov-erage and ignore direction-wise sensitivity. AdaMerging tunes global weights yet misses per-direction anisotropy. LoRA-aware methods like KnOTS and LoRA-LEGO im-prove structure but can shrink effective coverage and still lack sensitivity weighting. In short, they do not jointly pre-serve coverage and model anisotropy over LoRA directions. Building on these observations, we propose TARA, short for Task-Rank Anisotropy Alignment . Our method in-troduces a structured merging framework that explicitly in-corporates task preferences while addressing the two prop-erties above. It preserves LoRA directions to maintain sub-space coverage and accounts for anisotropy by direction-wise reweighting according to sensitivity. It then aligns the merging weights with a preference-weighted entropy pseudo loss, yielding merged models that faithfully ap-proximate fine-tuned models across tasks while improving robustness and generalization. We validate our approach across eight vision datasets and six natural language infer-ence tasks, where TARA consistently outperforms vanilla baselines and recent LoRA-aware methods in joint-task evaluation and transfer to unseen tasks. Our main contributions are summarized as follows: • Identification of subspace coverage and anisotropy as two key properties for analyzing and guiding LoRA merg-ing, highlighting their roles in subspace preservation and direction-wise sensitivity. • Introduction of TARA , a framework that aligns both task-level and rank-level preferences, ensuring coverage of LoRA subspaces while mitigating anisotropy-induced imbalance. • Extensive empirical validation on vision and language benchmarks, demonstrating state-of-the-art performance and strong robustness in various experimental settings. 
+
+# 2. Related work 
+
+Model Merging. Model merging integrates knowledge from separately fine-tuned models without joint multi-task training [], reducing computational cost while preserving task performance [23, 60, 102]. Core baselines include Task Arithmetic , which adds or subtracts task vectors [32], Reg-Mean , which requires inner-product matrices of layer inputs for data-free fusion [40], TIES , which resolves sign conflicts and prunes small deltas [99], and DARE , which sparsifies update deltas [107]. AdaMerging learns layer-wise merge coefficients via entropy minimization to improve multi-task performance [101]. For models trained on different data or from different initializations, permutation alignment pre-serves linear mode connectivity [1, 21]. ZipIt matches intermediate features to re-basin networks and align neu-rons across models, enabling training-free layer alignment [78]. Uncertainty-aware combinations mitigate mismatch through Fisher-weighted averaging [63] and uncertainty or gradient matching [13]. Preference-aware settings moti-vate multi-objective formulations such as Pareto merging [7] and smooth scalarization [49]. Overall, recent work ad-vances simple averaging into alignment- and uncertainty-aware schemes with explicit trade-off control. 
+
+LoRA-aware Merging. For large networks including foun-dation models such as LLMs [19], Low-Rank Adaptation (LoRA) [29] is a widely used fine-tuning scheme. Conven-tional parameter-space merging methods [32, 40, 99, 107] transfer poorly to LoRA adapters, motivating LoRA-aware approaches [79, 84, 114]. In particular, Stoica et al. [79] ar-gue that LoRA-updated models exhibit weaker cross-model representation alignment than full-rank finetunes, and pro-pose K NOTS, which concatenates adapter updates and ap-plies an SVD to align them in a shared subspace before merging principal components. Zhao et al. [114] intro-duce minimal semantic units (MSUs) and perform cluster-ing to assemble a merged adapter with an adjustable effec-tive rank. Related mixtures of LoRAs have also been ex-plored for image generation, including multi-LoRA com-position and concept mixing [22, 117, 120]. Additional re-lated work and connections to our approach are discussed in Section B. General model merging ignore the factorized structure of LoRA and often suffer from strong misalignment when adapters are folded into the base model before merging. In contrast, LoRA-aware methods operate on the low-rank fac-tors, which is both efficient and more effective for com-bining updates. In this work we explicitly account for 
+
+subspace coverage and anisotropy , two critical aspects of LoRA merging that prior methods largely overlook. 
+
+# 3. Subspace Coverage and Anisotropy 
+
+3.1. Problem Setting and Notation 
+
+Modern foundation models in language and vision are in-creasingly adapted with LoRA rather than full fine-tuning, which motivates principled ways to combine many LoRA adapters into a single model. In practice, directly merging adapters by folding them into the base weights and applying model-merging often underperforms due to strong cross-task misalignment [79]. These factors call for a merging approaches that is aware of the LoRA structure. We there-fore study LoRA merging , where multiple LoRA fine-tuned adapters are combined into one model that balances task performance according to a user-specified preference. 
+
+Base model and LoRA adapters. Let W0 ∈ Rd×m be the frozen pretrained weight matrix. For each task i ∈{1, . . . , N }, we attach a LoRA adapter of rank ri, parame-2Figure 1. Effective rank across layers for an attention projection layer (e.g., query). The gap between ∆X stack and Rank-1 stack 
+
+> reflects merge-induced collapse.
+
+terized as 
+
+∆Wi = BiA⊤ 
+
+> i
+
+, Bi ∈ Rd×ri , Ai ∈ Rm×ri . (1) Thus, rank(∆ Wi) ≤ ri ≪ min( d, m ). We further de-compose each as ∆Wi = Pri 
+
+> j=1
+
+bij a⊤ 
+
+> ij
+
+, where bij and aij 
+
+denote the j-th columns of Bi and Ai. Each outer product 
+
+bij a⊤ 
+
+> ij
+
+is referred to as a rank-1 LoRA direction .
+
+User preferences. We assume that the relative importance of tasks is specified by a vector ρ = [ρ1, . . . , ρ N ]⊤ ∈
+
+∆N −1, where ∆N −1 denotes the probability simplex. Alarger ρi indicates higher priority for task i.
+
+Merging as Multi-Objective Optimization. Without fix-ing preferences, LoRA merging can be cast as a multi-objective optimization (MOO) problem [65] that seeks a set of solutions. We minimize the objective vector f (W ) = [f1(W ), . . . , f N (W )] ⊤ over merged models W obtained by linearly combining available LoRA adapters on top of a fixed base W0. A solution W a dominates W b if 
+
+fk(W a) ≤ fk(W b) for all k ∈ { 1, . . . , N } and fj (W a) <fj (W b) for some j. A solution is Pareto optimal if no other feasible solution dominates it. The Pareto front is the col-lection of Pareto-optimal solutions. 
+
+3.2. Preserving LoRA Subspace Coverage 
+
+We quantify how much task-specific representational capac-ity is retained when LoRA adapters are merged. We refer to this as subspace coverage : it measures how broadly the task-specific LoRA directions span the parameter space and how well a merge preserves that span. We measure sub-space coverage using the entropy-based effective rank (er-ank) [73]. Let X ∈ Rd×m have singular values {σk}rX
+
+> k=1
+
+where rX = rank( X), and define pk = σ2
+
+> k
+
+ P rX 
+
+> j=1
+
+σ2 
+
+> j
+
+.Then the effective rank is 
+
+erank( X) = exp 
+
+
+
+−
+
+> rX
+
+X
+
+> k=1
+
+pk log pk
+
+
+
+. (2) 
+
+erank( X) equals rX for a flat spectrum and decreases as energy concentrates, providing a basis-invariant measure of effective dimensionality. We compare three quantities using effective rank, with all stacks formed by vectorizing matrices and placing one vector per row. First, per-task sum computes erank for each task i on Xi = [vec( bi1a⊤
+
+> i1
+
+), . . . , vec( bir i a⊤ 
+
+> ir i
+
+)] ⊤ and then sums PNi=1 erank( Xi). Second, the ∆X stack ( LoRA-agnostic ) uses Xagnostic = [vec(∆ W1), . . . , vec(∆ WN )] ⊤
+
+and computes a single erank( Xagnostic ). Third, the Rank-1 stack ( LoRA-aware ) aggregates all rank-1 factors across tasks into Xaware = [vec( b11 a⊤
+
+> 11
+
+), . . . , vec( bN r N a⊤ 
+
+> N r N
+
+)] ⊤
+
+and computes erank( Xaware ). Here we refer to the Rank-1 stack as LoRA-aware because it preserves the adapter factorization and treats each rank-1 direction bij a⊤ 
+
+> ij
+
+as a separate basis element, whereas the ∆W stack is LoRA-agnostic since it collapses each adapter into a single update 
+
+∆Wi and ignores the internal rank-1 structure. As shown in Figure 1, the LoRA-aware stack retains about 70% of the per-task sum , indicating that most task-specific directions remain approximately independent af-ter redundancy removal and thus cross-task alignment is weak. This agrees with prior work showing that LoRA fine-tuned models align less across tasks than full-rank fine-tuning [79]. The gap between the LoRA-aware and 
+
+LoRA-agnostic stacks captures subspace collapse under interpolation-based merging [32, 99, 101], because unlike 
+
+Xaware the interpolated updates in Xagnostic can interfere de-structively across tasks and lower the effective rank. For-mal definitions and additional results appear in Section D of supplementary material. 
+
+3.3. Anisotropy of LoRA Directions 
+
+Let W be the current weights and { Sk }Kk=1 a set of 
+
+LoRA directions , where a LoRA adapter uses factor matri-ces B ∈ Rd×r and A ∈ Rm×r (for simplicity, the same rank r for all adapters), with columns bk and ak, and we set Sk = bka⊤ 
+
+> k
+
+(so K = r for a single adapter, or the sum of ranks if multiple adapters are stacked). Consider a small update restricted to this span with direction-selection coef-ficients ϕ = ( ϕ1, . . . , ϕ K )⊤ ∈ RK (distinct from the task-preference vector ρ), so that ∆W = PKk=1 ϕkSk. Using the Frobenius inner product, the first-order change of each task loss is 
+
+∆fi ≈ ∇fi(W ), ∆W F =
+
+> K
+
+X
+
+> k=1
+
+ϕk ∇fi(W ), Sk F .
+
+(3) 3Stacking ∆f = [∆ f1, . . . , ∆fN ]⊤ yields the linearization 
+
+∆f ≈ J ϕ , Ji,k = ∇fi(W ), Sk F , (4) so J(W ) is the task-loss Jacobian restricted to span {Sk}.Directional imbalance is captured by the singular values of 
+
+J, which give the following bound from coefficients to loss changes. 
+
+Proposition 1 (Anisotropy Bounds) . Let σmax (J) and 
+
+σmin (J) denote the largest and smallest singular values of 
+
+J. Then, for any coefficient vector ϕ,
+
+σmin (J) ∥ϕ∥2 ≤ ∥ Jϕ ∥2 = ∥∆f ∥2 ≤ σmax (J) ∥ϕ∥2.
+
+(5) 
+
+When κ(J) = σmax (J)/σ min (J) is large, the map ϕ 7 →
+
+∆f is anisotropic , and equal-norm LoRA-direction updates need not yield proportional task-loss changes. 
+
+Empirical evidence of anisotropy. To illustrate the qual-itative effect anticipated by Proposition 1, we measure singular-value spectra and condition numbers of J across layers and modules. We observe a pronounced spectral spread and large condition numbers, indicating that a few directions dominate the task-loss response while many are weak. Full plots are deferred to Sec. E of supplementary material. See the condition-number traces in Figs. 6 and 7 and the scree curves in Fig. 8 of supplementary material. 
+
+Directional-sensitivity misalignment across preferences. 
+
+With the scalarized gradient g(ρ; W ) = P 
+
+> i
+
+ρi ∇fi(W ),define direction-wise loss sensitivities 
+
+hk(ρ; W ) = g(ρ; W ), Sk F , (6) 
+
+h(ρ; W ) =  h1, . . . , h K
+
+⊤. (7) When the preference ρ changes, the pattern of h(ρ; W )
+
+also changes as well. We quantify Directional Sensitivity Misalignment by 
+
+ξ(ρ1, ρ2; W ) = 1 − |⟨ h(ρ1; W ), h(ρ2; W )⟩| ∥h(ρ1; W )∥2 ∥h(ρ2; W )∥2
+
+, (8) so that ξ ∈ [0 , 1] . Here ⟨· , ·⟩ denotes the dot product. Smaller ξ indicates weaker ρ-dependence of the sensitivity profiles, whereas larger ξ indicates stronger ρ-dependence. When measuring anisotropy, a 180 ◦ flip lies in the same one-dimensional span. We therefore treat sign flips as equivalent and focus on alignment along the direction axis. We quantify how loss-sensitive directions within the LoRA span change when the task preference switches from 
+
+ρ1 (uniform over tasks) to ρ2 (one-hot on a single task). For each preference, we form a sensitivity profile over LoRA directions by projecting the scalarized gradient g(ρ; W ) = P 
+
+> i
+
+ρi ∇fi(X) onto the basis {Sk}. Throughout this anal-ysis, we set W to the Task Arithmetic merge Wmerge =      
+
+> Figure 2. Directional-sensitivity misalignment ξ(ρ1, ρ 2).
+> Larger ξindicates stronger change in loss-sensitive directions when switching preferences.
+
+W0 + λ PNi=1 ∆Wi with λ = 0 .3 following [32]. We then summarize the distance between the two preference with a misalignment index ξ(ρ1, ρ2) ∈ [0 , 1] . Figure 2 shows substantial misalignment across layers and modules, indi-cating that directional sensitivities within the LoRA span are highly preference-dependent and motivating our subse-quent directional alignment. 
+
+# 4. Method 
+
+Based on the analysis, we propose TARA, Task-Rank Anisotropy Alignment , which addresses both subspace cov-erage and anisotropy in LoRA merging. TARA weights LoRA directions with an entropy-minimization term, as in AdaMerging [101]. We present two variants that specify how the directions are constructed and how the direction-selection weights are assigned. 
+
+Variant A: Per-rank LoRA direction selection. This variant reweights individual rank-1 factors and focuses on anisotropy control within each adapter. Let ϕij ∈ R
+
+be a direction-selection weight for factor (i, j ) with i ∈{1, . . . , N } and j ∈ { 1, . . . , r i}. The merged weight is 
+
+WA(ϕ) = W0 +
+
+> N
+
+X
+
+> i=1
+> ri
+
+X
+
+> j=1
+
+ϕij bij a⊤ 
+
+> ij
+
+. (9) Unless otherwise noted, we allow signed weights and learn their scale directly. 
+
+Variant B: Shared singular-direction selection. This vari-ant builds a shared orthonormal basis across tasks to pre-serve subspace coverage, reduce cross-task interference, and control anisotropy via weights. Form a matrix by hori-zontally concatenating adapters as follows: 
+
+X = ∆W1, . . . , ∆WN
+
+ ∈ Rd×(mN ), (10) 4Table 1. Per-task accuracy on eight image-classification benchmarks. We merge eight ViT-B/32 checkpoints, each fine-tuned with LoRA. The upper panel shows the per-task absolute accuracy of the fine-tuned baselines. The lower panel shows the accuracy of the merged models, normalized by their corresponding fine-tuned baseline (%).                                                                                                                                                                            
+
+> Method Dataset Cars DTD EuroSAT GTSRB MNIST RESISC45 SUN397 SVHN Avg
+> Per-task absolute accuracies (%)
+> Finetuned 74.0 58.3 99.0 92.7 99.3 88.4 64.5 96.2 84.1
+> Per-task accuracies of merged models, normalized to finetuned (%)
+> Vanilla Merging
+> RegMean [40] 80.2 71.3 37.9 47.3 43.1 70.5 93.9 43.0 60.9 TA [32] 82.1 74.3 48.7 41.8 53.4 71.5 96.6 42.0 63.8 TIES [99] 81.0 72.5 53.8 37.4 69.0 65.3 94.8 45.3 64.9 DARE-TIES [107] 81.6 74.5 51.0 37.2 59.2 66.6 96.0 38.8 63.1 EMR-Merging [31] 82.6 73.9 48.2 40.2 54.6 70.6 95.7 45.9 64.0 FR-Merging [115] 79.9 71.0 24.2 34.2 46.6 65.4 92.2 47.6 57.6 Iso-C [60] 82.0 82.1 55.2 73.0 68.9 80.3 97.7 49.6 73.6 Iso-CTS [60] 80.8 82.3 56.2 74.8 68.5 79.6 97.4 48.5 73.5 AdaMerging [101] 79.5 73.5 70.9 39.7 63.0 69.0 97.8 66.6 70.0
+> LoRA-aware Merging
+> SVD [84] 81.8 73.5 47.7 38.3 52.8 70.2 96.4 40.4 62.6 Linear [59] 81.4 74.5 49.5 43.0 55.3 70.3 96.8 39.0 63.7 KnOTS-TIES [79] 82.7 73.7 49.3 48.9 68.9 70.9 95.5 53.8 68.0 KnOTS-DARE-TIES [79] 81.8 75.9 50.7 40.3 53.2 70.2 97.9 41.0 63.9 LoRA-LEGO [114] 81.1 73.0 54.4 40.3 48.6 71.5 97.3 37.1 62.9 RobustMerge [109] 80.1 76.8 54.8 38.2 55.4 69.5 96.5 35.2 63.3 TARA-Variant A 82.2 76.0 74.9 43.5 76.3 70.2 98.0 70.8 74.0 TARA-Variant B 86.2 78.4 76.8 42.9 82.7 75.4 98.6 69.7 76.3
+
+and compute the SVD: X = U ΣV ⊤. Select the top R sin-gular values and their associated singular vectors, yielding 
+
+U = [ u1, . . . , uR] ∈ Rd×R, (11) 
+
+Σ = diag( σ1, . . . , σ R), (12) 
+
+V = [ v1, . . . , vR] ∈ R(mN )×R. (13) Partition each vk into vk = [ v⊤
+
+> k1
+
+, . . . , v⊤ 
+
+> kN
+
+]⊤ with each 
+
+vki ∈ Rm and define 
+
+Sik = uk v⊤ 
+
+> ki
+
+∈ Rd×m (14) Assign weights ϕik ∈ R to these directions and obtain 
+
+WB (ϕ) = W0 +
+
+> N
+
+X
+
+> i=1
+> R
+
+X
+
+> k=1
+
+ϕik σk uk v⊤
+
+> ki
+
+. (15) Together, the shared orthonormal left directions {uk}Rk=1 
+
+and the per-task partitions of the right singular vectors pre-serve subspace coverage. The left basis {uk} retains the top-R column space of X, and vki ∈ Rm yields rank-1 components Sik = ukv⊤
+
+> ki
+
+. Direction weights then adjust these rank-1 components preserving subspace coverage. Variant B incurs extra cost to compute the shared SVD basis, whereas Variant A avoids this step. In return Vari-ant B typically attains higher accuracy, reflecting a practical trade-off between compute and performance. We quantify this trade-off in Table 6 of the supplementary material. Following Lin et al. [49], we optimize ϕ under a pref-erence vector ρ. Let W (ϕ) denote either WA(ϕ) from Eq. (9) or WB (ϕ) from Eq. (15). 
+
+Smooth Tchebycheff Scalarization. With anchors zi =min W fi(W ), define 
+
+Ψ( ϕ, ρ) = α log 
+
+> N
+
+X
+
+> i=1
+
+exp ρi fi
+
+ W (ϕ)−zi
+
+α
+
+!! 
+
+, (16) Here zi acts as a task-wise anchor that normalizes scale differences across tasks. The parameter α > 0 con-trols smoothing: smaller α concentrates the objective on the worst-performing task, whereas larger α yields a smoother aggregation that spreads focus more evenly across tasks. During merging, we use predictive entropy following AdaMerging [101] since fi requires labels. For zi, we use the entropy loss obtained when only task i’s adapter is ap-plied. Earlier learning-free mergers were attractive for full-parameter models due to lower memory use and simplicity. In LoRA-adapted settings, however, the memory gap be-tween learning-free and learning-based approaches is small even at foundation-model scale, so there is less reason to insist on learning-free methods. We quantify this in Table 6 of the supplementary material. 
+
+# 5. Experiments 
+
+Experimental Setup. 
+
+For vision experiments, we follow Stoica et al. [79] and use CLIP [72] with a ViT-B/32 backbone [17] pre-trained on ImageNet-21k [16]. Models are fine-tuned with rank-16 LoRA unless noted otherwise and evaluated on eight image classification benchmarks. We also test our method on six classification datasets with the LLaMA-3 8B model [19]. 5Dataset descriptions are in Section C.1, and LoRA fine-tuning details in Section C.2 of supplementary material. 
+
+Baselines. We denote the pretrained weights by W0, the task vector of the i-th task by ∆Wi, and the merged weights by Wmerge . For LoRA task vectors, we write 
+
+∆Wi = BiA⊤ 
+
+> i
+
+. The scaling coefficient for merging is denoted by λ. Our evaluation spans two distinct groups of baselines. Vanilla merging comprises (i) RegMean [40] aligns the merged model with fine-tuned models by solving a layer-wise least-squares problem using small calibration sets from each task, thereby matching the activations of the merged model to those of the task-specific models. (ii) Task Arithmetic (TA) [32] adds a scaled sum of task vectors to the pretrained weights, Wmerge = W0 + λ PNi=1 ∆Wi.(iii) TIES [99] prunes small-magnitude parameters, re-solves sign conflicts, and then averages only parameters with consistent signs with scaling coefficient λ. (iv) DARE-TIES [107] sparsifies each parameter with Bernoulli prob-ability p and rescales the retained parameters by 1/(1 − p)
+
+to preserve the expectation. (v) AdaMerging [101] learns merging coefficients by minimizing an output-entropy sur-rogate in the spirit of test-time adaptation [86]. LoRA-aware merging exploits low-rank adapter structure: (vi) SVD ag-gregates LoRA task vectors ∆Wmerge = λ P 
+
+> i
+
+BiA⊤ 
+
+> i
+
+and applies truncated SVD ∆Wmerge ≈ Ur Σr V ⊤ 
+
+> r
+
+[84] to re-cover rank of original LoRAs (vii) Linear [59] performs TA on {Bi} and {Ai} rather than whole task vector. (viii) KnOTS [79] computes an SVD on concatenated task vec-tors [∆ W1; . . . ; ∆ WN ] = U ΣV ⊤ and merge partitions of 
+
+V associated with each task vector. TIES or DARE-TIES can be applied to the Vi, yielding the variants KnOTS-TIES and KnOTS-DARE-TIES . (ix) LoRA-LEGO [114] decomposes each adapter into minimal semantic units, clus-ters them rank-wise, and assembles a new LoRA from the cluster centroids. We present a reimplementation of LoRA-LEGO. Finally, we also include the LoRA-aware (x) Ro-bustMerge [109], and recent vanilla-merging methods: (xi) 
+
+EMR-Merging [31], (xii) FR-Merging [115], and (xiii) 
+
+Iso-CTS [60]. Implementation details are in Sec. C.3. 
+
+Implementation Details. For our method, we adopt AdamW [55] with a learning rate of 0.001. The direction-selection weights ϕ are initialized to 0.4 and optimized with a batch size of 16 for 500 iterations similar to Yang et al. [101] to control training cost. For experiments, we set 
+
+α = 1 in Eq. (16). The effects of α is analyzed in supple. 
+
+Metrics. Following prior work [32, 79, 99], we report the absolute accuracy of individually fine-tuned models on each dataset, and compare different merging methods using a normalized accuracy metric. The normalized accuracy is defined as Accuracy of merged model on task-i 
+
+> Accuracy of fine-tuned model on task-i
+
+. This metric indi-cates how closely a merged model approaches the perfor-mance of the corresponding fine-tuned model for each task. 
+
+5.1. Experimental Results 
+
+Per-Task Evaluation across Vision Tasks. In this exper-iments, we adopt the conventional per-task evaluation pro-tocol [32, 79, 99], where the goal is to test how well differ-ent merging strategies preserve task-specific performance. Concretely, a collection of models fine-tuned independently on separate datasets are merged into a unified model, and its performance is measured on each dataset separately, re-lying solely on the dataset’s own samples and labels. Ta-ble 1 reports normalized per-task accuracies and their av-erages across eight vision tasks with CLIP, where all mod-els are fine-tuned with LoRA of rank 16. We categorize the baselines into two groups: vanilla merging methods and LoRA-aware methods that explicitly incorporate the LoRA structure. LoRA-aware methods generally outper-form their vanilla counterparts. For instance, KnOTS-TIES surpasses TIES, and KnOTS-DARE-TIES improves upon DARE-TIES. KnOTS-based variants highlight the benefits of accounting for LoRA structure. LoRA-LEGO does not provide significant advantages over vanilla methods, sug-gesting that merely preserving LoRA rank-1 directions is insufficient to retain task-specific information during merg-ing. By comparison, TARA consistently outperforms both vanilla and LoRA-aware baselines. Variant A shows steady gains with additional training iterations, leading to higher average accuracy. Variant B achieves the best overall trade-off, delivering the highest scores average of 76.3% with only 250 iterations. These results demonstrate that exploit-ing LoRA structure is essential for stable merging, and that TARA further effectively capture task-sensitive subspaces. Experiments in Table 1 use the checkpoints released by KnOTS [79]. We further confirm the results on indepen-dently trained checkpoints, as shown in Table 9. 
+
+Per-Task Evaluation on 6 NLI Tasks with LLMs. In Ta-ble 2, we report per-task normalized accuracies of merged models on six NLI benchmarks. For this setting, we ap-ply six LoRA adapters with rank 16 to LLaMA-3-8B [19]. Each benchmark follows the natural language inference protocol, where a hypothesis is classified against a given premise into entailment, contradiction, or neutral. Detailed descriptions of each dataset are provided in Section C.1 of supplementary material.. The NLI results with LLMs re-veal trends consistent with those observed in vision tasks. Vanilla merging baselines, with the exception of AdaMerg-ing, show limited ability to preserve task-specific informa-tion in large-scale models, while LoRA-aware methods still provide only moderate improvements. In contrast, TARA delivers significant and consistent gains. Variant B achiev-ing the best average normalized accuracy of 80.3%, high-lighting the effectiveness of TARA on language tasks. 
+
+Joint-Task Evaluation of General Models. The joint-task evaluation protocol, originally introduced by Stoica et al. 6Table 2. Per-task accuracy on six NLI benchmarks. We merge six LLaMA-3 8B checkpoints, each fine-tuned with LoRA. The upper panel shows the absolute per-task accuracy of the fine-tuned baselines. The lower panel shows the merged models’ accuracy, normalized by each task’s corresponding fine-tuned baseline (%). 
+
+Method Dataset MNLI QNLI SNLI RTE SICK SCITAIL Avg 
+
+Per-task absolute accuracies (%) 
+
+Finetuned 90.8 95.3 92.1 84.8 91.3 87.3 90.2 
+
+Per-task accuracies of merged models, normalized to finetuned (%) 
+
+Vanilla Merging 
+
+TA [32] 67.3 87.3 41.8 95.7 77.9 76.9 74.6 TIES [99] 61.3 91.5 38.2 85.5 76.8 70.5 70.6 DARE-TIES [107] 42.0 72.5 44.1 77.8 76.9 86.8 66.7 EMR-Merging [31] 75.3 87.5 41.2 88.0 70.3 73.9 72.7 Iso-C [60] 35.0 57.8 40.5 64.1 51.1 100.2 58.1 Iso-CTS [60] 37.1 57.1 39.8 59.4 49.8 95.3 56.4 FR-Merging [115] 65.7 86.9 41.9 93.2 78.3 77.6 73.9 AdaMerging [101] 47.5 92.9 41.3 102.6 93.8 94.2 78.7 
+
+LoRA-aware Merging 
+
+SVD [84] 67.7 87.2 41.7 95.7 77.6 76.6 74.4 Linear [59] 63.1 86.2 39.5 90.6 77.5 74.5 71.9 KnOTS-TIES [79] 41.1 83.4 56.6 87.2 87.9 94.8 75.2 KnOTS-DARE-TIES [79] 76.4 88.2 39.9 99.2 79.6 75.6 76.5 LoRA-LEGO [114] 62.5 84.8 41.4 100.0 87.0 83.7 76.6 RobustMerge [109] 66.4 87.2 41.8 94.0 77.7 77.3 74.1 TARA-Variant A 51.7 92.6 41.4 102.6 95.3 94.4 79.7 TARA-Variant B 46.8 94.1 41.4 103.4 98.1 97.8 80.3 
+
+Table 3. Joint-Task Evaluation Results. All models share a ViT-B/32 backbone, are fine-tuned with LoRA on separate datasets, and are then merged for joint-task evaluation.                               
+
+> Method Hits@1 Hits@3 Hits@5 TA [32] 43.5 65.2 74.0 TIES [99] 43.6 65.3 73.9 DARE-TIES [107] 44.0 66.4 75.1 AdaMerging [101] 48.1 73.2 83.0 KnOTS-TIES [79] 46.8 68.1 76.3 KnOTS-DARE-TIES [79] 45.2 66.9 75.3 LoRA-LEGO [114] 43.1 65.0 73.9 TARA-Variant A 51.1 75.9 84.9 TARA-Variant B 49.3 74.9 85.1
+
+[79], differs from the per-task setup by evaluating merged models over the union of inputs and labels from all eight vision benchmarks. This setting is more suitable for as-sessing whether a merged model can serve as a general-purpose model across multiple target datasets. In construct-ing the joint task, labels from all benchmarks are pooled together and duplicates are removed, resulting in a uni-fied label space. A detailed description of this setting is provided in Section C.4 of supplementary material.. Ta-ble 3 presents joint-task evaluation results in terms of top-1/3/5 accuracies. Vanilla merging baselines achieve lim-ited performance with Hits@1 below 45%. KnOTS-TIES and KnOTS-DARE-TIES obtain small but consistent gains, while AdaMerging achieves further improvements when ad-ditional optimization iterations are allowed. TARA con-sistently outperforms all baselines. Both Variant A and Variant B benefit from longer training, with Variant A (500 Iters) reaching the highest Hits@1 (51.1%) and strong 
+
+Figure 3. Two-Task Merging Results. 
+
+Figure 4. Preference Sensitivity of TARA and AdaMerging. 
+
+overall balance, while Variant B delivers the best Hits@5 (85.1%). These results highlight that our merging strat-egy effectively integrates task-specific knowledge across 7Table 4. Generalization results on two unseen tasks when merging ViT-B/32 models on six tasks.                                                                                                                                                                                                         
+
+> Seen Tasks Unseen Tasks All Tasks Method Cars DTD GTSRB RESISC45 SUN397 SVHN Avg Acc EuroSAT MNIST Avg Acc Avg Acc
+> Per-task accuracies of merged models, normalized to finetuned (%)
+> TA [32] 82.0 74.7 42.2 71.1 96.8 42.2 68.2 37.5 48.2 42.9 61.8 TIES [99] 81.5 73.2 40.3 64.4 95.4 45.7 66.7 37.2 61.8 49.5 62.4 KnOTS-TIES [79] 82.7 74.4 48.5 72.5 95.3 50.2 70.6 33.2 50.5 41.8 63.4 KnOTS-DARE-TIES [79] 81.7 72.5 49.4 71.9 94.6 52.5 70.4 31.6 51.2 41.4 63.2 LoRA-LEGO [114] 82.2 73.5 46.9 71.2 96.7 40.8 68.5 35.5 44.7 40.1 61.4 AdaMerging [101] 79.7 73.4 37.7 69.8 97.9 67.4 71.0 48.7 58.7 53.7 66.7 TARA-Variant A 82.8 73.9 43.8 70.5 98.2 73.4 73.8 48.4 61.1 54.8 69.1 TARA-Variant B 86.3 73.8 47.6 73.8 99.1 71.6 75.4 53.3 61.6 57.5 70.9
+> Method Cars DTD EuroSAT GTSRB MNIST SUN397 Avg Acc RESISC45 SVHN Avg Acc Avg Acc
+> Per-task accuracies of merged models, normalized to finetuned (%)
+> TA [32] 82.3 75.1 53.0 40.7 52.4 96.7 66.7 68.6 34.7 51.7 63.0 TIES [99] 81.9 74.8 73.7 33.2 63.4 95.6 70.4 68.9 31.6 50.3 65.4 KnOTS-TIES [79] 82.5 72.9 53.8 47.8 61.7 94.9 69.0 67.5 35.1 51.3 64.5 KnOTS-DARE-TIES [79] 82.7 72.2 53.1 48.5 61.5 94.3 68.7 66.7 35.4 51.0 64.3 LoRA-LEGO [114] 81.1 72.3 55.6 42.8 62.6 94.7 68.2 65.2 33.9 49.5 63.5 AdaMerging [101] 79.6 74.2 72.5 36.5 60.0 97.9 70.1 69.2 41.1 55.2 66.4 TARA-Variant A 84.9 75.7 76.3 40.5 77.4 97.5 75.4 69.5 42.1 55.8 70.5 TARA-Variant B 86.7 77.0 79.5 42.8 76.3 98.2 76.8 70.5 45.6 58.1 72.1
+
+datasets and yields more general models under the chal-lenging joint-task setting. The full results are provided in Table 8 of supplementary material. 
+
+Two-Task Trade-Off Analysis. We examine whether preference-aware merging can trace an accuracy trade-off. Figure 3 shows results on the CLIP ViT-B/32 backbone. For the GTSRB-SVHN pair, sweeping 30 preference val-ues and merging the two adapters with TARA yields a smooth trade-off curve (line). Baseline mergers (AdaMerg-ing, KnOTS, LoRA-LEGO, TA) appear as isolated operat-ing points. By jointly accounting for subspace coverage 
+
+(retaining effective rank) and anisotropy (reweighting di-rectional emphasis), TARA produces merged models that reflect diverse preferences and in turn typically lie above the baseline points, offering stronger accuracy trade-offs at comparable performance levels and enabling selection of an operating point by adjusting the preference. 
+
+Preference Sensitivity Analysis. To assess robustness to changes in the preference vector, we adopt the following setting. We fix the GTSRB and SVHN preferences to 0.125 
+
+each and randomly sample the remaining task preferences on the simplex so that all entries sum to 1. We sample 30 preference vectors and merge eight CLIP ViT-B/32 adapters with TARA and with AdaMerging, then record accuracies on GTSRB and SVHN. In Figure 4 each point corresponds to one sampled preference and its resulting two-task accu-racies. For AdaMerging we use a weighted sum of per-task pseudo-objectives. Compared to AdaMerging, TARA produces a tighter point cloud with lower empirical covari-ance and more stable two-task performance under prefer-ence perturbations, consistent with its direction-aware han-dling during LoRA merging. 
+
+Evaluation of Generalization to Unseen Tasks. We as-sess the generalization performance of TARA following the evaluation protocol of Yang et al. [101]. In this set-ting, seen tasks are those for which LoRA fine-tuned check-points are available and included during merging, whereas 
+
+unseen tasks correspond to datasets without any associ-ated LoRA checkpoints. As shown in Table 4, models are merged on six seen tasks and subsequently evaluated on both the seen tasks themselves and two unseen tasks. The results demonstrate that vanilla baselines and LoRA-aware methods struggle to achieve strong performance on unseen datasets. In contrast, TARA consistently outperforms all baselines across both evaluation groups. Variant B achieves the highest overall accuracy of 70.9% in the first split, while Variant B reaches 72.1% in the second split. These re-sults show that TARA preserves in-domain performance and generalizes better to unseen benchmarks. We provide more detailed analyses, including computa-tional and memory costs, in Sec. F of the supplement. 
+
+# 6. Conclusion 
+
+We revisited LoRA merging through two complementary lenses: subspace coverage , where LoRA updates collec-tively occupy a wide, low-redundancy subspace rather than collapsing onto a few shared directions, and anisotropy , the directional imbalance in how changes in the scale of LoRA rank-1 directions translate into loss changes. Ignoring either can collapse useful subspaces and bias loss-critical direc-tions. Building on effective-rank and directional-sensitivity analyses, we introduce TARA-Merging to align direc-tion weights with task preferences while preserving task-relevant subspaces. Direction-wise reweighting maintains high subspace coverage and accounts for anisotropy, yield-ing consistent gains across per-task, joint, and transfer eval-uations. This demonstrates that addressing both factors is key to robust, general-purpose LoRA merging. 8Acknowledgements This research was supported by the Challengeable Future Defense Technology Research and Development Program through the Agency For Defense De-velopment(ADD) funded by the Defense Acquisition Pro-gram Administration(DAPA) in 2026(No.915102201) 
+
+# References 
+
+[1] Samuel K Ainsworth, Jonathan Hayase, and Siddhartha Srinivasa. Git re-basin: Merging models modulo permu-tation symmetries. arXiv preprint arXiv:2209.04836 , 2022. 2[2] Takuya Akiba, Makoto Shing, Yujin Tang, Qi Sun, and David Ha. Evolutionary optimization of model merging recipes. Nature Machine Intelligence , 7(2):195–204, 2025. 1[3] Luisa Bentivogli, Peter Clark, Ido Dagan, and Danilo Gi-ampiccolo. The fifth pascal recognizing textual entailment challenge. TAC , 7(8):1, 2009. 2 [4] Samuel R Bowman, Gabor Angeli, Christopher Potts, and Christopher D Manning. A large annotated corpus for learning natural language inference. arXiv preprint arXiv:1508.05326 , 2015. 2 [5] Hao Mark Chen, Shell Xu Hu, Wayne Luk, Timothy Hospedales, and Hongxiang Fan. Fw-merging: Scaling model merging with frank-wolfe optimization. In Proceed-ings of the IEEE/CVF International Conference on Com-puter Vision , pages 3390–3400, 2025. 13 [6] Shiqi Chen, Jinghan Zhang, Tongyao Zhu, Wei Liu, Siyang Gao, Miao Xiong, Manling Li, and Junxian He. Bring reason to vision: Understanding perception and reason-ing through model merging. In Forty-second International Conference on Machine Learning , 2025. 2 [7] Weiyu Chen and James Kwok. Pareto merging: Multi-objective optimization for preference-aware model merg-ing. arXiv preprint arXiv:2408.12105 , 2024. 2 [8] Gong Cheng, Junwei Han, and Xiaoqiang Lu. Remote sens-ing image scene classification: Benchmark and state of the art. Proceedings of the IEEE , 105(10):1865–1883, 2017. 2, 4[9] Runxi Cheng, Feng Xiong, Yongxian Wei, Wanyun Zhu, and Chun Yuan. Whoever started the interference should end it: Guiding data-free model merging via task vectors. 
+
+arXiv preprint arXiv:2503.08099 , 2025. 2 [10] Mircea Cimpoi, Subhransu Maji, Iasonas Kokkinos, Sammy Mohamed, and Andrea Vedaldi. Describing tex-tures in the wild. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 3606–3613, 2014. 2 [11] Donato Crisostomi, Marco Fumero, Daniele Baieri, Florian Bernard, and Emanuele Rodola. C2M3: Cycle-consistent multi-model merging. Advances in Neural Information Processing Systems , 37:28674–28705, 2024. 1 [12] Ido Dagan, Oren Glickman, and Bernardo Magnini. The pascal recognising textual entailment challenge. In 
+
+Machine learning challenges workshop , pages 177–190. Springer, 2005. 2 [13] Nico Daheim, Thomas M¨ ollenhoff, Edoardo Maria Ponti, Iryna Gurevych, and Mohammad Emtiyaz Khan. Model merging by uncertainty-based gradient matching. arXiv preprint arXiv:2310.12808 , 2023. 2 [14] MohammadReza Davari and Eugene Belilovsky. Model breadcrumbs: Scaling multi-task model merging with sparse masks. In European Conference on Computer Vi-sion , pages 270–287. Springer, 2024. 2 [15] Pala Tej Deep, Rishabh Bhardwaj, and Soujanya Poria. Della-merging: Reducing interference in model merg-ing through magnitude-based sampling. arXiv preprint arXiv:2406.11617 , 2024. 1 [16] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li Fei-Fei. Imagenet: A large-scale hierarchical im-age database. In 2009 IEEE conference on computer vision and pattern recognition , pages 248–255. Ieee, 2009. 5, 2 [17] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, et al. An image is worth 16x16 words: Transformers for image recognition at scale. arXiv preprint arXiv:2010.11929 , 2020. 5 [18] Yiyang Du, Xiaochen Wang, Chi Chen, Jiabo Ye, Yiru Wang, Peng Li, Ming Yan, Ji Zhang, Fei Huang, Zhifang Sui, et al. Adamms: Model merging for heterogeneous multimodal large language models with unsupervised co-efficient optimization. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 9413– 9422, 2025. 2 [19] Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Ab-hishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Amy Yang, Angela Fan, et al. The llama 3 herd of models. arXiv e-prints , pages arXiv–2407, 2024. 2, 5, 6, 3 [20] Sebastian Dziadzio, Vishaal Udandarao, Karsten Roth, Ameya Prabhu, Zeynep Akata, Samuel Albanie, and Matthias Bethge. How to merge your multimodal models over time? In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 20479–20491, 2025. 2 [21] Rahim Entezari, Hanie Sedghi, Olga Saukh, and Behnam Neyshabur. The role of permutation invariance in lin-ear mode connectivity of neural networks. arXiv preprint arXiv:2110.06296 , 2021. 2 [22] Rohit Gandikota, Joanna Materzy´ nska, Tingrui Zhou, An-tonio Torralba, and David Bau. Concept sliders: Lora adap-tors for precise control in diffusion models. In European Conference on Computer Vision , pages 172–188. Springer, 2024. 2 [23] Antonio Andrea Gargiulo, Donato Crisostomi, Maria Sofia Bucarelli, Simone Scardapane, Fabrizio Silvestri, and Emanuele Rodola. Task singular vectors: Reducing task interference in model merging. In Proceedings of the Com-puter Vision and Pattern Recognition Conference , pages 18695–18705, 2025. 2, 1 [24] Danilo Giampiccolo, Bernardo Magnini, Ido Dagan, and William B Dolan. The third pascal recognizing textual en-tailment challenge. In Proceedings of the ACL-PASCAL 
+
+9workshop on textual entailment and paraphrasing , pages 1–9, 2007. 2 [25] Danna Gurari, Qing Li, Abigale J Stangl, Anhong Guo, Chi Lin, Kristen Grauman, Jiebo Luo, and Jeffrey P Bigham. Vizwiz grand challenge: Answering visual questions from blind people. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 3608–3617, 2018. 7 [26] R Bar Haim, Ido Dagan, Bill Dolan, Lisa Ferro, Danilo Giampiccolo, Bernardo Magnini, and Idan Szpektor. The second pascal recognising textual entailment challenge. In 
+
+Proceedings of the Second PASCAL Challenges Workshop on Recognising Textual Entailment , pages 785–794, 2006. 2[27] Patrick Helber, Benjamin Bischke, Andreas Dengel, and Damian Borth. Eurosat: A novel dataset and deep learning benchmark for land use and land cover classification. IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing , 12(7):2217–2226, 2019. 2 [28] Stefan Horoi, Guy Wolf, Eugene Belilovsky, and Gintare Karolina Dziugaite. Less is more: Undertrain-ing experts improves model upcycling. arXiv preprint arXiv:2506.14126 , 2025. 2 [29] Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, Weizhu Chen, et al. Lora: Low-rank adaptation of large language models. 
+
+ICLR , 1(2):3, 2022. 1, 2, 3 [30] Chengsong Huang, Qian Liu, Bill Yuchen Lin, Tianyu Pang, Chao Du, and Min Lin. Lorahub: Efficient cross-task generalization via dynamic lora composition. In Confer-ence on Language Modeling (COLM) , 2024. 2 [31] Chenyu Huang, Peng Ye, Tao Chen, Tong He, Xiangyu Yue, and Wanli Ouyang. Emr-merging: Tuning-free high-performance model merging. Advances in Neural Informa-tion Processing Systems , 37:122741–122769, 2024. 5, 6, 7, 1, 4 [32] Gabriel Ilharco, Marco Tulio Ribeiro, Mitchell Worts-man, Suchin Gururangan, Ludwig Schmidt, Hannaneh Ha-jishirzi, and Ali Farhadi. Editing models with task arith-metic. arXiv preprint arXiv:2212.04089 , 2022. 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13 [33] Moritz Imfeld, Jacopo Graldi, Marco Giordano, Thomas Hofmann, Sotiris Anagnostidis, and Sidak Pal Singh. Transformer fusion with optimal transport. arXiv preprint arXiv:2310.05719 , 2023. 1 [34] Arthur Jacot, Franck Gabriel, and Cl´ ement Hongler. Neu-ral tangent kernel: Convergence and generalization in neu-ral networks. Advances in neural information processing systems , 31, 2018. 1 [35] Wooseong Jeong and Kuk-Jin Yoon. Quantifying task pri-ority for multi-task optimization. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 363–372, 2024. 1 [36] Wooseong Jeong and Kuk-Jin Yoon. Resolving token-space gradient conflicts: Token space manipulation for transformer-based multi-task learning. In Proceedings of the IEEE/CVF International Conference on Computer Vi-sion , pages 2887–2897, 2025. [37] Wooseong Jeong and Kuk-Jin Yoon. Selective task group updates for multi-task optimization. In The Thirteenth International Conference on Learning Representations ,2025. [38] Wooseong Jeong, Jegyeong Cho, Youngho Yoon, and Kuk-Jin Yoon. Synchronizing task behavior: Aligning multi-ple tasks during test-time training. In Proceedings of the IEEE/CVF International Conference on Computer Vision ,pages 24340–24350, 2025. 1 [39] Ruochen Jin, Bojian Hou, Jiancong Xiao, Weijie Su, and Li Shen. Fine-tuning linear layers only is a simple yet effective way for task arithmetic. arXiv preprint arXiv:2407.07089 ,2024. 1 [40] Xisen Jin, Xiang Ren, Daniel Preotiuc-Pietro, and Pengxi-ang Cheng. Dataless knowledge fusion by merging weights of language models. arXiv preprint arXiv:2212.09849 ,2022. 2, 5, 6 [41] Ege Kesim and Selahattin Serdar Helli. Multi lora meets vision: Merging multiple adapters to create a multi task model. arXiv preprint arXiv:2411.14064 , 2024. 2 [42] Tushar Khot, Ashish Sabharwal, and Peter Clark. Scitail: A textual entailment dataset from science question answer-ing. In Proceedings of the AAAI conference on artificial intelligence , 2018. 2 [43] Jonathan Krause, Michael Stark, Jia Deng, and Li Fei-Fei. 3d object representations for fine-grained categorization. In 
+
+Proceedings of the IEEE international conference on com-puter vision workshops , pages 554–561, 2013. 2 [44] Yann LeCun. The mnist database of handwritten digits. 
+
+http://yann. lecun. com/exdb/mnist/ , 1998. 2, 4 [45] Giwon Lee, Wooseong Jeong, Daehee Park, Jaewoo Jeong, and Kuk-Jin Yoon. Interaction-merged motion plan-ning: Effectively leveraging diverse motion datasets for robust planning. In Proceedings of the IEEE/CVF Inter-national Conference on Computer Vision , pages 28610– 28621, 2025. 2 [46] Sanwoo Lee, Jiahao Liu, Qifan Wang, Jingang Wang, Xun-liang Cai, and Yunfang Wu. Dynamic fisher-weighted model merging via bayesian optimization. arXiv preprint arXiv:2504.18992 , 2025. 1 [47] Dengchun Li, Yingzi Ma, Naizheng Wang, Zhengmao Ye, Zhiyuan Cheng, Yinghao Tang, Yan Zhang, Lei Duan, Jie Zuo, Cal Yang, et al. Mixlora: Enhancing large lan-guage models fine-tuning with lora-based mixture of ex-perts. arXiv preprint arXiv:2404.15159 , 2024. 2 [48] Mengqi Liao, Wei Chen, Junfeng Shen, Shengnan Guo, and Huaiyu Wan. Hmora: Making llms more effective with hi-erarchical mixture of lora experts. In The Thirteenth Inter-national Conference on Learning Representations , 2025. 2 [49] Xi Lin, Xiaoyuan Zhang, Zhiyuan Yang, Fei Liu, Zhenkun Wang, and Qingfu Zhang. Smooth tchebycheff scalar-ization for multi-objective optimization. arXiv preprint arXiv:2402.19078 , 2024. 2, 5 [50] Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee. Improved baselines with visual instruction tuning, 2023. 7 [51] Haotian Liu, Chunyuan Li, Qingyang Wu, and Yong Jae Lee. Visual instruction tuning, 2023. 7 
+
+10 [52] Shuqi Liu, Han Wu, Bowei He, Xiongwei Han, Mingxuan Yuan, and Linqi Song. Sens-merging: Sensitivity-guided parameter balancing for merging large language models. 
+
+arXiv preprint arXiv:2502.12420 , 2025. 1 [53] Tian Yu Liu, Aditya Golatkar, and Stefano Soatto. Tangent transformers for composition, privacy and removal. arXiv preprint arXiv:2307.08122 , 2023. 1 [54] Ilya Loshchilov and Frank Hutter. SGDR: Stochastic gradi-ent descent with warm restarts. In International Conference on Learning Representations , 2017. 3 [55] Ilya Loshchilov and Frank Hutter. Decoupled weight de-cay regularization. In International Conference on Learn-ing Representations , 2019. 6, 3, 7 [56] Pan Lu, Liang Qiu, Jiaqi Chen, Tony Xia, Yizhou Zhao, Wei Zhang, Zhou Yu, Xiaodan Liang, and Song-Chun Zhu. Iconqa: A new benchmark for abstract diagram understand-ing and visual language reasoning. In The 35th Conference on Neural Information Processing Systems (NeurIPS) Track on Datasets and Benchmarks , 2021. 7 [57] Pan Lu, Swaroop Mishra, Tanglin Xia, Liang Qiu, Kai-Wei Chang, Song-Chun Zhu, Oyvind Tafjord, Peter Clark, and Ashwin Kalyan. Learn to explain: Multimodal rea-soning via thought chains for science question answering. 
+
+Advances in Neural Information Processing Systems , 35: 2507–2521, 2022. 7 [58] Zhenyi Lu, Chenghao Fan, Wei Wei, Xiaoye Qu, Dangyang Chen, and Yu Cheng. Twin-merging: Dynamic integration of modular expertise in model merging. Advances in Neural Information Processing Systems , 37:78905–78935, 2024. 2 [59] Sourab Mangrulkar, Sylvain Gugger, Lysandre Debut, Younes Belkada, Sayak Paul, and Benjamin Bossan. PEFT: State-of-the-art parameter-efficient fine-tuning methods. 
+
+https : / / github . com / huggingface / peft ,2022. 5, 6, 7, 11, 12 [60] Daniel Marczak, Simone Magistri, Sebastian Cygert, Bartłomiej Twardowski, Andrew D Bagdanov, and Joost van de Weijer. No task left behind: Isotropic model merging with common and task-specific subspaces. arXiv preprint arXiv:2502.04959 , 2025. 2, 5, 6, 7, 4 [61] Marco Marelli, Luisa Bentivogli, Marco Baroni, Raf-faella Bernardi, Stefano Menini, and Roberto Zamparelli. Semeval-2014 task 1: Evaluation of compositional distri-butional semantic models on full sentences through seman-tic relatedness and textual entailment. In Proceedings of the 8th international workshop on semantic evaluation (Se-mEval 2014) , pages 1–8, 2014. 2 [62] Ahmed Masry, Do Xuan Long, Jia Qing Tan, Shafiq Joty, and Enamul Hoque. Chartqa: A benchmark for question answering about charts with visual and logical reasoning. 
+
+arXiv preprint arXiv:2203.10244 , 2022. 7 [63] Michael S Matena and Colin A Raffel. Merging models with fisher-weighted averaging. Advances in Neural Infor-mation Processing Systems , 35:17703–17716, 2022. 2 [64] Minesh Mathew, Dimosthenis Karatzas, and CV Jawahar. Docvqa: A dataset for vqa on document images. In Pro-ceedings of the IEEE/CVF winter conference on applica-tions of computer vision , pages 2200–2209, 2021. 7 [65] Kaisa Miettinen. Nonlinear multiobjective optimization .Springer Science & Business Media, 1999. 3 [66] Anshul Nasery, Jonathan Hayase, Pang Wei Koh, and Se-woong Oh. Pleas-merging models with permutations and least squares. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 30493–30502, 2025. 1 [67] Amin Heyrani Nobari, Kaveh Alimohammadi, Ali Arjo-mandBigdeli, Akash Srivastava, Faez Ahmed, and Navid Azizan. Activation-informed merging of large language models. arXiv preprint arXiv:2502.02421 , 2025. 1 [68] Guillermo Ortiz-Jimenez, Alessandro Favero, and Pascal Frossard. Task arithmetic in the tangent space: Improved editing of pre-trained models. Advances in Neural Infor-mation Processing Systems , 36, 2024. 1 [69] Aniello Panariello, Daniel Marczak, Simone Magistri, An-gelo Porrello, Bartłomiej Twardowski, Andrew D Bag-danov, Simone Calderara, and Joost van de Weijer. Ac-curate and efficient low-rank model merging in core space. 
+
+arXiv preprint arXiv:2509.17786 , 2025. 1 [70] Akshara Prabhakar, Yuanzhi Li, Karthik Narasimhan, Sham Kakade, Eran Malach, and Samy Jelassi. Lora soups: Merging loras for practical skill composition tasks. arXiv preprint arXiv:2410.13025 , 2024. 1 [71] Zihuan Qiu, Lei Wang, Yang Cao, Runtong Zhang, Bing Su, Yi Xu, Fanman Meng, Linfeng Xu, Qingbo Wu, and Hongliang Li. Null-space filtering for data-free contin-ual model merging: Preserving transparency, promoting fi-delity. arXiv preprint arXiv:2509.21413 , 2025. 2 [72] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learn-ing transferable visual models from natural language super-vision. In International conference on machine learning ,pages 8748–8763. PmLR, 2021. 1, 5, 3 [73] Olivier Roy and Martin Vetterli. The effective rank: A mea-sure of effective dimensionality. In 2007 15th European signal processing conference , pages 606–610. IEEE, 2007. 3[74] Olga Russakovsky, Jia Deng, Hao Su, Jonathan Krause, Sanjeev Satheesh, Sean Ma, Zhiheng Huang, Andrej Karpathy, Aditya Khosla, Michael Bernstein, Alexander C. Berg, and Li Fei-Fei. ImageNet Large Scale Visual Recog-nition Challenge. International Journal of Computer Vision (IJCV) , 115(3):211–252, 2015. 7 [75] Viraj Shah, Nataniel Ruiz, Forrester Cole, Erika Lu, Svet-lana Lazebnik, Yuanzhen Li, and Varun Jampani. Ziplora: Any subject in any style by effectively merging loras. In 
+
+European Conference on Computer Vision , pages 422–438. Springer, 2024. 2 [76] Li Shen, Anke Tang, Enneng Yang, Guibing Guo, Yong Luo, Lefei Zhang, Xiaochun Cao, Bo Du, and Dacheng Tao. Efficient and effective weight-ensembling mixture of experts for multi-task model merging. arXiv preprint arXiv:2410.21804 , 2024. 2 [77] Johannes Stallkamp, Marc Schlipsing, Jan Salmen, and Christian Igel. The german traffic sign recognition bench-mark: a multi-class classification competition. In The 2011 
+
+11 international joint conference on neural networks , pages 1453–1460. IEEE, 2011. 2 [78] George Stoica, Daniel Bolya, Jakob Bjorner, Pratik Ramesh, Taylor Hearn, and Judy Hoffman. Zipit! merging models from different tasks without training. arXiv preprint arXiv:2305.03053 , 2023. 2 [79] George Stoica, Pratik Ramesh, Boglarka Ecsedi, Leshem Choshen, and Judy Hoffman. Model merging with svd to tie the knots. In Proceedings of the International Conference on Learning Representations (ICLR) , 2025. 1, 2, 3, 5, 6, 7, 8, 4, 9, 11, 12 [80] Derek Tam, Mohit Bansal, and Colin Raffel. Merging by matching models in task parameter subspaces. arXiv preprint arXiv:2312.04339 , 2023. 2 [81] Anke Tang, Li Shen, Yong Luo, Yibing Zhan, Han Hu, Bo Du, Yixin Chen, and Dacheng Tao. Parameter efficient multi-task model fusion with partial linearization. arXiv preprint arXiv:2310.04742 , 2023. 1 [82] Anke Tang, Li Shen, Yong Luo, Shuai Xie, Han Hu, Lefei Zhang, Bo Du, and Dacheng Tao. Smile: Zero-shot sparse mixture of low-rank experts construction from pre-trained foundation models. arXiv preprint arXiv:2408.10174 ,2024. 2 [83] Anke Tang, Enneng Yang, Li Shen, Yong Luo, Han Hu, Bo Du, and Dacheng Tao. Merging models on the fly with-out retraining: A sequential approach to scalable continual model merging. arXiv preprint arXiv:2501.09522 , 2025. 2 [84] Dennis Tang, Prateek Yadav, Yi-Lin Sung, Jaehong Yoon, and Mohit Bansal. Lora merging with svd: Understanding interference and preserving performance. In ICML 2025 Workshop on Reliable and Responsible Foundation Models ,2025. 2, 5, 6, 7, 11, 12 [85] Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel Bowman. Glue: A multi-task benchmark and analysis platform for natural language un-derstanding. In Proceedings of the 2018 EMNLP Work-shop BlackboxNLP: Analyzing and Interpreting Neural Networks for NLP , pages 353–355, 2018. 2 [86] Dequan Wang, Evan Shelhamer, Shaoteng Liu, Bruno Olshausen, and Trevor Darrell. Tent: Fully test-time adaptation by entropy minimization. arXiv preprint arXiv:2006.10726 , 2020. 6 [87] Ke Wang, Nikolaos Dimitriadis, Alessandro Favero, Guillermo Ortiz-Jimenez, Francois Fleuret, and Pascal Frossard. Lines: Post-training layer scaling prevents for-getting and enhances model merging. arXiv preprint arXiv:2410.17146 , 2024. 2 [88] Ke Wang, Nikolaos Dimitriadis, Guillermo Ortiz-Jimenez, Franc ¸ois Fleuret, and Pascal Frossard. Localizing task in-formation for improved model merging and compression. 
+
+arXiv preprint arXiv:2405.07813 , 2024. 2 [89] Ke Wang, Yiming Qin, Nikolaos Dimitriadis, Alessandro Favero, and Pascal Frossard. Memoir: Lifelong model editing with minimal overwrite and informed retention for llms. In Advances in Neural Information Processing Sys-tems (NeurIPS) , 2025. 2 [90] Yongxian Wei, Runxi Cheng, Weike Jin, Enneng Yang, Li Shen, Lu Hou, Sinan Du, Chun Yuan, Xiaochun Cao, and Dacheng Tao. Unifying multimodal large language model capabilities and modalities via model merging. arXiv preprint arXiv:2505.19892 , 2025. 2 [91] Yongxian Wei, Anke Tang, Li Shen, Zixuan Hu, Chun Yuan, and Xiaochun Cao. Modeling multi-task model merging as adaptive projective gradient descent. In Forty-second International Conference on Machine Learning ,2025. 2 [92] Adina Williams, Nikita Nangia, and Samuel Bowman. Abroad-coverage challenge corpus for sentence understand-ing through inference. In Proceedings of the 2018 Confer-ence of the North American Chapter of the Association for Computational Linguistics: Human Language Technolo-gies, Volume 1 (Long Papers) , pages 1112–1122, 2018. 2 [93] Mitchell Wortsman, Gabriel Ilharco, Samir Ya Gadre, Re-becca Roelofs, Raphael Gontijo-Lopes, Ari S Morcos, Hongseok Namkoong, Ali Farhadi, Yair Carmon, Simon Kornblith, et al. Model soups: averaging weights of mul-tiple fine-tuned models improves accuracy without increas-ing inference time. In International conference on machine learning , pages 23965–23998. PMLR, 2022. 1 [94] Mitchell Wortsman, Gabriel Ilharco, Jong Wook Kim, Mike Li, Simon Kornblith, Rebecca Roelofs, Raphael Gon-tijo Lopes, Hannaneh Hajishirzi, Ali Farhadi, Hongseok Namkoong, et al. Robust fine-tuning of zero-shot models. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 7959–7971, 2022. 1 [95] Han Wu, Yuxuan Yao, Shuqi Liu, Zehua Liu, Xiao-jin Fu, Xiongwei Han, Xing Li, Hui-Ling Zhen, Tao Zhong, and Mingxuan Yuan. Unlocking efficient long-to-short llm reasoning with model merging. arXiv preprint arXiv:2503.20641 , 2025. 1 [96] Xun Wu, Shaohan Huang, and Furu Wei. Mixture of lora experts. arXiv preprint arXiv:2404.13628 , 2024. 2 [97] Jianxiong Xiao, James Hays, Krista A Ehinger, Aude Oliva, and Antonio Torralba. Sun database: Large-scale scene recognition from abbey to zoo. In 2010 IEEE computer society conference on computer vision and pattern recogni-tion , pages 3485–3492. IEEE, 2010. 2, 4 [98] Zhengqi Xu, Ke Yuan, Huiqiong Wang, Yong Wang, Mingli Song, and Jie Song. Training-free pretrained model merg-ing. In Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition , pages 5915–5925, 2024. 2 [99] Prateek Yadav, Derek Tam, Leshem Choshen, Colin A Raf-fel, and Mohit Bansal. Ties-merging: Resolving interfer-ence when merging models. Advances in Neural Informa-tion Processing Systems , 36:7093–7115, 2023. 1, 2, 3, 5, 6, 7, 8, 11, 12 [100] Kunda Yan, Min Zhang, Sen Cui, Qu Zikun, Bo Jiang, Feng Liu, and Changshui Zhang. CALM: Consensus-aware lo-calized merging for multi-task learning. In Forty-second International Conference on Machine Learning , 2025. 13 [101] Enneng Yang, Zhenyi Wang, Li Shen, Shiwei Liu, Guib-ing Guo, Xingwei Wang, and Dacheng Tao. Adamerg-ing: Adaptive model merging for multi-task learning. arXiv preprint arXiv:2310.02575 , 2023. 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13 
+
+12 [102] Enneng Yang, Li Shen, Guibing Guo, Xingwei Wang, Xi-aochun Cao, Jie Zhang, and Dacheng Tao. Model merging in llms, mllms, and beyond: Methods, theories, applications and opportunities. arXiv preprint arXiv:2408.07666 , 2024. 1, 2 [103] Enneng Yang, Li Shen, Zhenyi Wang, Guibing Guo, Xiao-jun Chen, Xingwei Wang, and Dacheng Tao. Representa-tion surgery for multi-task model merging. arXiv preprint arXiv:2402.02705 , 2024. 2 [104] Enneng Yang, Li Shen, Zhenyi Wang, Guibing Guo, Xing-wei Wang, Xiaocun Cao, Jie Zhang, and Dacheng Tao. Surgeryv2: Bridging the gap between model merging and multi-task learning with deep representation surgery. arXiv preprint arXiv:2410.14389 , 2024. 2 [105] Enneng Yang, Anke Tang, Li Shen, Guibing Guo, Xing-wei Wang, Xiaochun Cao, and Jie Zhang. Continual model merging without data: Dual projections for balancing sta-bility and plasticity. In The Thirty-ninth Annual Conference on Neural Information Processing Systems , 2025. 2 [106] Yang Yang, Wen Wang, Liang Peng, Chaotian Song, Yao Chen, Hengjia Li, Xiaolong Yang, Qinglin Lu, Deng Cai, Boxi Wu, et al. Lora-composer: Leveraging low-rank adap-tation for multi-concept customization in training-free dif-fusion models. arXiv preprint arXiv:2403.11627 , 2024. 2 [107] Le Yu, Bowen Yu, Haiyang Yu, Fei Huang, and Yongbin Li. Language models are super mario: Absorbing abilities from homologous models as a free lunch. In Forty-first In-ternational Conference on Machine Learning , 2024. 1, 2, 5, 6, 7, 3, 11, 12 [108] Netzer Yuval. Reading digits in natural images with unsu-pervised feature learning. In Proceedings of the NIPS Work-shop on Deep Learning and Unsupervised Feature Learn-ing , 2011. 2, 4 [109] Fanhu Zeng, Haiyang Guo, Fei Zhu, Li Shen, and Hao Tang. Parameter efficient merging for multimodal large lan-guage models with complementary parameter adaptation. 
+
+arXiv preprint arXiv:2502.17159 , 2025. 5, 6, 7, 2, 4 [110] Binchi Zhang, Zaiyi Zheng, Zhengzhang Chen, and Jun-dong Li. Beyond the permutation symmetry of transform-ers: The role of rotation for model fusion. arXiv preprint arXiv:2502.00264 , 2025. 2 [111] Haobo Zhang and Jiayu Zhou. Unraveling lora interference: Orthogonal subspaces for robust model merging. arXiv preprint arXiv:2505.22934 , 2025. 1 [112] Jinghan Zhang, Junteng Liu, Junxian He, et al. Compos-ing parameter-efficient modules with arithmetic operation. 
+
+Advances in Neural Information Processing Systems , 36: 12589–12610, 2023. 1 [113] Juzheng Zhang, Jiacheng You, Ashwinee Panda, and Tom Goldstein. Lori: Reducing cross-task interference in multi-task low-rank adaptation. arXiv preprint arXiv:2504.07448 ,2025. 1 [114] Ziyu Zhao, Tao Shen, Didi Zhu, Zexi Li, Jing Su, Xuwu Wang, Kun Kuang, and Fei Wu. Merging loras like playing lego: Pushing the modularity of lora to extremes through rank-wise clustering. In Proceedings of the International Conference on Learning Representations (ICLR) , 2025. 1, 2, 5, 6, 7, 8, 3, 11, 12 [115] Shenghe Zheng and Hongzhi Wang. Free-merging: Fourier transform for efficient model merging. In Proceedings of the IEEE/CVF International Conference on Computer Vi-sion , pages 3863–3873, 2025. 5, 6, 7, 4 [116] Shenghe Zheng, Hongzhi Wang, Chenyu Huang, Xiaohui Wang, Tao Chen, Jiayuan Fan, Shuyue Hu, and Peng Ye. Decouple and orthogonalize: A data-free framework for lora merging. arXiv preprint arXiv:2505.15875 , 2025. 1 [117] Ming Zhong, Yelong Shen, Shuohang Wang, Yadong Lu, Yizhu Jiao, Siru Ouyang, Donghan Yu, Jiawei Han, and Weizhu Chen. Multi-lora composition for image genera-tion. arXiv preprint arXiv:2402.16843 , 2024. 2 [118] Yuyan Zhou, Liang Song, Bingning Wang, and Weipeng Chen. Metagpt: Merging large language models us-ing model exclusive task arithmetic. arXiv preprint arXiv:2406.11385 , 2024. 2 [119] Didi Zhu, Yibing Song, Tao Shen, Ziyu Zhao, Jinluan Yang, Min Zhang, and Chao Wu. REMEDY: Recipe merging dynamics in large vision-language models. In The Thir-teenth International Conference on Learning Representa-tions , 2025. 2 [120] Shaobin Zhuang, Yiwei Guo, Yanbo Ding, Kunchang Li, Xinyuan Chen, Yaohui Wang, Fangyikang Wang, Ying Zhang, Chen Li, and Yali Wang. Timestep master: Asym-metrical mixture of timestep lora experts for versatile and efficient diffusion models in vision. arXiv preprint arXiv:2503.07416 , 2025. 2 [121] Zhan Zhuang, Xiequn Wang, Wei Li, Yulong Zhang, Qiushi Huang, Shuhao Chen, Xuehao Wang, Yanbin Wei, Yuhe Nie, Kede Ma, Yu Zhang, and Ying Wei. Come together, but not right now: A progressive strategy to boost low-rank adaptation. In Forty-second International Conference on Machine Learning , 2025. 1 [122] Xiandong Zou, Mingzhu Shen, Christos-Savvas Bouga-nis, and Yiren Zhao. Cached multi-lora composition for multi-concept image generation. arXiv preprint arXiv:2502.04923 , 2025. 2 
+
+13 Preference-Aligned LoRA Merging: Preserving Subspace Coverage and Addressing Directional Anisotropy 
+
+# Supplementary Material 
+
+# A. Proof of Proposition 1 
+
+Proposition 1 (Anisotropy Bounds) . Let σmax (J) and 
+
+σmin (J) denote the largest and smallest singular values of 
+
+J. Then, for any coefficient vector ϕ,
+
+σmin (J) ∥ϕ∥2 ≤ ∥ Jϕ ∥2 = ∥∆f ∥2 ≤ σmax (J) ∥ϕ∥2.
+
+(5) 
+
+When κ(J) = σmax (J)/σ min (J) is large, the map ϕ 7 →
+
+∆f is anisotropic , and equal-norm LoRA-direction updates need not yield proportional task-loss changes. Proof. Let J ∈ RN ×K be the restricted task-loss Jaco-bian with entries Ji,k = ⟨∇ fi(W ), Sk⟩, and take its SVD J = U ΣV ⊤, where U ∈ RN ×q and V ∈ RK×q
+
+have orthonormal columns ( U⊤U = V ⊤V = Iq ), Σ =diag( σ1, . . . , σ q ) with σ1 ≥ · · · ≥ σq > 0, and q =rank( J). For any coefficient vector ϕ ∈ RK , define 
+
+˜ϕ = V ⊤ϕ ∈ Rq . By orthogonal invariance of the Eu-clidean norm, 
+
+∥Jϕ ∥2 = ∥U ΣV ⊤ϕ∥2 = ∥ΣV ⊤ϕ∥2 = ∥Σ ˜ϕ∥2. (17) The second equality holds since multiplication by U pre-serves the ℓ2 norm: for any y ∈ Rq , ∥U y∥2 = ∥y∥2. Also, because V has orthonormal columns, ∥V ⊤ϕ∥2 ≤ ∥ ϕ∥2.Since Σ is diagonal, 
+
+∥Jϕ ∥22 = ∥Σ ˜ϕ∥22 =
+
+> q
+
+X
+
+> i=1
+
+σ2 
+
+> i
+
+˜ϕ 2 
+
+> i
+
+. (18) For the upper bound, use σi ≤ σmax (J) and ∥ ˜ϕ∥2 ≤ ∥ ϕ∥2
+
+to obtain 
+
+∥Jϕ ∥22 =
+
+> q
+
+X
+
+> i=1
+
+σ2 
+
+> i
+
+˜ϕ 2 
+
+> i
+
+≤ σmax (J)2
+
+> q
+
+X
+
+> i=1
+
+˜ϕ 2 
+
+> i
+
+≤ σmax (J)2∥ϕ∥22,
+
+(19) hence ∥Jϕ ∥2 ≤ σmax (J) ∥ϕ∥2.For the lower bound, decompose ϕ = ϕR + ϕN with 
+
+ϕR := V V ⊤ϕ ∈ range( V ) and ϕN := ( I − V V ⊤)ϕ ∈
+
+ker( J). Equivalently, ˜ϕ = ( ˜ϕ1, . . . , ˜ϕq ) are the coordinates of ϕR in the V -basis. Then 
+
+∥Jϕ ∥22 =
+
+> q
+
+X
+
+> i=1
+
+σ2 
+
+> i
+
+˜ϕ 2 
+
+> i
+
+≥ σmin (J)2
+
+> q
+
+X
+
+> i=1
+
+˜ϕ 2 
+
+> i
+
+= σmin (J)2∥ϕR∥22,
+
+(20) which implies ∥Jϕ ∥2 ≥ σmin (J) ∥ϕR∥2. If one restricts to the admissible subspace that excludes the nullspace (e.g., the LoRA span intersected with ker( J)⊥), then ϕN = 0 
+
+and ∥ϕR∥2 = ∥ϕ∥2, yielding 
+
+σmin (J) ∥ϕ∥2 ≤ ∥ Jϕ ∥2 ≤ σmax (J) ∥ϕ∥2.
+
+(Equivalently, interpret σmin (J) as the smallest nonzero 
+
+singular value on the feasible subspace.) 
+
+# B. Additional Related Work 
+
+Pre-Merging and Additional Model Merging. Pre-merging studies [81, 111, 113, 121] clarify and formalize the linear-composition behavior that Task Arithmetic relies on: they analyze when parameter-space combinations ap-proximate joint training via partial or tangent linearization [39, 53, 68, 81] and connect these to NTK-style local lin-earization [34]. Building on this foundation, recent formu-lations explore optimal-transport fusion for Transformers [33], cycle-consistent multi-model merging [11], deriving layer-wise coefficients from model-internal statistics [31], permutation with least-squares alignment [66], constructing merging recipes from collections of fine-tuned models with diverse hyperparameters [93] with early evidence on CLIP that averaging robustness-oriented fine-tunes can improve zero-shot robustness [94], evolutionary search for recipe discovery [2], sparsity- and magnitude-aware sampling to reduce interference [15], and dynamic Fisher weighting guided by Bayesian optimization [46]. AIM [67] uses the information from the activation space of LLMs for merging. Another line of work leverages intermediate activations dur-ing inference or training and uses feature responses in spe-cific layers to guide the merging process [52, 67, 95]. 
+
+Additional LoRA-targeted Merging. Within LoRA-targeted methods, a training-free framework decouples di-rection and scale and orthogonalizes adapter directions be-fore merging [116]. Zhang et al. [112] compose PEFT mod-ules via weight-space arithmetic, enabling flexible transfer without extra training. Zhang and Zhou [111] enforce or-thogonal LoRA subspaces pre-finetuning, reducing interfer-ence and preserving merge performance. Liu et al. [52] ad-justs task and layer-wise merging coefficients using activa-tion/gradient sensitivity and cross-task transferability. Sev-eral methods directly exploit low-rank structure for merg-ing [23, 69, 70]. In particular, Panariello et al. [69] propose a core space that can be efficiently combined with existing merging baselines. 1Model Merging in LLMs and VLMs. More recent work on model merging directly targets LLMs and VLMs and proposes strategies tailored to these architectures [6, 18, 58, 90, 109, 118, 119]. In particular, RobustMerge [109] in-troduces a merging method for MLLMs that exploits di-rectional robustness in a low-rank space. Zhang et al. [110] leverage the rotation symmetry of self-attention lay-ers, which substantially enlarges the equivalence set of Transformer models compared to permutation-based sym-metries. 
+
+Model Merging for Multi-Task and Continual Learning. 
+
+Another line of work explicitly connects model merging with conventional multi-task learning [45, 76, 91, 103, 104], viewing merging as a mechanism for parameter sharing and representation consolidation across tasks. A complemen-tary set of studies aims to localize task-specific informa-tion in the parameters or to quantify interference within lin-ear layers [9, 14, 80, 88], while Marczak et al. [60] fur-ther decompose the parameter space into shared and task-specific subspaces. MuDSC [98] also explores heteroge-neous settings with diverse dense prediction tasks for evalu-ating merging performance. However, it is not directly com-parable to our setting because it allows branch-like architec-tures such as ZipIt [78]. Model merging has also been stud-ied in continual learning scenarios [20, 71, 83, 87, 89, 105], where merging is used to mitigate catastrophic forgetting and to accumulate knowledge across tasks over time. 
+
+LoRA Composition. Dynamic routing or mixture-of-experts compositions learn to combine multiple LoRAs at inference time [47, 48, 82, 96], and few-shot dynamic com-position improves cross-task transfer [28, 30]. In vision, multi-LoRA merging for multi-task recognition demon-strates modularity [41]. In diffusion, multi-LoRA compo-sition and subject-style concept mixing further highlight modularity [22, 75, 106, 117, 120, 122]. These methods dynamically assign or route adapters per input or task in an MoE-like fashion, which alters the inference-time architec-ture and falls outside our scope. 
+
+# C. Experimental Settings 
+
+C.1. Datasets 
+
+C.1.1. Vision Benchmarks 
+
+Following Stoica et al. [79], we adopt a ViT-B/32 backbone pre-trained on ImageNet-21k [16], fine-tuned with LoRA rank 16. Evaluation is conducted on eight standard image-classification datasets. Brief summaries are provided below. 
+
+SUN397 [97]. Large-scale scene recognition dataset with 397 categories and 108,754 images, each class having at least 100 samples. 
+
+Cars [43]. Fine-grained car recognition covering 196 cate-gories with 16,185 images, evenly split into train and test. 
+
+RESISC45 [8]. Remote sensing benchmark with 45 scene classes and 31,500 images, about 700 per class. 
+
+EuroSAT [27]. Satellite image classification dataset of 27,000 images in 10 land-use categories across diverse re-gions. 
+
+SVHN [108]. Street View House Numbers dataset with 10 digit classes, 73,257 train images, 26,032 test images, and 500k+ extra samples. 
+
+GTSRB [77]. Traffic sign recognition dataset with 43 cate-gories and over 50,000 labeled images. 
+
+MNIST [44]. Classic handwritten digit dataset of 70,000 grayscale images evenly distributed across 10 classes (60k train / 10k test). 
+
+DTD [10]. Texture classification dataset with 47 attributes and 5,640 images, about 120 per class. 
+
+C.1.2. Language Benchmarks 
+
+In addition to the main benchmarks used in the paper, we evaluate our method on six classification datasets to assess its applicability to large language models. These datasets are used in conjunction with the LLaMA-3 8B model. Be-low, we briefly summarize each dataset. 
+
+QNLI [85]. A question-answering dataset reformulated as sentence-pair classification. Each example is a (question, sentence) pair, and the label indicates whether the sentence contains the answer to the question (binary). 
+
+MNLI [92]. A large, crowdsourced collection of sentence pairs annotated for natural language inference. Given a premise and a hypothesis, the task is to predict one of three labels: entailment , contradiction , or neutral (three-class). 
+
+SNLI [4]. A corpus of ∼570k human-written sentence pairs labeled for entailment , contradiction , or neutral , supporting the standard NLI task (three-class). 
+
+RTE [3, 12, 24, 26]. A suite of textual entailment datasets compiled from the RTE1, RTE2, RTE3, and RTE5 chal-lenges. Examples are drawn from news and Wikipedia. In the GLUE formulation, all RTE sets are converted to binary classification by collapsing neutral and contradiction into 
+
+not-entailment for consistency. 
+
+SICK [61]. A dataset of around 10k sentence pairs built from image and video captions. Each pair is labeled for semantic relatedness (1-5 scale) and for textual entailment with three classes: entailment , contradiction , and neutral .It is widely used for evaluating compositional semantics, entailment, and similarity in a unified setting. 
+
+SciTail [42]. An entailment dataset derived from multiple-choice science exams and web sentences. Each (premise, hypothesis) pair is labeled as entails or neutral (binary). The dataset contains 27,026 examples (10,101 entails and 16,925 neutral ). 2(a) Query (b) Key        
+
+> (c) Value (d) Output
+> Figure 5. Effective Rank across layers for each module. Higher curves indicate broader subspace coverage. The gap between ∆Wstack
+> and Rank-1 stack reflects merge-induced collapse.
+
+C.2. Training Details 
+
+For the vision tasks, we fine-tuned CLIP [72] with a ViT-B/32 backbone. All models were optimized using AdamW [55] with a learning rate of 3e-4 and a cosine learn-ing rate scheduler [54] with a weight decay of 1e-4. For sequence classification, we fine-tuned LLaMA-3 [19] with 8B parameters, following the setup of [79]. Op-timization used AdamW with a learning rate of 3e-5 and a linear scheduler. A linear classification head with three out-puts was added for natural language inference (entailment, contradiction, neutral), and in binary settings predictions for the unused class were disregarded. To enable efficient adaptation, we applied LoRA [29] to both CLIP and LLaMA. Specifically, low-rank adapters were attached to the query, key, value, and output projec-tion matrices of each transformer block. Unless otherwise stated, the default LoRA hyperparameters were: rank = 16, 
+
+α = 16, and dropout = 0.1. 
+
+C.3. Implementation Details 
+
+In this paper, we compare our approach against ten baselines, following the experimental protocols reported in their original works. For TA [32], we tune the scaling coefficient of task vectors across the range of 
+
+[0 .1, 0.2, . . . 1.0] . For TIES [99] and DARE-TIES [107], both the scaling coefficient λ and pruning coefficient η
+
+were selected via grid search. Specifically, λ was var-ied over [0 .8, 0.9, . . . , 1.8] , while η was explored over 
+
+[0 .1, 0.2, . . . , 0.9] . For AdaMerging [101], all coefficients 
+
+{λlk}N,L n=1 ,l =1 (where N is the number of tasks and L the number of layers) are initialized to 0.3 before optimization with the entropy surrogate. For KnOTS [79], we evalu-ate two variants: KnOTS-TIES and KnOTS-DARE-TIES, which combine KnOTS with TIES [99] and DARE [107], respectively. For LoRA-LEGO [114], we reimplement the algorithm following the original paper. We apply k-means clustering to LoRA Minimal Semantic Units (MSUs), where each MSU u = [a, b ] consists of a row a from the LoRA down-projection matrix A and the corresponding 3(a) q proj (b) k proj (c) v proj (d) out proj                                    
+
+> Figure 6. Condition Number Anisotropy κ(RAW Basis). Layer-wise condition number κ(ρ)per module under the non-orthogonal LoRA basis (RAW). Larger κindicates stronger within-preference directional concentration of loss sensitivity. (Here, ρ1uniformly weights all tasks, whereas ρ2assigns all weight to a single task (one-hot).)
+> (a) q proj (b) k proj (c) v proj (d) out proj
+> Figure 7. Condition Number Anisotropy κ(SVD Basis). Layer-wise condition number κ(ρ)per module under the orthogonal LoRA basis (SVD). Larger κindicates stronger within-preference directional concentration of loss sensitivity. (Here, ρ1uniformly weights all tasks, whereas ρ2assigns all weight to a single task (one-hot).)
+
+column b from the up-projection matrix B. We experiment with cluster sizes k ∈ { 8, 16 , 32 , 64 , 128 }, and reproduce the dual scaling strategies: parameter reweighting and out-put reweighting. Parameter reweighting rescales each clus-ter centroid μ to match the average norm of its members, 
+
+μ′ =  
+
+> 1
+> p
+> Ppi=1 ∥si∥∥μ∥
+
+μ, compensating for the reduced norm af-ter merging, while output reweighting scales the merged LoRA by √r√k (with r the original LoRA rank and k the merged rank) to stabilize variance. We evaluate every k and both scaling strategies, reporting the best performance. We further include the LoRA-aware RobustMerge [109] and strong vanilla-merging methods EMR-Merging [31], FR-Merging [115], and Iso-CTS [60], and report their results in Sec. F. 
+
+C.4. Per-Task and Joint-Task Evaluation 
+
+In addition to the standard per-task benchmark, we also adopt the “joint-task” evaluation introduced by Stoica et al. [79]. Unlike the per-task regime, where each dataset is treated independently, the joint-task aggregates the inputs and labels from all eight vision benchmarks into a sin-gle evaluation pool. After combining all label sets, dupli-cate classes are removed (for example, MNIST [44] and SVHN [108] share the same digit categories), resulting in 748 unique labels across the combined benchmark. This setup is particularly demanding because models must not only generalize within a task, but also discriminate among labels that appear across different datasets. In some cases, labels are semantically close or hierarchical, such as “islet” in SUN397 [97] and “island” in RESISC45 [8], which in-creases the difficulty of classification. To account for such ambiguity, evaluation is reported using Hits@ k metrics, where Hits@1 corresponds to top-1 accuracy and higher 
+
+k values allow partial credit when the correct label ap-pears among the top-k predictions. Joint-task protocol serves as an important benchmark for assessing the gener-ality of merged models, as it directly tests whether a single model can operate across the diverse label space of multiple datasets. 
+
+# D. Additional Analysis: Subspace Coverage 
+
+This appendix presents the exact formulations used in the main paper’s subspace-coverage analysis. We form all stacks by vectorizing matrices and placing one vector per row. Let W0 ∈ Rd×m be the pre-trained weight. For task i ∈ { 1, . . . , N } with LoRA rank ri, write ∆Wi =Pri 
+
+> j=1
+
+bij a⊤ 
+
+> ij
+
+with bij ∈ Rd and aij ∈ Rm. Let vec( ·) : 
+
+Rd×m → Rdm denote matrix vectorization. For any ma-trix X, let {σk}RX 
+
+> k=1
+
+be its nonzero singular values with 4(a) q proj (b) k proj    
+
+> (c) v proj (d) out proj
+
+Figure 8. Layer-wise Directional-Sensitivity Spectra (RAW vs. SVD). For each module and layer, we form the task-direction sensitivity matrix with entries Ji,k = ⟨∇ fi(W ), S k ⟩ and plot the scree curve of its singular values as energy fractions σ2 
+
+> k
+
+/P 
+
+> j
+
+σ2 
+
+> j
+
+versus component index k. “RAW” stacks rank-1 LoRA factors directly, while “SVD” uses a shared orthonormal basis. The two spectra are overlaid in each panel. A larger leading mass indicates stronger concentration of sensitivity into a few modes, whereas flatter spectra indicate a more distributed use of LoRA directions. 
+
+RX = rank( X) and define 
+
+pk = σ2
+
+> k
+
+PRX 
+
+> j=1
+
+σ2
+
+> j
+
+, erank( X) = exp 
+
+
+
+−
+
+> RX
+
+X
+
+> k=1
+
+pk log pk
+
+
+
+.
+
+The following entries are used in our analysis. For each entity, we define the stacked matrix and report its subspace coverage via effective rank. • Per-task sum — compute coverage per task and then ag-gregate across tasks: 
+
+Xi =
+
+
+
+vec  bi1a⊤
+
+> i1
+
+
+
+...
+
+vec  bir i a⊤
+
+> ir i
+
+ ∈ Rri×dm ,
+
+PerTaskSum = 
+
+> N
+
+X
+
+> i=1
+
+erank( Xi).
+
+• ∆W stack (LoRA-agnostic) — coverage of task updates when the LoRA rank-1 structure is ignored. We stack the task updates and use erank( Xagnostic ) with 
+
+Xagnostic =
+
+
+
+vec  ∆W1
+
+
+
+...
+
+vec  ∆WN
+
+ ∈ RN ×dm ,
+
+• Rank-1 stack (LoRA-aware) — coverage when rank-1 directions from all adapters are retained. We stack all rank-1 directions and use erank( Xaware ) with 
+
+Xaware =
+
+
+
+vec  b11 a⊤
+
+> 11
+
+
+
+...
+
+vec  bN r N a⊤
+
+> N r N
+
+ ∈ R(P 
+
+> iri)×dm
+
+,
+
+5Other modules. Supplementary results in Fig. 5 show the same qualitative pattern across additional modules (e.g., At-tention and MLP layers). The ordering Per-task sum ≥
+
+Rank-1 stack (LoRA-aware) ≥ ∆W stack (LoRA-agnostic) 
+
+consistently holds, and the LoRA-aware stack retains roughly 60% ∼ 70% of the per-task sum. The gap between LoRA-aware and LoRA-agnostic reflects subspace collapse under interpolation-based merging. 
+
+# E. Additional Analysis: Anisotropy 
+
+Within-Preference Anisotropy. We measure how un-evenly a single preference ρ ∈ ∆N −1 concentrates loss sensitivity onto LoRA directions. Let g(ρ; W ) =
+
+PNi=1 ρi ∇fi(W ) be the scalarized gradient at parameters 
+
+W obtained by averaging task LoRA updates and then scal-ing by 0.3 (as Task Arithmetic [32]). Given a basis of LoRA directions {Sk}Kk=1 (either the RAW stack of rank-1 fac-tors or the shared SVD-orthonormal basis), define the di-rectional sensitivities with condition-number . Larger κ in-dicates stronger within-preference concentration of sensitiv-ity onto a few directions (greater anisotropy), while smaller 
+
+κ indicates a more balanced use of the LoRA subspace. We report layer-wise κ(ρ; W ) for each module ( q proj ,
+
+k proj , v proj , out proj ) under both RAW and SVD bases in Fig. 6 and Fig. 7. Here, ρ1 uniformly weights all tasks, whereas ρ2 assigns all weight to a single task (one-hot). Figure 8 compares, for each module and layer, the singular-value energy distribution of the task-direction sen-sitivity matrix under the RAW (rank-1 factor stack) and SVD (shared orthonormal) bases. Each curve shows the energy fraction σ2
+
+> k
+
+/ P 
+
+> j
+
+σ2 
+
+> j
+
+versus component index k. Alarger leading mass indicates stronger anisotropy with sen-sitivity concentrated in a few directions, while flatter curves indicate a more balanced use of the LoRA subspace. 
+
+Directional-Sensitivity Misalignment in the SVD Basis. 
+
+Following Sec. 3.3, we conduct the same analysis with di-rectional sensitivities projected onto the rank-1 LoRA direc-tions obtained by SVD orthogonalization. We then compute a misalignment index ξ(ρ1, ρ2) between the uniform and one-hot preferences across the LoRA layers. As shown in Fig. 9, the resulting heatmap closely mirrors the raw-basis result in Fig. 2: substantial layer- and module-wise mis-alignment persists, indicating preference-dependent sensi-tive directions that remain even with SVD basis. 
+
+# F. Additional Results 
+
+F.1. Extended Analysis of Baseline Comparisons 
+
+In this section, we provide a more detailed analysis of the baseline comparisons presented in the main paper. We elab-orate on the per-task performance metrics across both vision    
+
+> Figure 9. Directional-sensitivity misalignment ξ(ρ1, ρ 2)in the SVD basis.
+
+and natural language inference (NLI) domains, offering an extended examination of the behavior of recent vanilla and LoRA-aware merging methods. 
+
+Per-Task Evaluation across Vision Tasks. For the eight image-classification benchmarks, Tab. 1 reports both the ab-solute per-task accuracies of the fine-tuned LoRA check-points and the normalized accuracies of the merged models. Strong vanilla merging methods such as Iso-CTS [60] reach up to 73.5% of the fine-tuned performance on average, but still lag behind the fine-tuned baselines and show large variance across datasets. Among LoRA-aware approaches, KnOTS-TIES [79] provides the strongest baseline, whereas RobustMerge [109] yields noticeably weaker average per-formance and smaller gains, indicating that its robustness benefits are limited in this setting. On top of these baselines, TARA-Variant A and TARA-Variant B further improve the average normalized accuracy to 74.0% and 76.3%, respec-tively, with consistent gains, showing that our method bet-ter preserves per-task performance when merging multiple checkpoints than more recent merging baselines. 
+
+Per-Task Evaluation on 6 NLI Tasks with LLMs. For the six NLI benchmarks, Tab. 2 shows a different picture from CLIP-based vision settings. Although Iso-C [60] per-forms strongly on vision benchmarks, in the NLI setting it produces highly unbalanced results: it attains more than 100% of the fine-tuned accuracy on SCITAIL, but suffers large drops on the other tasks, leading to the lowest av-erage among recent vanilla baselines. EMR-Merging [31] and FR-Merging [115], which are effective in conven-tional CLIP-based multi-task setups, also fail to transfer cleanly to LLMs and do not achieve competitive averages in this regime. LoRA-aware methods generally improve over vanilla merging, but RobustMerge offers only mod-est gains over simpler LoRA-aware baselines, with limited improvement in average normalized accuracy. In contrast, 6Table 5. To further address concerns regarding latency coming from gradient-based optimization, we experimented our method with LLaVA [50, 51] on merging six VQA experts.                                                         
+
+> Method Dataset ScienceQA VizWiz IconQA ImageNet ChartQA DocVQA Avg
+> Per-task absolute accuracies (%)
+> Finetuned 86.6 69.7 65.2 96.0 39.3 41.2 66.4
+> Per-task accuracies of merged models, normalized to finetuned (%)
+> TA [32] 81.6 71.3 57.2 43.6 66.6 79.5 66.6 TIES [99] 90.9 69.8 66.5 54.8 79.1 81.9 73.8 KnOTS-TIES [79] 87.4 77.0 60.5 44.8 76.5 85.6 72.0 AdaMerging [101] 87.9 81.0 66.3 47.0 74.5 76.1 72.1 TARA-Variant A 88.3 78.7 69.2 60.5 78.4 80.4 75.9 TARA-Variant B 89.1 79.2 69.5 59.6 78.3 80.0 76.0
+
+Table 6. Time and memory cost analysis. We group baselines into gradient-free and gradient-based methods and compare their time and memory cost on LLaMA and LLaVA. For gradient-free methods, we exclude the time spent on grid search for tuning the scaling factor on the validation set. We report only time per iteration for gradient-free methods and all times measured in minutes (min). TIES, KnOTS-TIES, and TARA-Variant B require additional computation to resolve parameter conflicts or perform SVD, so we report both their total time and, in parentheses, the separate contributions from preprocessing and either one validation run (for gradient-free methods) or one optimization run (for gradient-based methods). Memory usage is reported as VRAM in MiB.                              
+
+> LLaMA-3-8B LLaVA-1.5-7B Method Time (min) VRAM (MiB) Time (min) VRAM (MiB) TA [32] 3.6 16,150 10.6 14,814 TIES [99] 8.1 (4.5+3.6) 16,150 18.3 (7.7+10.6) 14,814 KnOTS-TIES [79] 10.8 (7.2+3.6) 16,150 24.3 (13.7+10.6) 14,814 AdaMerging [101] 8.0 19,918 13.9 19,788 TARA-Variant A 8.2 19,922 14.1 19,788 TARA-Variant B 15.2 (6.6+8.6) 20,040 27.7 (14.6+13.1) 20,662
+
+our TARA-Variant A and TARA-Variant B reach 79.7% and 80.3% average normalized accuracy, respectively, out-performing all vanilla and LoRA-aware baselines. These results indicate that methods tailored to CLIP-based mod-els do not automatically carry over to LLMs, while our ap-proach scales robustly from vision to language tasks. 
+
+F.2. Evaluation on 6 VLM Tasks 
+
+We further evaluate the scalability of our method on vision–language models (VLMs). Specifically, we use LLaVA [50, 51] on six benchmarks: ScienceQA [57], VizWiz [25], IconQA [56], ImageNet [74], ChartQA [62], and DocVQA [64]. We fine-tune each LoRA adapter with rank 16 applied to the query, key, value and output pro-jection modules of the attention layers, and train them for 500 iterations using AdamW [55] with a learning rate of 
+
+3 × 10 −5 and batch size 1. We compare against vanilla model merging baselines, Task Arithmetic (TA) [32] and TIES [99], as well as the LoRA-aware methods KnOTS-TIES [79] and AdaMerging [101]. On LLaVA, AdaMerg-ing underperforms LoRA-targeted merging methods such as KnOTS-TIES, indicating that its gains do not transfer well to the VLM regime. In contrast, both TARA-Variant A and TARA-Variant B achieve clear and stable improve-ments over all baselines across the six benchmarks, con-firming that our approach also works reliably in multimodal VLM scenarios. 
+
+F.3. Ablations and Time/Memory Analysis 
+
+Table 6 summarizes the empirical efficiency of each method in terms of time cost and peak VRAM. We apply rank-16 LoRA and merge six LLaMA and six LLaVA mod-els on a single NVIDIA GeForce RTX 3090. The upper panel reports gradient-free methods, and the lower panel re-ports gradient-based methods. A key observation is that, even when merging six fine-tuned LoRA checkpoints at foundation-model scale, the peak memory usage only in-creases by about 4–5 GB, so gradient-based merging does not incur prohibitive VRAM overhead. For time, we report the cost of a single validation eval-uation for gradient-free methods and the total optimization time for gradient-based methods. At first glance, gradient-free and gradient-based approaches have similar per-run time, but gradient-free methods usually require multiple validation runs to tune the scaling factor λ, which sub-stantially increases their effective cost. For example, tun-ing the Task Arithmetic scaling factor in Wmerge = W0 +
+
+λ PNi=1 ∆Wi with a grid from 0.3 to 0.7 in steps of 0.1 en-7tails five trials. If each evaluation takes 10 .6 minutes, the total time rises to about 53 minutes. Gradient-based methods do not require such grid search, so their total time can be more favorable. TARA has run-time comparable to AdaMerging but achieves higher accu-racy. Methods such as TIES, KnOTS-TIES, and TARA-Variant B incur additional preprocessing to compute an SVD over all task vectors. For these methods, we there-fore report both their total time and, in parentheses, a break-down into preprocessing time and either one validation run for the gradient-free setting or one optimization run for the gradient-based setting. For six LLaMA-3-8B models, for instance, TARA-Variant B spends 6.6 of its 15 .2 min-utes on SVD preprocessing and the remaining 8.6 min-utes on optimization, which is comparable to Variant A and AdaMerging. Even for large models such as LLaMA-3-8B and LLaVA-1.5-7B, a merge completes within 30 minutes, underscoring the practical applicability of TARA. To complement the analysis on foundation models, we also evaluate computational efficiency on relatively lightweight vision targets. Table 7 reports the time and memory costs using the ViT-B/32 backbone. Consistent with the trends observed in larger models, the runtimes for learning-free methods (e.g., KnOTS-TIES, LoRA-LEGO) represent only a single validation pass. Because practical deployment requires grid searches to find optimal scaling factors, their total operational time typically exceeds the single-run optimization time of TARA. Regarding mem-ory consumption, while a distinct gap in VRAM usage ex-ists between learning-free and gradient-based methods on the smaller ViT-B/32 architecture, this discrepancy dimin-ishes at the foundation-model scale (as seen with LLaMA-3). Since frozen base weights dominate the overall memory footprint of large models, the relative overhead introduced by gradient computation becomes less pronounced.             
+
+> Table 7. Computational Cost (ViT-B/32). Times denote a single validation pass (learning-free) vs. optimization (learning-based).
+> Method Time (min) VRAM (MiB)
+> KnOTS-TIES [79] 2.8 2262 LoRA-LEGO [114] 4.0 1416 AdaMerging [101] 4.1 4344 TARA (Variant A) 4.1 4344 TARA (Variant B) 5.1 5922
+
+F.4. Additional Ablation Studies 
+
+Ablation on Hyperparameter α. Figure 10 reports the effect of the STCH scaling hyperparameter α on normalized accuracy for both Variant A and Variant B. Performance is slightly degraded at very small scaling ( α = 0 .1), but quickly stabilizes once α reaches 0.5. For α ≥ 0.5, both variants show only minor fluctuations and maintain consis-tently strong performance across all benchmarks, indicating that our method is not sensitive to the exact choice of α in this range. Unless otherwise noted, we therefore fix α = 1 
+
+in all main experiments.               
+
+> Figure 10. Ablation study of the hyperparameter α.Normal-ized accuracy is reported for two model variants across α∈{0.1,0.5,1.0,2.0,5.0}. Both Variant A and Variant B exhibit sta-ble performance over a wide range of αvalues, indicating that the method is not sensitive to this hyperparameter. Unless otherwise stated, we use α= 1 for all main experiments.
+
+Two-Task Pareto Fronts across Pairs. Figure 11 plots accuracy trade-offs for four task pairs on CLIP ViT-B/32. Sweeping the preference with TARA yields smooth Pareto fronts that are consistently dominant over AdaMerging, that is, TARA attains higher accuracy for the same preference across most of the preference range, especially in the bal-anced region where both tasks must be retained. Baseline mergers appear as isolated points and frequently lie below or off our front. We attribute this dominance to TARA ’s LoRA-aware design: it preserves subspace coverage, retain-ing useful low-rank directions across tasks, while reweight-ing anisotropic directions to mitigate interference, keeping the merged model competitive near each task-optimal end without collapsing in the middle. 
+
+Robustness under Preference Perturbations. Figure 12 tests robustness with 8 tasks by fixing the two focal-task weights to 0.125 each (total 0.25 ) and randomly choos-ing the other six weights so they are nonnegative and sum to 0.75 . Each scatter cloud shows 30 such samplings and the ellipses summarize their empirical covariance, with the mean marked by “ ×”. Across all pairs, TARA produces tighter ellipses, indicating lower variance under preference perturbations, while AdaMerging shows larger spread. We also applied both a linear weighted-sum objective and a smooth Tchebycheff objective to TARA and to AdaMerg-ing; the choice of objective yielded nearly identical ellipses and means. 8Figure 11. Two-Task Trade-Offs on CLIP ViT-B/32. Pairs shown from top-left to bottom-right: Cars-MNIST, DTD-RESISC45, EuroSAT-SUN397, GTSRB-SVHN. 
+
+Merging Models with LoRA Rank 16 on our Check-points. We complement the main-paper results (which use the KnOTS-released checkpoints [79]) with additional experiments on our own LoRA checkpoints to gauge ro-bustness across sources. Specifically, we fine-tune CLIP ViT-B/32 adapters with a learning rate different from that used by KnOTS, and then evaluate the same merging pro-tocols. Table 9 reports per-task absolute accuracies for the fine-tuned adapters (upper panel) and, for each merger, task-wise accuracies normalized to the corresponding fine-tuned baseline (lower panel). Table 11 reports generalization to unseen tasks on our checkpoints. The results are consistent with the main paper, indicating that the advantages of pre-serving subspace coverage and addressing anisotropy hold across different fine-tuning learning rates. A comparison of checkpoints is provided in Tab. 10. 
+
+Merging Models with LoRA Rank 4. LoRA is known to exhibit weaker cross-task alignment than full-rank fine-tuning, so LoRA-aware merging becomes especially im-portant at low ranks. Using our CLIP ViT-B/32 check-points fine-tuned with rank-4 adapters, we evaluate vanilla and LoRA-aware merging in Table 12. Vanilla methods (e.g., TIES) degrade substantially, LoRA-aware baselines (KnOTS-TIES, LoRA-LEGO) recover more accuracy, and TARA achieves the strongest results overall: Variant B (500 iters) attains the best average normalized accuracy at 90.5 %and leads on most datasets. These rank-4 outcomes mir-ror the trends at higher ranks and underscore the benefit of modeling subspace coverage and anisotropy in low-rank LoRA merging. 9Figure 12. Preference Sensitivity under Random Global Preferences. Pairs shown from top-left to bottom-right: Cars-MNIST, DTD-RESISC45, EuroSAT-SUN397, GTSRB-SVHN. 
+
+10 Table 8. Eight CLIP/ViT-B-32 Models Joint-Task Results. 
+
+Method Metric Joint-Task Performances (%) Cars DTD EuroSAT GTSRB MNIST RESISC45 SUN397 SVHN Avg TA [32] 
+
+Hits@1 60.7 40.7 15.3 38.8 31.8 59.7 61.9 29.2 43.5 
+
+Hits@3 84.9 63.7 23.0 66.1 48.4 83.6 83.9 50.1 65.2 
+
+Hits@5 92.0 74.0 31.0 77.9 55.7 90.2 89.9 61.6 74.0 TIES [99] 
+
+Hits@1 60.4 39.7 13.0 35.0 33.4 58.6 61.3 32.9 43.6 
+
+Hits@3 84.9 61.9 21.9 63.3 48.2 82.8 83.7 53.6 65.3 
+
+Hits@5 92.1 72.4 29.0 75.3 54.0 89.4 89.9 64.1 73.9 DARE-TIES [107] 
+
+Hits@1 60.8 39.3 12.8 33.7 34.3 57.5 60.4 35.5 44.0 
+
+Hits@3 85.3 61.4 18.1 63.6 50.2 82.3 82.6 57.8 66.4 
+
+Hits@5 92.6 73.0 20.9 74.6 55.7 89.0 89.1 69.5 75.1 AdaMerging [101] 
+
+Hits@1 58.7 37.9 18.1 36.7 51.6 57.4 63.1 61.6 48.1 
+
+Hits@3 83.1 59.5 56.9 63.6 71.0 81.3 84.8 85.1 73.2 
+
+Hits@5 91.0 70.5 72.7 75.9 80.7 89.1 90.8 92.8 83.0 KnOTS-TIES [79] 
+
+Hits@1 61.7 40.5 16.2 44.2 39.1 59.0 60.6 36.7 46.8 
+
+Hits@3 85.8 63.8 22.3 69.0 52.6 83.9 82.8 58.4 68.1 
+
+Hits@5 92.6 74.5 31.1 79.8 58.4 90.4 89.1 68.5 76.3 KnOTS -DARE-TIES [79] 
+
+Hits@1 60.4 40.3 15.9 41.9 34.6 58.4 60.4 34.8 45.2 
+
+Hits@3 85.0 63.5 21.1 68.4 50.0 83.8 82.4 56.5 66.9 
+
+Hits@5 92.2 74.5 26.6 78.9 55.9 90.4 88.9 67.4 75.3 LoRA-LEGO [114] 
+
+Hits@1 60.3 39.9 15.9 41.6 29.8 57.6 60.1 30.2 43.1 
+
+Hits@3 84.5 61.8 19.5 68.8 47.8 82.8 82.3 51.2 65.0 
+
+Hits@5 91.8 74.0 21.1 78.3 56.9 89.7 88.8 63.5 73.9 TARA-Variant A 
+
+Hits@1 60.8 39.5 15.2 39.9 65.2 59.0 63.2 65.7 51.1 
+
+Hits@3 84.8 60.8 58.0 67.0 80.7 82.6 85.2 87.8 75.9 
+
+Hits@5 92.2 71.8 74.9 78.2 86.4 89.9 91.0 95.0 84.9 TARA-Variant B 
+
+Hits@1 63.2 40.1 12.1 41.9 64.6 62.1 63.6 46.4 49.3 
+
+Hits@3 87.0 61.3 56.3 67.0 83.5 84.7 85.5 74.2 74.9 
+
+Hits@5 93.4 72.5 76.9 77.2 88.9 90.9 91.3 89.9 85.1 
+
+Table 9. Using our checkpoints. Per-task accuracy on eight image-classification benchmarks. We merge eight ViT-B/32 checkpoints, each finetuned with LoRA. The upper panel shows the per-task absolute accuracy of the finetuned baselines; the lower panel reports accuracy of merged models, normalized by their corresponding finetuned baseline (%). 
+
+Method Dataset Cars DTD EuroSAT GTSRB MNIST RESISC45 SUN397 SVHN Avg 
+
+Per-task absolute accuracies (%) 
+
+Finetuned 76.2 72.5 98.6 98.3 99.2 93.1 73.7 96.7 88.5 
+
+Per-task accuracies of merged models, normalized to finetuned (%) 
+
+Vanilla Merging 
+
+TA [32] 85.6 70.8 81.9 89.1 97.9 81.9 89.1 91.9 86.0 TIES [99] 72.2 61.2 64.7 66.6 90.0 70.0 86.1 73.7 73.1 DARE-TIES [107] 73.0 62.7 56.1 63.6 85.7 69.6 86.2 71.5 71.0 AdaMerging [101] 87.7 71.2 96.3 94.4 98.7 87.3 86.8 91.9 89.3 
+
+LoRA-aware Merging 
+
+SVD [84] 76.0 60.9 74.8 90.4 98.1 74.2 85.0 93.6 81.6 Linear [59] 74.9 67.3 68.4 67.6 91.7 72.9 86.7 75.3 75.6 KnOTS-TIES [79] 85.4 69.3 77.8 76.6 93.3 80.1 89.4 82.0 81.7 KnOTS-DARE-TIES [79] 84.1 68.7 77.9 78.6 94.4 80.1 89.8 83.8 82.2 LoRA-LEGO [114] 84.9 71.4 82.7 91.1 98.5 81.2 87.4 93.4 86.3 TARA-Variant A 87.2 72.5 96.5 95.7 99.0 87.0 88.0 93.7 89.9 TARA-Variant B 85.8 72.0 96.8 96.4 99.1 88.0 87.4 95.2 90.1 
+
+11 Table 10. Comparison between merging methods between our checkpoints and KnOTS checkpoints. 
+
+Method Dataset Cars DTD EuroSAT GTSRB MNIST RESISC45 SUN397 SVHN Avg 
+
+Per-task absolute accuracies (%) 
+
+Finetuned (KnOTS) 74.0 58.3 99.0 92.7 99.3 88.4 64.5 96.2 84.1 Finetuned (Ours) 76.2 72.5 98.6 98.3 99.2 93.1 73.7 96.7 88.5 
+
+Per-task accuracies of merged models, normalized to finetuned (%) 
+
+TA [32] (KnOTS) 82.0 73.6 48.8 42.1 53.1 71.5 97.5 41.2 63.7 TA [32] (Ours) 83.1 68.7 79.7 93.0 98.8 79.4 85.2 93.8 85.2 TARA-Variant A (KnOTS) 84.5 76.2 68.9 39.4 82.2 72.8 97.5 70.0 73.9 TARA-Variant A (Ours) 86.5 72.0 94.4 95.0 98.8 85.3 87.4 93.5 89.1 TARA-Variant B (KnOTS) 86.2 78.4 76.8 42.9 82.7 75.4 98.6 69.7 76.3 TARA-Variant B (Ours) 86.1 72.7 95.7 95.6 99.0 86.4 88.0 94.2 89.7 
+
+Table 11. Using our checkpoints. Generalization results on two unseen tasks when merging ViT-B/32 models trained on six tasks.                                                                                                                                                                                                         
+
+> Seen Tasks Unseen Tasks All Tasks Method Cars DTD GTSRB RESISC45 SUN397 SVHN Avg Acc EuroSAT MNIST Avg Acc Avg Acc
+> Per-task accuracies of merged models, normalized to finetuned (%)
+> TA [32] 85.6 73.0 94.7 82.4 88.4 95.0 86.5 47.3 78.1 62.7 80.6 TIES [99] 76.5 62.5 71.4 73.3 87.5 75.0 74.4 49.0 64.5 56.8 69.9 KnOTS-TIES [79] 85.0 69.4 83.9 81.1 89.4 84.8 82.3 56.6 73.4 65.0 78.0 KnOTS-DARE-TIES [79] 85.7 69.3 85.0 81.4 90.3 86.4 83.0 56.7 74.0 65.4 78.6 LoRA-LEGO [114] 85.2 72.9 94.9 82.3 88.3 94.8 86.4 46.9 77.8 62.4 80.4 AdaMerging [101] 87.1 73.8 93.4 91.2 88.4 96.2 88.4 52.2 83.1 67.7 83.2 TARA-Variant A 87.4 74.9 94.9 89.6 89.2 96.7 88.8 57.4 86.6 72.0 84.6 TARA-Variant B 87.2 74.7 95.4 89.4 89.3 96.7 88.8 63.4 87.7 75.5 85.5
+> Method Cars DTD EuroSAT GTSRB MNIST SUN397 Avg Acc RESISC45 SVHN Avg Acc Avg Acc
+> Per-task accuracies of merged models, normalized to finetuned (%)
+> TA [32] 87.2 75.6 86.4 95.6 98.4 90.6 89.0 60.4 61.6 61.0 82.0 TIES [99] 74.7 62.8 65.3 74.6 88.3 88.0 75.6 65.1 48.9 57.0 71.0 KnOTS-TIES [79] 86.7 70.8 80.8 83.3 94.1 90.4 84.3 67.5 57.2 62.4 78.8 KnOTS-DARE-TIES [79] 87.6 71.0 80.4 85.3 95.1 90.7 85.0 66.7 56.2 61.4 79.1 LoRA-LEGO [114] 87.0 75.3 86.0 95.9 98.5 90.2 88.8 60.0 61.5 60.8 81.8 AdaMerging [101] 89.7 74.7 96.7 95.0 99.4 90.4 91.0 60.1 63.7 61.9 83.7 TARA-Variant A 89.9 75.0 97.1 96.2 99.3 90.9 91.4 61.2 63.5 62.4 84.1
+> TARA-Variant B 89.7 74.9 97.4 96.4 99.2 91.0 91.4 60.7 58.6 59.7 83.5
+
+Table 12. Using our checkpoints with LoRA (Rank-4). Per-task accuracy on eight image-classification benchmarks. We merge eight ViT-B/32 checkpoints, each finetuned with LoRA. The upper panel shows the per-task absolute accuracy of the finetuned baselines; the lower panel reports accuracy of merged models, normalized by their corresponding finetuned baseline (%). 
+
+Method Dataset Cars DTD EuroSAT GTSRB MNIST RESISC45 SUN397 SVHN Avg 
+
+Per-task absolute accuracies (%) 
+
+Finetuned 72.1 70.2 98.4 98.1 99.2 93.3 73.4 96.7 87.7 
+
+Per-task accuracies of merged models, normalized to finetuned (%) 
+
+Vanilla Merging 
+
+TA [32] 87.4 76.2 74.0 78.1 98.1 83.7 89.7 92.3 84.9 TIE [99] 81.3 64.4 46.5 51.9 77.4 69.1 86.8 64.1 67.7 DARE-TIES [107] 81.2 65.4 50.9 48.4 76.3 69.8 86.7 63.5 67.8 AdaMerging [101] 87.9 75.1 94.7 92.0 98.2 86.9 89.5 91.1 89.4 
+
+LoRA-aware Merging 
+
+SVD [84] 80.5 62.7 40.6 73.7 94.4 69.3 87.3 92.4 75.1 Linear [59] 44.0 25.6 12.4 37.8 71.5 23.3 44.2 51.7 38.8 KnOTS-TIES [79] 88.2 72.2 72.5 62.3 89.7 79.3 89.5 77.0 78.8 KnOTS-DARE-TIES [79] 87.7 73.0 73.4 65.0 90.4 79.9 89.5 78.8 79.7 LoRA-LEGO [114] 88.2 75.8 74.8 76.9 97.5 83.8 90.4 91.5 84.8 TARA-Variant A 88.7 76.4 94.9 92.1 98.3 86.8 90.0 92.0 89.9 TARA-Variant B 89.8 76.7 94.6 92.8 98.4 88.0 90.1 93.2 90.5 
+
+12 Ablation Study on LoRA Rank. We evaluate the impact of varying LoRA ranks r on the merging performance using the ViT-B/32 backbone. Table 13 presents the absolute and normalized accuracy across different rank configurations. TARA achieves higher accuracy than the baselines across all evaluated ranks. Notably, in the ‘Full’ setting, where the LoRA rank matches the ViT embedding dimension to emulate full-parameter fine-tuning, TARA does not simply converge to the FFT merging solution, rather, it maintains a distinct performance margin. 
+
+Table 13. Absolute (Normalized) Accuracy across LoRA Ranks.                     
+
+> Method r=4 r=16 r=64 r=256 Full
+> TA [32] 71.9(82.9) 76.2(86.2) 77.9(86.2) 77.1(85.3) 72.0(80.8) Adamerging [101] 76.3(87.2) 78.7(88.5) 80.2(88.7) 79.8(88.6) 79.1(88.2) TARA 77.5(88.8) 80.5(90.6) 81.9(90.5) 80.9(89.7) 80.5(89.5)
+
+Efficiency Analysis with Recent Baselines To assess computational efficiency, we compare TARA against re-cent gradient-based merging methods, CALM [100] and FW-Merging [5], using the CLIP-ViT-B/32 backbone. Ta-ble 14 reports the average accuracy, runtime, and peak memory (VRAM) usage. The results indicate that TARA requires significantly less runtime and memory overhead while maintaining competitive accuracy compared to other gradient-based approaches. 
+
+Table 14. Comparison with Recent Baselines.                    
+
+> Method Adamerging [101] CALM [100] FW-Merging [5] TARA-variant B
+> Avg. Acc. 78.7 80.0 77.9 80.5 Time (min) 4.1 20.0 13.4 5.1 VRAM (MiB) 4344 8066 7542 5922
+
+Extended Evaluation on Vision Benchmarks. To verify the scalability of our approach, we extend the evaluation to different model scales (ViT-B/32 and ViT-L/14) and varying numbers of tasks (8, 14, and 20) following settings similar to those in FW-Merging [5]. As detailed in Tab. 15, TARA consistently demonstrates comparable or superior absolute and normalized accuracy across these configurations rela-tive to recent baselines. This performance gap is partic-ularly evident in large-scale settings, such as merging 20 tasks with the ViT-L/14 backbone. 
+
+Table 15. Absolute (Normalized) accuracy on vision benchmark.                                        
+
+> Backbone (# Tasks) TA [32] AdaMer. [101] CALM [100] FW-Mer. [5] TARA
+> ViT-B/32 (8) 76.2(86.2) 78.7(88.5) 80.0(90.6) 77.9(87.6) 80.5(90.6) ViT-B/32 (14) 73.6(83.6) 75.0(84.8) 74.7(84.6) 75.4(85.2) 75.4(85.2) ViT-B/32 (20) 64.6(72.7) 66.6(74.8) 66.9(75.2) 68.2(77.2) 68.7(77.2) ViT-L/14 (8) 88.0(95.8) 88.9(96.7) 83.0(90.3) 87.0(94.7) 88.9(96.7) ViT-L/14 (14) 85.0(92.7) 85.2(93.0) 80.5(87.7) 85.7(93.6) 85.9(93.7) ViT-L/14 (20) 80.7(87.2) 81.3(87.8) 78.5(84.5) 77.4(84.1) 81.5(88.0)
+
+13

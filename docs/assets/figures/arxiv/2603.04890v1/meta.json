@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.04890v1/fig-001.webp",
+      "caption": "Table 3. Ablation Study of FedAFD under Non-IID Setting",
+      "page": 8,
+      "index": 1,
+      "width": 1036,
+      "height": 200
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04890v1/fig-002.webp",
+      "caption": "Figure 3. T-SNE analysis of feature discrepancy on public data. Locally-trained and FedAFD encoders are compared.",
+      "page": 8,
+      "index": 2,
+      "width": 496,
+      "height": 286
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04890v1/fig-003.webp",
+      "caption": "Figure 2. Overview of our proposed FedAFD comprising three steps: ① Server is trained on a public dataset and extracts global public features. ② With delivered global representations and encoders, clients train local models on private data by granularity-aware local and global fusion, enhanced with bi-level adversarial feature alignment. ③ Clients extract local public features of the public dataset and then sends it to the server. The server performs adaptive aggregation and updates the global model via similarity-guided ensemble distillation.",
+      "page": 3,
+      "index": 3,
+      "width": 1036,
+      "height": 423
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04890v1/fig-004.webp",
+      "caption": "Table 2. Performance comparison with baselines on diverse clients and the server under both IID and Non-IID settings. #rounds denotes the communication round number when they are close to convergence on the server, i.e., rsum R@1 equals 57.50.",
+      "page": 6,
+      "index": 4,
+      "width": 1036,
+      "height": 669
+    }
+  ]
+}

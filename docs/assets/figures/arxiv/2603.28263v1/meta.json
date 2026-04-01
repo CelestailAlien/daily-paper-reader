@@ -1,0 +1,70 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.28263v1/fig-001.webp",
+      "caption": "Table 2: Base model language adaptation results. Bold indicates best among the same model architecture and underline indicates best overall.",
+      "page": 6,
+      "index": 1,
+      "width": 450,
+      "height": 355
+    },
+    {
+      "url": "assets/figures/arxiv/2603.28263v1/fig-002.webp",
+      "caption": "Table 4: Strict instruction-level accuracy on IFEval (mean ± SD over 3 runs). For each test language, {model}merge-* denotes the corresponding monolingual variant adapted to that language.",
+      "page": 7,
+      "index": 2,
+      "width": 450,
+      "height": 284
+    },
+    {
+      "url": "assets/figures/arxiv/2603.28263v1/fig-003.webp",
+      "caption": "Table 3: Main experimental results on multiple-choice benchmarks (Accuracy) and machine translation (BLEU). Bold indicates best among the same backbone model and underline indicates best overall.",
+      "page": 7,
+      "index": 3,
+      "width": 937,
+      "height": 596
+    },
+    {
+      "url": "assets/figures/arxiv/2603.28263v1/fig-004.webp",
+      "caption": "Table 5: Merge method comparison. Results are reported using Llama 3.1 8B merge-*, where each language is evaluated with their specialized expert.",
+      "page": 8,
+      "index": 4,
+      "width": 450,
+      "height": 380
+    },
+    {
+      "url": "assets/figures/arxiv/2603.28263v1/fig-005.webp",
+      "caption": "Table 6: Merge method comparison. Results are reported using Qwen3 8B merge-*, where each language is evaluated with their specialized expert.",
+      "page": 8,
+      "index": 5,
+      "width": 450,
+      "height": 380
+    },
+    {
+      "url": "assets/figures/arxiv/2603.28263v1/fig-006.webp",
+      "caption": "Figure 1: Proportion sweep ablation for Llama 3.1 8B merges across Iberian languages (EU, GL, CA, ES), comparing Linear (top row) and Task Arithmetic (bottom row). Each subplot shows the effect of varying the merge proportion wi on Benchmark Average, Machine Translation, and IFEval Strict.",
+      "page": 9,
+      "index": 6,
+      "width": 947,
+      "height": 398
+    },
+    {
+      "url": "assets/figures/arxiv/2603.28263v1/fig-007.webp",
+      "caption": "Table 7: Additional results for Task Arithmetic merges on multiple-choice benchmarks (Accuracy) and machine translation (BLEU). We report baseline models together with Task Arithmetic merge variants for Llama 3.1 8B, Qwen3 8B, and Qwen3 14B. Bold indicates the best result among merged variants of the same backbone model, and underline indicates the best overall result.",
+      "page": 16,
+      "index": 7,
+      "width": 937,
+      "height": 596
+    },
+    {
+      "url": "assets/figures/arxiv/2603.28263v1/fig-008.webp",
+      "caption": "Table 8: Additional results showing the best-performing merge configuration per language and backbone on multiple-choice benchmarks (Accuracy) and machine translation (BLEU). For each merged model, we report the strongest variant among the explored merge methods. Bold indicates the best result among merged variants of the same backbone model, and underline indicates the best overall result.",
+      "page": 16,
+      "index": 8,
+      "width": 939,
+      "height": 573
+    }
+  ]
+}

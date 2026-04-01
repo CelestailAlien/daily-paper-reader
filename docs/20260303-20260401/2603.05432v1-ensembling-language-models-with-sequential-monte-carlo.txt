@@ -1,0 +1,2481 @@
+Title: Ensembling Language Models with Sequential Monte Carlo
+
+URL Source: https://arxiv.org/pdf/2603.05432v1
+
+Published Time: Fri, 06 Mar 2026 02:27:59 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+# Ensembling Language Models with Sequential Monte Carlo 
+
+Robin S.M. Chan 1 Tianyu Liu 1 Samuel Kiegeland 1 2 Clemente Pasti 1 2 Jacob Hoover Vigly 2
+
+Timothy J. O’Donnell 2 3 4 5 Ryan Cotterell 1 Tim Vieira 1
+
+Abstract 
+
+Practitioners have access to an abundance of lan-guage models and prompting strategies for solv-ing many language modeling tasks; yet prior work shows that modeling performance is highly sensitive to both choices. Classical machine learning ensembling techniques offer a princi-pled approach: aggregate predictions from mul-tiple sources to achieve better performance than any single one. However, applying ensembling to language models during decoding is challeng-ing: naively aggregating next-token probabilities yields samples from a locally normalized, biased approximation of the generally intractable ensem-ble distribution over strings. In this work, we introduce a unified framework for composing K
+
+language models into f -ensemble distributions for a wide range of functions f : RK 
+
+> ≥0
+
+→ R≥0.To sample from these distributions, we propose a byte-level sequential Monte Carlo (SMC) algo-rithm that operates in a shared character space, enabling ensembles of models with mismatch-ing vocabularies and consistent sampling in the limit. We evaluate a family of f -ensembles across prompt and model combinations for various struc-tured text generation tasks, highlighting the bene-fits of alternative aggregation strategies over tra-ditional probability averaging, and showing that better posterior approximations can yield better ensemble performance. 1
+
+1. Introduction 
+
+Language models trained on different data, architectures, or objectives often exhibit complementary strengths. Even different prompts applied to the same model can surface distinct capabilities. The successes of ensemble methods 
+
+> 1
+
+ETH Zürich 2CHI-FRO 3McGill University 4Mila 5Canada CIFAR AI Chair. Correspondence to: Robin Chan <robin.chan@inf.ethz.ch>, Tim Vieira <tim.f.vieira@gmail.com>. 
+
+Preprint. March 6, 2026. 
+
+> 1
+
+Code: https://github.com/chanr0/smc_ensembling 
+
+in classical machine learning motivate the application of various prediction aggregation strategies to combine the strengths of individual models into a single, better predictor. For instance, probability averaging in the traditional en-sembling sense reduces variance (Jordan and Jacobs, 1994), the product of experts (Hinton, 1999) concentrates proba-bility mass on regions of agreement, and other operations induce completely different behaviors (Kittler et al., 1998). Sampling from such ensemble distributions has practical applications in language modeling. For instance, probabil-ity averaging is most widely used to reduce variance and marginalize over individual model errors (see, inter alia ,Liu et al., 2024; Yao et al., 2025); contrastive operators can be employed to “steer” generation, amplifying desirable traits while suppressing toxic or hallucinatory outputs (Liu et al., 2021; Li et al., 2023; Dekoninck et al., 2024); finally, the product between a language model and a constraint is often used for controlled generation, when the goal is to restrict output to the intersection of hard logical or syntactic constraints (Lipkin et al., 2025; Loula et al., 2025). Applying these strategies to language models is not straight-forward, as they define distributions over sequences of sym-bols, or strings , and generate these autoregressively. One commonly used strategy is to apply ensembling during de-coding by aggregating next-token distributions at each gen-eration step. Most prior work in this space has focused on the vocabulary alignment problem —combining models with mismatching tokenization—proposing various heuris-tics such as union vocabularies (Yu et al., 2024; Yao et al., 2025), or shared embedding spaces (Huang et al., 2024; Xu et al., 2024). Once token alignment is achieved, these meth-ods predominantly default to (weighted) token probability averaging (cf. §A), sampling from locally normalized, bi-ased approximations of the true global ensemble distribution over strings (Park et al., 2024). In this work, we sidestep the vocabulary alignment problem by mapping language models to the character level, which allows us to focus on different questions: beyond probability averaging, what ensembling strategies are effective, and what do we gain by consistently sampling from the global ensemble distribution over strings 
+
+rather than local approximations? We address these questions by introducing f -ensembles, a unified framework for composing K language models with 1
+
+> arXiv:2603.05432v1 [cs.CL] 5 Mar 2026
+
+Ensembling Language Models with Sequential Monte Carlo −30 −25 −20 −15 −10 −5 0          
+
+> log p(· | My favorite physicist is)
+> −30
+> −25
+> −20
+> −15
+> −10
+> −5
+> 0
+> log  p(· | My favorite author is) James Baldwin. Robert Jordan. Carl Sagan. David Hilbert. Einstein. Richard Feynman. Bill Nye. a great guy. a very good one.
+> ”My favorite physicist is...” ”My favorite author is...” Ensemble: prod(physicists, authors)
+> 0.00.20.40.60.81.0
+> pens ,global /p ens ,local
+> −6−5−4
+> log pens ,local
+> −30
+> −25
+> −20
+> −15
+> log  p(· | My favorite physicist
+> and  author is)
+> ρ= 0 .090
+> −40 −30 −20 −10
+> log pens ,global
+> −35
+> −30
+> −25
+> −20
+> −15
+> log  p(· | My favorite physicist
+> and  author is)
+> ρ= 0 .958***
+
+Figure 1. Prompt intersection on GPT-2. We generate 200 strings from the normalized token-level product of “ My favorite physicist is ”and “ My favorite author is ” prompts, then score each under the local ensemble pens ,local (string probabilities emerging from locally normalized token-level product ensembling) and global ensemble pens ,global (normalized product of string probabilities). Left: scatter plot of log probabilities with color indicating the generated strings’ global probability relative to their local ones. We also plot completions from the author prompt ( ) and the physicist prompt ( ) that don’t overlap with the ensemble’s completions ( ). Right: Correlation with the explicitly formulated intersection constraint probability p(· | “My favorite physicist and author is ”).
+
+a wide range of ensembling functions f : RK 
+
+> ≥0
+
+→ R≥0. For inference, we propose a character-level sequential Monte Carlo algorithm, which enables the rigorous combination of models with mismatching tokenization and allows consis-tent sampling from the global f -ensemble distribution (i.e., in the limit). Our main empirical contribution is to eval-uate and compare a diverse range of f -ensembles within the family of generalized means on a range of structured text generation tasks. We evaluate within-model prompt ensembling, as well as ensembles across model families. Our results demonstrate the efficacy of ensembles for im-proving base model performance and show a significant effect of the choice of ensembling function on task perfor-mance. Namely, we find that consensus-seeking strategies, such as the product, consistently outperform local proba-bility averaging. Finally, we show the utility of our SMC ensembling algorithm by highlighting the performance im-provements driven by better approximations of the global ensemble posterior. 
+
+2. Motivation: Global Prompt Intersection 
+
+We first motivate the utility of ensembling language models—and sampling from good ensemble posterior approximations—with a prompt intersection experiment adapted from Lew et al. (2023). 
+
+Setup. Consider a language model prompted with two prefixes with overlapping plausible completions. A practi-tioner may be interested in sampling strings that are probable under both prompts, i.e., sampling from their intersection. For illustrative purposes of this example, we prompt GPT-2 (Radford et al., 2019) with “ My favorite physicist is ” and “My favorite author is ” and aim to synthesize an ensemble that places high probability on physicists who are also au-thors. To that end, we generate 200 completions ending in a period using best-first beam search (beam width 20), scor-ing partial sequences by the cumulative, locally normalized product of next-token probabilities. 
+
+String Scoring. We compare two ways of scoring com-pletions under the ensemble: (1) pens ,local , which multiplies the token-level probabilities from each prompt at every gen-eration step, then normalizes; and (2) pens ,global , which first computes each prompt’s probability for the entire completed string, then multiplies these string-level probabilities. We normalize pens ,global across the 200 generated completions. 2
+
+Results. In Figure 1, we plot the 200 ensemble com-pletions ( ) alongside completions generated from each prompt individually ( for authors, for physicists). We see that the completions generated from the locally normal-ized product ensemble tend to be ones that are assigned high probability under both prompts, rather than those probable under only one prompt (e.g., “ James Baldwin. ”, a probable completion for the author prompt, is improbable under the physicist prompt, making it also low-probability under the ensemble). However, when comparing the probabilities as-signed by the local ensemble with the global one, we observe a systematic mismatch: the local ensemble places relatively more probability mass on globally low-probability continu-ations, such as “ a great guy. ”, and relatively less probability on globally high-probability strings, such as “ Carl Sagan. ”. 
+
+> 2
+
+The true marginal likelihood is intractable, as it requires an infi-nite sum over all possible strings. However, these approximate probabilities only differ from the true ones by a constant. 
+
+2Ensembling Language Models with Sequential Monte Carlo 
+
+This occurs because the local product rewards tokens that are individually probable under both prompts at each step— favoring generic continuations like “ a” or “ my ” early on— rather than rewarding full completions that are probable for both prompts. A completion like “ a great guy. ” accumu-lates high local scores despite being improbable under the string-level global ensemble. We validate this observation by scoring the generated com-pletions under a prompt that explicitly encodes the intersec-tion constraint: “ My favorite physicist and author is ”. The global ensemble probabilities strongly correlate with this explicit constraint ( ρ = 0 .958 , p < 0.001 ), while the local ensemble does not ( ρ = 0 .090 , p = 0 .24 ). 
+
+Insights. This example illustrates two key points. First, global ensembling over strings can yield markedly different behavior than local token-level ensembling. In this example, the global product ensemble yields a significantly better approximation of the intended intersection constraint. Sec-ond, the product ensemble captures a meaningful property: concentrating probability on strings that are probable under both language models. However, it is only one aggregation strategy in the vast design space of aggregation functions that induce a variety of behaviors. In combination, these findings raise the question: Across the spectrum of behav-iors induced by different ensembling functions f , how can we sample from their global distributions over strings? 
+
+3. Background: Language Models 
+
+An alphabet Γ is a finite, non-empty set of symbols. Let 
+
+Γ∗ denote the set of all strings γ formed from the symbols in Γ, including the empty string ε. We write |γ| to denote the length of γ. A language model p is a probability dis-tribution over Γ∗. We write △Γ∗
+
+to denote the set of valid probability distributions (language models) over Γ∗.Let γ′ ⪰ γ denote that γ is a prefix of γ′. The prefix probability ⃗p(γ) is the probability that a string drawn from 
+
+p begins with γ ∈ Γ∗:⃗p(γ) def 
+
+= X
+
+> γ′∈Γ∗
+
+p(γ γ ′) (1) For every γ, γ′ ∈ Γ∗ where ⃗p(γ) > 0 , we define the condi-tional prefix probability ⃗p(γ ′ | γ) def 
+
+=
+
+
+
+p(γ)⃗p(γ) if γ′ = □⃗p(γ γ ′)⃗p(γ) otherwise (2) where □ denotes a distinguished end-of-string delimiter. 3
+
+Note that ⃗p(· | γ) describes a probability distribution over      
+
+> 3Note that □/∈Γ, and it is an error to append □to any string.
+
+Γ ∪ { □}. Then, the probability of γ under language model 
+
+p may be factorized as 
+
+p(γ) = ⃗p( □ | γ)
+
+> |γ|
+
+Y
+
+> t=1
+
+⃗p(γ t | γ<t )
+
+| {z }
+
+> =⃗p(γ)
+
+(3) This factorization corresponds to the generative process used by autoregressive language models, generating a string by iteratively appending samples from next-token distributions and stopping when □ is reached. 
+
+4. Language Model f -Ensembles 
+
+Ensembling is a technique for combining potential functions 
+
+(which may or may not be probability distributions) into a probability distribution that reflects some aspect of each. In particular, given a set of potentials p1, ... , p K : Σ ∗ → R≥0,defined over the character alphabet Σ,4 and the ensemble function f : RK 
+
+> ≥0
+
+→ R, we define the f -ensemble as follows 
+
+Definition 4.1. The f -ensemble of potentials p1, ... , p K ∈
+
+R≥0Σ∗
+
+is a distribution Φ ∈ △ Σ∗
+
+defined as 
+
+Φ( x) def 
+
+= f (p1(x), ... , p K (x)) 
+
+ZZ def 
+
+= X
+
+> x′∈Σ∗
+
+f (p1(x′), ... , p K (x′)) 
+
+for every f : RK 
+
+> ≥0
+
+→ R, such that 0 < Z < ∞. We further define φ(x) def 
+
+= f (p1(x), ... , p K (x)) as the unnormalized 
+
+ensemble distribution. 
+
+Since Φ is a probability distribution, the prefix probability ⃗
+
+Φ and the conditional prefix probability ⃗ Φ( x′ | x) follow directly from Eq. (1). Ideally, to sample from Φ we would iteratively sample from the conditional next-symbol prob-ability ⃗ Φ( xt | x<t ), with xt ∈ (Σ ∪ □), until the end of sequence delimiter □ is hit. However, sampling directly from ⃗ Φ( xt | x<t ) is often unfeasible as computing Z is intractable. Therefore, in §5 we explore various strategies to approximately sample from ⃗ Φ( xt | x<t ).
+
+4.1. A Family of f -Ensembles 
+
+Definition 4.1 admits a wide range of aggregation functions 
+
+f —but which should we choose? We show that the family      
+
+> 4Note that, when {pk}Kk=1 are defined over different token alpha-bets , a common issue is tokenization mismatch , i.e., when two potentials do not share the same alphabet, token level probabilities cannot be aggregated directly. We address this by mapping each model to a shared probability space, defined on the common char-acter alphabet Σ. This problem was discussed in detail by Vieira et al. (2025a), for further details regarding the specific setting of this paper, see §C.
+
+3Ensembling Language Models with Sequential Monte Carlo 
+
+Table 1. The generalized means family of f -ensembles. The en-semble Φ minimizes PKk=1 wk Dα(Φ || pk ). The divergences are defined as: Pearson χ2: Dχ2 (p || q) def 
+
+= P 
+
+> x∈Σ∗
+> (p(x)−q(x)) 2
+> q(x)
+
+;KL: DKL (p || q) def 
+
+= P 
+
+> x∈Σ∗
+
+p(x) log p(x) 
+
+> q(x)
+
+; and Rényi-∞:
+
+D∞(p || q) def 
+
+= log max x∈Σ∗ p(x) 
+
+> q(x)
+
+.
+
+τ Name f -Ensemble Minimized Dα
+
+−∞ Minimum 1 
+
+> Z
+
+min Kk=1 pk (x) D∞(Φ || pk )
+
+> consensus
+
+−1 Harmonic 1
+
+> Z
+
+PKk=1  
+
+> wk
+> pk(x)
+
+−1
+
+Dχ2 (Φ || pk )0 Product 1
+
+> Z
+
+QKk=1 pk (x)wk DKL (Φ || pk )1 Sum 1
+
+> Z
+
+PKk=1 wk pk (x) DKL (pk || Φ) 
+
+> coverage
+
+2 Quadratic 1
+
+> Z
+
+qPKk=1 wk pk (x)2 Dχ2 (pk || Φ) +∞ Maximum 1 
+
+> Z
+
+max Kk=1 pk (x) D∞(pk || Φ) 
+
+of generalized means arises naturally from a variational principle: they are the unique minimizers of weighted sums of α-divergences to the base potentials. Specifically, consider K expert potentials {pk}Kk=1 , where 
+
+pk : Σ ∗ → R≥0. Our goal is to construct a single ensem-ble distribution Φ that synthesizes the information provided by the K experts, given prior expert weights w ∈ △ K .Following prior work by Dekoninck et al. (2024), we de-fine the optimal consensus distribution Φ∗(x) minimizing a weighted sum of divergences D, i.e., 
+
+Φ∗ def 
+
+= argmin 
+
+> Φ∈△ Σ∗
+> K
+
+X
+
+> k=1
+
+wkD(Φ || pk) (4) The choice of D determines how similarity between distribu-tions is assessed and, therefore, influences which ensemble distribution is considered optimal. In this work, we discuss 
+
+D within the family of α-divergences (Amari, 1985): 
+
+Dα(q || p) = 1
+
+α(1 − α) 1 − X
+
+> x∈Σ∗
+
+q(x)αp(x)1−α
+
+!
+
+(5) 
+
+Theorem 4.1 (α-Divergence Ensembles) . Let Dα be the α-divergence with parameter α ∈ R \ { 0, 1}. The unique con-sensus distribution Φ∗ that minimizes the expert-weighted loss in Eq. (4) is the generalized mean of the experts, with power parameter τ def 
+
+= 1 − α:
+
+Φ∗(x) = 1
+
+Z
+
+> K
+
+X
+
+> k=1
+
+wkpk(x)τ
+
+! 1
+
+> τ
+
+(6) 
+
+where Z is the normalizer ensuring P 
+
+> x∈Σ∗
+
+Φ∗(x) = 1 .Proof. In Appendix D. ■
+
+Qualitative analysis of generalized mean ensembles. 
+
+Generalized means unify many practically used model ag-gregation strategies under a single framework, recovering product of experts (Hinton, 1999; 2002) as τ → 0, mixture of experts (Jordan and Jacobs, 1994) as τ → 1, and min and 
+
+max aggregations (Kittler et al., 1998) as τ → ±∞ . Deriv-ing them as minimizers of weighted sums of α-divergences further explains how these methods mediate disagreements between experts, and provides a qualitative guide for choos-ing f (cf. Tab. 1). The regime where τ ≤ 0 exhibits 
+
+consensus-seeking behavior (where pk(x) = 0 → Φ( x) = 0), which forces the ensemble to concentrate probability mass on the intersection of the expert supports. In contrast, the regime where τ ≥ 1 exhibits coverage-seeking behavior (where pk(x) > 0 → Φ( x) > 0), forcing the ensemble to distribute mass over the union of the expert supports. In both regimes, |τ | modulates the effect’s strength. 
+
+5. Approximate Inference 
+
+We now describe how to (approximately) sample from any 
+
+f -ensemble distribution Φ. The strategies we present are different instantiations of importance sampling (Robert and Casella, 2005). In general, we will approximately sam-ple from Φ—which is generally intractable—by sampling from a tractable proposal distribution and appropriately cor-recting the resulting distortion with an importance weight .Adopting the importance sampling terminology, we will refer to Φ as the target distribution , and to φ as the unnor-malized target .
+
+5.1. Importance Sampling 
+
+Importance sampling is a general-purpose technique for ap-proximating intractable distributions. We now present a ver-sion adapted to the special case of estimating f -ensembles: 
+
+Definition 5.1. Importance sampling works as fol-lows: Given a sample budget M > 0,5 we sample 
+
+x(1) , ... , x(M ) i.i.d. 
+
+∼ r from a proposal distribution r ∈ △ Σ∗
+
+.6
+
+We associate an importance weight with each x(m), i.e., 
+
+w(m) def 
+
+= φ(x(m))/r (x(m)). We then define the estimated unnormalized target :
+
+bφ(x) def 
+
+= 1
+
+M
+
+> M
+
+X
+
+> m=1
+
+w(m)1{x = x(m)} (7) 
+
+The estimated target distribution alongside the estimated 
+
+> 5
+
+Chatterjee and Diaconis (2018) show that the number of samples required for importance sampling with proposal distribution r
+
+to obtain a good approximation of the target distribution Φ is exponential in the KL divergence KL(Φ ∥r).
+
+> 6
+
+For technical reasons, we require r to satisfy φ(x) > 0 = ⇒
+
+Φ( x) > 0 for all x ∈ Σ∗, or equivalently (by contrapositive) 
+
+Φ( x) = 0 = ⇒ φ(x) = 0 for all x ∈ Σ∗. We provide a discussion about the implications in §D.2. 
+
+4Ensembling Language Models with Sequential Monte Carlo 
+
+normalization constant are given as: 
+
+bΦ( x) def 
+
+= bφ(x)
+
+bZ , bZ def 
+
+= 1
+
+M
+
+> M
+
+X
+
+> m=1
+
+w(m) (8) Crucially, importance sampling provides an unbiased esti-mate bZ of the normalizing constant Z, and an estimate bΦ
+
+of the ensemble distribution Φ that is consistent (but biased for finite M ). See §D.1 for more details and proofs of cor-rectness. Importance sampling of complete strings is not well-suited to an autoregressive language model, which is inherently a sequential model. For this reason, we introduce sequential importance sampling. 
+
+5.2. Sequential Importance Sampling 
+
+Sequential importance sampling (SIS; Del Moral et al., 2006) is a variant of importance sampling designed for distributions over sequences, where samples are built in-crementally by extending partial sequences according to a proposal kernel. In language modeling, this kernel is typi-cally the next-token distribution (cf. Eq. (3)), which extends a partial string by one symbol at each step. At each time step, the importance weights are updated, yielding in the end an importance weight for each particle as in Def. 5.1. 7
+
+In order to compute the weight update, we need to have access to the next token prefix target :⃗φ(x ′ | x) def 
+
+=
+
+( φ(x)⃗φ(x) if x′ = □⃗φ(x x ′)⃗φ(x) x′ ∈ Σ (9) where ⃗φ(x) def 
+
+=⃗ Φ( x) · Z. Unfortunately, ⃗φ is itself in-tractable. 8 Therefore, we introduce a shaping function ⃗ψ : Σ ∗ → R≥0 as an intermediate target to compute the importance weights. A common choice for ⃗ ψ(x) is 
+
+f (⃗p 1(x), ... ,⃗ p K (x)) , which, notably, is not the same as ⃗φ(x) . Intuitively, the shaping function serves as a tractable surrogate for the intractable prefix target, guiding the sam-pler towards promising regions of Σ∗.To compute the importance weight update for SIS, we need to define a next-token version of the shaping function: 9⃗ψ(x′ | x) def 
+
+=
+
+ 
+
+> φ(x)⃗ψ(x)
+
+if x′ = □⃗ψ(x x′)⃗ψ(x) otherwise (10) Importantly, this definition gives the following factorization of φ, ∀x ∈ Σ∗ (which preserves the importance weights); 
+
+φ(x) = ⃗ ψ(ε)⃗ψ(□ | x)
+
+> |x|
+
+Y
+
+> t=1
+
+⃗ψ(xt | x<t ) (11) 
+
+> 7
+
+Samples are often called particles in SIS. 
+
+> 8
+
+It would require computing an infinite sum P 
+
+> x′∈Σ∗
+
+f (p1(x x ′), ... , p K (x x ′)) .
+
+> 9
+
+Note that ⃗ ψ(· | x) is not necessarily a probability distribution. 
+
+Proposition 5.1. The shaping weights are equivalent to those used in importance sampling: 
+
+φ(x)
+
+r(x) =⃗ ψ(ε)⃗ ψ(□ | x)⃗r( □ | x)
+
+> |x|
+
+Y
+
+> t=1
+
+⃗ψ(xt | x<t )⃗r(x t | x<t ) (12) 
+
+Proof. Prop. 5.1 follows directly from Eq. (11) and Eq. (3) applied to r(x), followed by algebra. ■
+
+Interestingly, it turns out that the optimal choice for the proposal distribution is proportional to the shaping itself: 
+
+Proposition 5.2. The locally optimal proposal distribution i.e., the one that minimizes the variance of the importance weight update at each step, is ⃗r ∗(x′ | x) ∝⃗ ψ(x′ | x).
+
+See §D.1 for proof. Note that, even when the proposal is proportional to the next-token shaping function, the two may still differ when the shaping function is not normalized. 
+
+Algorithm 1 Sequential Monte Carlo 10  
+
+> 1.
+
+procedure SMC( r,⃗ ψ, M, τ ) 
+
+> 2.
+
+for m = 1 ... M : ▷M number of samples  
+
+> 3.
+
+(x(m), w (m), α (m)) ← (ε,⃗ ψ (ε), true ) 
+
+> 4.
+
+while ∃m ∈ 1 ... M : α(m) : 
+
+> 5.
+
+for m = 1 ... M such that α(m) : ▷Active particles  
+
+> 6.
+
+y′ ∼ r(· | x(m)) 
+
+> 7.
+
+if y′ = □ : ▷Complete the particle  
+
+> 8.
+
+α(m) ← false  
+
+> 9.
+
+else  
+
+> 10.
+
+x(m) ← x(m) ◦ y′ 
+
+> 11.
+
+w(m) ← w(m)⃗ ψ(y′|x(m)) 
+
+> r(y′|x(m))
+> 12.
+
+(x(·), w (·), α (·)) ← RESAMPLE (x(·), w (·), α (·), τ ) 
+
+> 13.
+
+bZ ← 1
+
+> M
+
+PMm=1 w(m) 
+
+> 14.
+
+bφ(x) ← 1
+
+> M
+
+PMm=1 w(m)1{x = x(m)} 
+
+> 15.
+
+bΦ( x) ← bφ(x) 
+
+> bZ
+> 16.
+
+return ( bZ, bφ, bΦ)  
+
+> 17.
+
+procedure RESAMPLE (x(·), w (·), α (·), τ ) 
+
+> 18.
+
+W ← PMm=1 w(m) 
+
+> 19.
+
+cM ← W 2/
+
+PMm=1 
+
+ w(m)2 
+
+> 20.
+
+if cM < τ ·M : ▷Resample  
+
+> 21.
+
+x(·) ← x(·); w(·) ← w(·) ▷Temporary copy  
+
+> 22.
+
+for m = 1 ... M : 
+
+> 23.
+
+R ∼ Categorical( W −1⟨w(1) , ... , w (M )⟩) 
+
+> 24.
+
+(x(m), w (m), α (m)) ← (x(R), W /M, α (R)) 
+
+> 25.
+
+return (x(·), w (·), α (·))
+
+> 10
+
+Note that the final weight step is more detailed than the pseu-docode suggests, as □ is handled as in Eq. (10). 
+
+5Ensembling Language Models with Sequential Monte Carlo 
+
+5.3. Sequential Monte Carlo 
+
+Sequential Monte Carlo (SMC) is a generalization of SIS that incorporates a resampling step that reallocates compu-tation from less to more promising partial sequences while sampling particles. More concretely, using a multinomial re-sampling strategy, at each step, 11 SMC samples indices 
+
+a(1) , ... , a (M ) i.i.d. 
+
+∼ Categorical( W −1⟨w(1) , ... , w (M )⟩),where W def 
+
+= PMm=1 w(m). All particles are then reassigned as (x(i), w (i)) = ( x(a(i)), W/M ). The full procedure is shown in Alg. 1. 
+
+6. Experiments 
+
+Different LMs and prompts often exhibit complementary strengths on the same task (Polo et al., 2024). As discussed in our related work section (cf. §A), prior work on LM ensembling during inference has largely focused on local probability averaging (i.e., sum ensembles) (Yao et al., 2025) , whereas our f -ensemble framework spans a broader family of aggregation strategies. We evaluate whether these alterna-tive f -ensembles can exploit this to improve upon individual models across tasks. More specifically, our experiments aim to answer the following questions: RQ1. To what extent can language models be synergistic ,i.e., work better jointly, rather than on their own? RQ2. In what ways does the mediation strategy between models, encoded by f , affect performance under the resulting ensemble? RQ3. How does the quality of approximation of Φ affect the performance of the f -ensemble? 
+
+6.1. Setup Models and Prompts. We evaluate ensembles us-ing instruction-tuned LMs from three model families: Llama (Llama3.1-8B-Instruct; Llama Team, 2024), Qwen (Qwen2.5-7B-Instruct; Yang et al., 2025), and Phi (phi-4 (14B); Abdin et al., 2024). This yields two experimental settings: within-model ensembles that combine the same model under different prompts and cross-model ensembles that combine two models under the same prompt. 
+
+Datasets. We study the effectiveness of ensembling lan-guage models on three exact-match structured text genera-tion tasks in different domains, where the number of gen-eration steps allows differences between local and global sampling to manifest. For each dataset, we evaluate 100 randomly sampled instances.                 
+
+> 11 In practice, resampling is only done based on the effective sam-ple size bNdef
+> =(PMm=1 w(m))2
+> PMm=1 (w(m))2which measures the variance among importance weights. We resample when bNfalls below a threshold τ·Mfor τ∈(0 ,1) .
+
+• JSON. Task: Generate documents that conform to a spe-cific JSON schema using the GlaiveAI function-calling dataset (GlaiveAI, 2024) from JSONSchemaBench (Geng et al., 2025). Metric: Binary correctness, whether the generated string conforms to a specific JSON schema. • Big-Bench Hard. Task: Diverse reasoning tasks (Suzgun et al., 2023). We focus on the word sorting subtask: given a list of words, sort them in alphabetical order. Metric: 
+
+binary correctness of the generated sorted list. • Text-to-SQL. Task: Generate SQL queries from a natu-ral language question and relevant database schema (Yu et al., 2018). Metric: Execution accuracy, i.e., checking whether the generated query produces the same output when executed against the provided test database. 
+
+Baselines. In this work, we study which aggregation func-tions effectively combine models and how approximation quality affects performance. Notably, as discussed in §A, these questions are largely orthogonal to improving model routing, enhancing post-hoc selection (e.g., best-of-N ), or comparing vocabulary alignment heuristics. Thus, to evalu-ate RQ1-RQ3, we compare our SMC f -ensembles against: (1) the best-performing base model, (2) locally normalized probability averaging (the predominant aggregation strat-egy for ensembling during inference; Chen et al., 2025), (3) 
+
+f -ensembles at different approximation qualities, notably, locally normalized f -ensembles. 
+
+Evaluation Metric. Because a f -ensemble defines a dis-tribution over outputs, we evaluate its performance in terms of the probability mass it assigns to correct answers, i.e., accuracy in expectation under Φ, rather than the accuracy of a single decoded output. We approximate it using the weighted particles from SMC: 
+
+E
+
+> x∼Φ
+
+[1{x ∈ Y} ] ≈
+
+> M
+
+X
+
+> m=1
+
+¯w(m) · 1{x(m) ∈ Y} (13) where ¯w(m) = w(m)/ PMm′=1 w(m′) are the normalized importance weights and Y ⊆ Σ∗ is the set of correct outputs. 
+
+f -Ensembles. We evaluate four generalized means span-ning the consensus-coverage spectrum: min of experts (τ → −∞ ), product of experts ( τ = 0 ), mixture of experts (τ = 1 ), and max of experts ( τ → ∞ ). These represent commonly used aggregation strategies (Khalifa et al., 2023) and the meaningful limits of the generalized mean family (see Tab. 1), enabling systematic analysis of how the choice of aggregation affects performance. The used functions are 
+
+annihilative 12 , ensuring the used shaping function (cf. §5.2) satisfies absolute continuity when used as the proposal. Across experiments, we report means and 95% CIs across 5 different seeds with M = 10 particles (we provide particle ablations in §G.3), a resampling threshold of 0.9, and equal 
+
+> 12 In fact, all generalized means are, as derived in Prop. D.2.
+
+6Ensembling Language Models with Sequential Monte Carlo 
+
+Table 2. Summary of model ensembling results. Bold : non-overlapping 95% CIs with best baseline. †: highest average expected accuracy by column (within-model), or overall (cross-model). Shaded: strongest single-prompt baseline. JSON Schema BBH (Word Sorting) SPIDER (Text-to-SQL) 
+
+Method Qwen Phi Llama Qwen Phi Llama Qwen Phi Llama Prompt 1 95 .6±0.8 83 .5±1.9 86 .3±1.6 13 .9±1.0 27 .7±1.2 38 .6±1.5 40 .0±1.5 24 .2±1.5 38 .4±1.8
+
+Prompt 2 93 .8±0.9 79 .5±5.6 84 .3±2.5 5.8±0.9 24 .3±1.5 36 .5±1.9 53 .6±1.0† 34 .5±1.7 36 .3±1.7
+
+Local Prob. Avg. 95 .2±3.2 82 .0±4.7 83 .4±3.5 9.6±3.0 25 .8±5.8 41 .2±6.5 45 .6±3.7 28 .4±4.8 39 .4±6.3
+
+Best Local f -Ens. 96 .4±0.7† 87 .2±4.4 88 .6±4.4 15 .0±2.3 27 .2±5.1 45 .0±2.9† 52 .6±1.4 36 .0±3.4† 43 .6±3.4†
+
+Best Global f -Ens. (Token SMC, M = 10 ) 96 .0±0.2 87 .4±0.3 88 .9±1.1 15 .3±2.0 28 .2±1.1 42 .3±0.9 51 .2±1.8 34 .2±0.7 41 .9±1.4
+
+Best Global f -Ens. (Token SMC, M = 25 ) 95 .8±0.3 87 .8±0.8† 89 .1±0.4† 14 .9±1.3 28 .6±1.0† 42 .7±0.6 51 .2±0.9 34 .5±0.7 42 .0±0.5
+
+Best Global f -Ens. (Byte SMC, M = 10 ) 92 .8±1.0 87 .5±0.7 88 .9±1.4 15 .5±0.1† 23 .8±1.5 34 .0±1.4 48 .3±2.1 34 .5±0.9 42 .4±0.9
+
+Best Cross-Model f -Ens. (Byte SMC, M = 10 ) 92 .6±0.9(Q+P, Prompt 1) 41 .1±1.0 (P+L, Prompt 1) 55 .5±1.1†(Q+L, Prompt 2) 
+
+expert weight, unless specified otherwise. To understand the interactions between base models and the resulting ensemble distribution, we run our experiments for K = 2 experts. We report more details in §E. 
+
+6.2. Results [RQ1] Models can act synergistically with themselves and each other. The effectiveness of ensembling de-pends on how the experts differ: we empirically find that ensembles improve upon base models primarily when both prompts perform moderately on the same examples. When one prompt already succeeds, the other has little to con-tribute; when both fail, combining them does not help. 13 
+
+Accordingly, we introduce variation by selecting prompt pairs that provide complementary instructions (see §F for details). As shown in Table 5, this can already yield signifi-cant performance improvements over the better base model for at least one ensemble for each task. Cross-model ensembles show similar increases in expected accuracy without requiring complementary prompt construc-tion. For BBH and SPIDER, ensembling the two better-performing models with the same prompt yields significant improvements over base model performance—showing the ability to even outperform the best prompt ensembles. This suggests that architectural and data diversity across model families provides value beyond prompt variation alone. 
+
+[RQ2] Consensus-seeking ensembles improve expected accuracy over probability averaging. From Figure 2 (and more detailed results in Table 5), we also observe sig-nificant differences between ensemble methods across tasks and models. Although some significant variation is visi-ble among operators (with min ensembles coming out on top most of the time), the primary distinction is between 
+
+> 13
+
+We provide empirical support in §G.2. Q P L Q P L Q P L                                  
+
+> min product sum max
+> −0.2+3.9†+2.6†+1 .4†+0 .5†+3.7†−2.4†−0.3†+3.5†
+> +0 .4†+2.9+2 .2+1 .3−0.1+2.3−2.7−3.7+3 .3
+> −0.3−2.2−1.2−4.1−1.2−1.2−7.7−5.1−0.2
+> −0.4−4.2−2.6−4.8−2.3−3.9−7.7−5.0−0.5
+> JSON BBH SPIDER
+> −10
+> −505
+> ∆ Acc. (%)
+
+Figure 2. f -ensembles for token-level SMC. Values show change in accuracy (%) relative to the best single-prompt baseline. †:best in column. Bold : significant improvement over the best base prompt (non-overlapping 95% CIs). Q=Qwen, P=Phi, L=Llama. 
+
+consensus-seeking and coverage-seeking operators. In the setting of combining two complementary language mod-els, consensus-seeking operators consistently outperform coverage-seeking ones. Additionally, in terms of expected accuracy, token-wise SMC ensembling with consensus-seeking operators yields significantly increased expected accuracies over the base model performances for at least one model per dataset. To better understand these results, we note that for any weighted mixture Φ( x) = PKk=1 wkpk(x)
+
+with w ∈ △ K , the ensemble’s expected accuracy is bounded by the better-performing base model: 
+
+E
+
+> x∼Φ
+
+[1{x ∈ Y} ] = X
+
+> x∈Σ∗
+
+Φ( x) · 1{x ∈ Y} (14a) 
+
+=
+
+> K
+
+X
+
+> k=1
+
+wk E
+
+> x∼pk
+
+[1{x ∈ Y} ] (14b) 
+
+≤ max 
+
+> k=1 ,...,K
+
+
+
+wk E
+
+> x∼pk
+
+[1{x ∈ Y} ]
+
+
+
+(14c) For an equal weighting (i.e., probability averaging), 
+
+Ex∼Φ[1{x ∈ Y} ] equals the arithmetic mean of the base model accuracies. 7Ensembling Language Models with Sequential Monte Carlo −4 −2 0                  
+
+> est. log Z−KL( qalg || Φ) (z-scored)
+> −3
+> −2
+> −1
+> 0
+> 1
+> 2
+> 3
+> Expected Accuracy (z-scored)
+> ρ= 0 .235 ∗∗∗
+> min
+> −20
+> est. log Z−KL( qalg || Φ) (z-scored)
+> −1
+> 0
+> 1
+> 2ρ= 0 .309 ∗∗∗
+> product
+> −202
+> est. log Z−KL( qalg || Φ) (z-scored)
+> −2
+> −1
+> 0
+> 1
+> 2ρ=−0.044
+> sum
+> −2024
+> est. log Z−KL( qalg || Φ) (z-scored)
+> −2
+> 0
+> 2
+> 4
+> ρ=−0.082 ∗
+> max
+> Particles 1 (Local) 2510 25 50 75
+
+Figure 3. Representative relationship between expected accuracy and the estimated log marginal likelihood, log bZ, on BBH for Llama. Each datapoint represents (sample, particle) configurations aggregated across seeds. Both metrics are z-scored per example to normalize for variations in problem difficulty and scale. Points are colored by the number of particles used for estimation. Marginal plots display the kernel density estimates for the respective axes. The grey line and shaded band indicate a linear regression fit with a 95% confidence interval. Pearson correlation coefficients ρ are annotated in the top-left ( ∗∗∗ p < 0.001 , ∗p < 0.05 ). 
+
+First, this provides a sanity check of our implementation: using our SMC algorithm, we observe that the expected accuracy of the equally-weighted mixture converges to the average accuracy of the base models as we increase the number of particles (cf. Table 5). Second, this observation yields a theoretical explanation for prior empirical work by Yao et al. (2025), which shows that if base LMs exhibit a large performance gap, a variety of LM ensembling meth-ods that rely on local probability averaging drop below the accuracy of the better-performing model. We reproduce similar behavior in the local probability averaging baseline in Table 2. Although the locally normalized sampling distri-bution can differ from the global one used in our derivation, we see that probability averaging remains fundamentally constrained by this property, regardless of the performance gap. By contrast, consensus-seeking operators show more robust results. 
+
+[RQ3] Approximation quality affects f -ensemble per-formance differently. Table 2 shows some promising aggregated results regarding the usefulness of SMC for at-taining better ensembles over baseline approaches. However, it remains unclear in what scenarios improved approxima-tion quality , i.e., the closeness of our sampling distribution to the target distribution Φ, correlates with expected accu-racy in the evaluated tasks. To this end, we follow prior work (Andrieu and Roberts, 2009; Lew et al., 2023; Zhao et al., 2024), which shows that 
+
+E[log bZ] provides a lower bound on log Z − KL( qalg ∥Φ) ,where qalg denotes the marginal distribution induced by the SMC sampling algorithm. Intuitively, higher values of 
+
+E[log bZ] mean that the algorithm’s samples are “better”, i.e., closer to being sampled from the global ensemble Φ.Both the approximation quality metric and expected accu-racy are defined at the instance level, as log Z varies across samples. To enable comparison, we compute per-instance Spearman correlations and report their mean in Table 6. For visualization, we z-score both metrics per instance to nor-malize for problem difficulty, allowing us to plot aggregated trends. We visualize a representative subset in Figure 3, where we plot z-scored approximation quality against z-scored expected accuracy for each unique (sample, particle count) configuration aggregated across seeds, and refer to §G for additional results. We observe rather consistent, medium-sized, significant pos-itive Spearman correlations for consensus-seeking operators (min and product), which can also be seen in other datasets. This may suggest that for these f -ensembles, improving the posterior approximation, whether through additional parti-cles or better proposals, translates to measurably higher task performance. In contrast, coverage-seeking operators (sum and max) tend to even show weak negative correlations be-tween the approximation quality and expected accuracy. For sum ensembles, this aligns with our theoretical expectations, as, although local probability averaging can help, the global ensemble’s expected accuracy will always converge to the average of the base models’. 
+
+7. Conclusion 
+
+We develop f -ensembling; a unified framework for com-posing language models into ensemble distributions over strings. Motivated by significant differences in locally and globally normalized string scoring in prompt intersection, we further propose a flexible byte-level SMC ensembling algorithm that prioritizes globally promising samples during inference. In a series of experiments, we show that language models can act synergistically with one another. Unlike probability averaging, which is bounded by its base model performances, consensus-seeking f s yield more robust accu-racy improvements and, for these operators, better posterior approximations translate to better task performance. 8Ensembling Language Models with Sequential Monte Carlo 
+
+Impact Statements 
+
+This paper presents work aimed at advancing the field of machine learning by combining language models. There are many potential societal consequences of our work, none of which we feel need to be highlighted here. 
+
+References 
+
+Marah Abdin, Jyoti Aneja, Harkirat Behl, Sébastien Bubeck, Ronen Eldan, Suriya Gunasekar, Michael Harrison, Rus-sell J. Hewett, Mojan Javaheripi, Piero Kauffmann, James R. Lee, Yin Tat Lee, Yuanzhi Li, Weishung Liu, Caio C. T. Mendes, Anh Nguyen, Eric Price, Gustavo de Rosa, Olli Saarikivi, Adil Salim, Shital Shah, Xin Wang, Rachel Ward, Yue Wu, Dingli Yu, Cyril Zhang, and Yi Zhang. 2024. Phi-4 technical report. Preprint ,arXiv:2412.08905. Shun-ichi Amari. 1985. Differential-Geometrical Methods in Statistics , volume 28 of Lecture Notes in Statistics .Springer-Verlag. Christophe Andrieu and Gareth O. Roberts. 2009. The pseudo-marginal approach for efficient Monte Carlo com-putations. arXiv: Statistics Theory .Stephen Boyd and Lieven Vandenberghe. 2004. Convex Optimization . Cambridge University Press. Sourav Chatterjee and Persi Diaconis. 2018. The sample size required in importance sampling. The Annals of Applied Probability , 28. Zhijun Chen, Jingzheng Li, Pengpeng Chen, Zhuoran Li, Kai Sun, Yuankai Luo, Qianren Mao, Ming Li, Likang Xiao, Dingqi Yang, Yikun Ban, Hailong Sun, and Philip S. Yu. 2025. Harnessing multiple large language models: A survey on LLM ensemble. Preprint , arXiv:2502.18036. Jasper Dekoninck, Marc Fischer, Luca Beurer-Kellner, and Martin Vechev. 2024. Controlled text generation via language model arithmetic. In International Conference on Learning Representations .Pierre Del Moral, Arnaud Doucet, and Ajay Jasra. 2006. Sequential Monte Carlo samplers. Journal of the Royal Statistical Society: Series B (Statistical Methodology) ,68(3). Juan Luis Gastaldi, John Terilla, Luca Malagutti, Brian DuSell, Tim Vieira, and Ryan Cotterell. 2025. The foun-dations of tokenization: Statistical and computational concerns. In International Conference on Learning Rep-resentations .Saibo Geng, Hudson Cooper, Michał Moskal, Samuel Jenk-ins, Julian Berman, Nathan Ranchin, Robert West, Eric Horvitz, and Harsha Nori. 2025. JSONSchemaBench: A rigorous benchmark of structured outputs for language models. Preprint , arXiv:2501.10868. John Geweke. 1989. Bayesian inference in econometric models using Monte Carlo integration. Econometrica ,57(6). GlaiveAI. 2024. Glaive function calling dataset. Accessed: 2026-01-22. Neha Gupta, Harikrishna Narasimhan, Wittawat Jitkrittum, Ankit Singh Rawat, Aditya Krishna Menon, and Sanjiv Kumar. 2024. Language model cascades: Token-Level uncertainty and beyond. In International Conference on Learning Representations .Geoffrey E. Hinton. 1999. Products of experts. In Proceed-ings of the International Conference on Artificial Neural Networks , volume 1. Institution of Electrical Engineers. Geoffrey E. Hinton. 2002. Training products of experts by minimizing contrastive divergence. Neural Computing ,14(8). Yichong Huang, Xiaocheng Feng, Baohang Li, Yang Xiang, Hui Wang, Ting Liu, and Bing Qin. 2024. Ensemble learning for heterogeneos large language models with deep parallel collaboration. In Conference on Neural Information Processing Systems .Dongfu Jiang, Xiang Ren, and Bill Yuchen Lin. 2023. LLM-Blender: Ensembling large language models with pair-wise ranking and generative fusion. In Proceedings of the Annual Meeting of the Association for Computational Linguistics .Lifeng Jin, Baolin Peng, Linfeng Song, Haitao Mi, Ye Tian, and Dong Yu. 2024. Collaborative decoding of critical tokens for boosting factuality of large language models. 
+
+Preprint , arXiv:2402.17982. Wittawat Jitkrittum, Neha Gupta, Aditya Krishna Menon, Harikrishna Narasimhan, Ankit Singh Rawat, and San-jiv Kumar. 2023. When does confidence-based cascade deferral suffice? In Conference on Neural Information Processing Systems .Michael I. Jordan and Robert A. Jacobs. 1994. Hierarchi-cal mixtures of experts and the EM algorithm. Neural Computing , 6(2). Muhammad Khalifa, Lajanugen Logeswaran, Moontae Lee, Honglak Lee, and Lu Wang. 2023. Exploring demonstra-tion ensembling for in-context learning. In ICLR 2023 Workshop on Mathematical and Empirical Understanding of Foundation Models .9Ensembling Language Models with Sequential Monte Carlo 
+
+J. Kittler, M. Hatef, R.P.W. Duin, and J. Matas. 1998. On combining classifiers. IEEE Transactions on Pattern Analysis and Machine Intelligence , 20(3). Alexander K. Lew, Tan Zhi-Xuan, Gabriel Grand, and Vikash Mansinghka. 2023. Sequential Monte Carlo steer-ing of large language models using probabilistic pro-grams. In ICML Workshop: Sampling and Optimization in Discrete Space .Tianlin Li, Qian Liu, Tianyu Pang, Chao Du, Qing Guo, Yang Liu, and Min Lin. 2024. Purifying large language models by ensembling a small language model. Preprint ,arXiv:2402.14845. Xiang Lisa Li, Ari Holtzman, Daniel Fried, Percy Liang, Jason Eisner, Tatsunori Hashimoto, Luke Zettlemoyer, and Mike Lewis. 2023. Contrastive decoding: Open-ended text generation as optimization. In Proceedings of the Annual Meeting of the Association for Computational Linguistics .Hunter Lightman, Vineet Kosaraju, Yuri Burda, Harrison Ed-wards, Bowen Baker, Teddy Lee, Jan Leike, John Schul-man, Ilya Sutskever, and Karl Cobbe. 2024. Let’s verify step by step. In International Conference on Learning Representations .Ben Lipkin, Benjamin LeBrun, Jacob Hoover Vigly, João Loula, David R. MacIver, Li Du, Jason Eisner, Ryan Cotterell, Vikash Mansinghka, Timothy J. O’Donnell, Alexander K. Lew, and Tim Vieira. 2025. Fast controlled generation from language models with adaptive weighted rejection sampling. In Conference on Language Model-ing .Alisa Liu, Maarten Sap, Ximing Lu, Swabha Swayamdipta, Chandra Bhagavatula, Noah A. Smith, and Yejin Choi. 2021. DExperts: Decoding-time controlled text genera-tion with experts and anti-experts. In Proceedings of the Annual Meeting of the Association for Computational Lin-guistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers) .Cong Liu, Xiaojun Quan, Yan Pan, Liang Lin, Weigang Wu, and Xu Chen. 2024. Cool-Fusion: Fuse large language models without training. Preprint , arXiv:2407.19807. Llama Team. 2024. The Llama 3 herd of models. Preprint ,arXiv:2407.21783. João Loula, Benjamin LeBrun, Li Du, Ben Lipkin, Clemente Pasti, Gabriel Grand, Tianyu Liu, Yahya Emara, Marjorie Freedman, Jason Eisner, Ryan Cotterell, Vikash Mans-inghka, Alexander K. Lew, Tim Vieira, and Timothy J. O’Donnell. 2025. Syntactic and semantic control of large language models via sequential Monte Carlo. In Interna-tional Conference on Learning Representations .Keming Lu, Hongyi Yuan, Runji Lin, Junyang Lin, Zheng Yuan, Chang Zhou, and Jingren Zhou. 2024. Routing to the expert: Efficient reward-guided ensemble of large language models. In Proceedings of the Conference of the North American Chapter of the Association for Com-putational Linguistics: Human Language Technologies .Costas Mavromatis, Petros Karypis, and George Karypis. 2024. Pack of LLMs: Model fusion at test-time via perplexity optimization. In Conference on Language Modeling .Ning Miao, Hao Zhou, Lili Mou, Rui Yan, and Lei Li. 2019. CGMH: Constrained sentence generation by Metropolis-Hastings sampling. Proceedings of the AAAI Conference on Artificial Intelligence , 33. Art B. Owen. 2013. Monte Carlo theory, methods and examples , chapter 9. https://artowen.su.domains/ mc/ . Accessed: 2025-03-15. Kanghee Park, Jiayu Wang, Taylor Berg-Kirkpatrick, Na-dia Polikarpova, and Loris D’Antoni. 2024. Grammar-aligned decoding. In Conference on Neural Information Processing Systems .Buu Phan, Brandon Amos, Itai Gat, Marton Havasi, Matthew J. Muckley, and Karen Ullrich. 2025. Exact byte-level probabilities from tokenized language models for FIM-tasks and model ensembles. In International Conference on Learning Representations .Buu Phan, Ashish J Khisti, and Karen Ullrich. 2026. Cross-tokenizer likelihood scoring algorithms for language model distillation. In International Conference on Learn-ing Representations .Gabriel Poesia, Alex Polozov, Vu Le, Ashish Tiwari, Gus-tavo Soares, Christopher Meek, and Sumit Gulwani. 2022. Synchromesh: Reliable code generation from pre-trained language models. In International Conference on Learn-ing Representations .Felipe Maia Polo, Ronald Xu, Lucas Weber, Mírian Silva, Onkar Bhardwaj, Leshem Choshen, Allysson Flavio Melo de Oliveira, Yuekai Sun, and Mikhail Yurochkin. 2024. Efficient multi-prompt evaluation of LLMs. In Confer-ence on Neural Information Processing Systems .Lianhui Qin, Sean Welleck, Daniel Khashabi, and Yejin Choi. 2022. COLD decoding: Energy-based constrained text generation with langevin dynamics. In Conference on Neural Information Processing Systems .Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya Sutskever, et al. 2019. Language models are unsupervised multitask learners. OpenAI blog , 1(8). 10 Ensembling Language Models with Sequential Monte Carlo 
+
+Christian P. Robert and George Casella. 2005. Monte Carlo Statistical Methods . Springer-Verlag. Sheldon M. Ross. 2023. Additional variance reduction techniques. In Simulation , sixth edition. Academic Press. Tal Shnitzer, Anthony Ou, Mírian Silva, Kate Soule, Yuekai Sun, Justin Solomon, Neil Thompson, and Mikhail Yurochkin. 2024. Large language model routing with benchmark datasets. In Conference on Language Model-ing .Ruoxi Sun, Sercan Arik, Rajarishi Sinha, Hootan Nakhost, Hanjun Dai, Pengcheng Yin, and Tomas Pfister. 2023. SQLPrompt: In-context text-to-SQL with minimal la-beled data. In Findings of the Association for Computa-tional Linguistics: EMNLP 2023 .Mirac Suzgun, Nathan Scales, Nathanael Schärli, Sebas-tian Gehrmann, Yi Tay, Hyung Won Chung, Aakanksha Chowdhery, Quoc Le, Ed Chi, Denny Zhou, and Jason Wei. 2023. Challenging BIG-bench tasks and whether chain-of-thought can solve them. In Findings of the Asso-ciation for Computational Linguistics: ACL 2023 .Tim Vieira, Benjamin LeBrun, Mario Giulianelli, Juan Luis Gastaldi, Brian DuSell, John Terilla, Timothy J. O’Donnell, and Ryan Cotterell. 2025a. From language models over tokens to language models over characters. In International Conference on Machine Learning .Tim Vieira, Tianyu Liu, Clemente Pasti, Yahya Emara, Brian DuSell, Benjamin LeBrun, Mario Giulianelli, Juan Luis Gastaldi, John Terilla, Timothy J. O’Donnell, and Ryan Cotterell. 2025b. Language models over canonical byte-pair encodings. In International Conference on Machine Learning .Yangyifan Xu, Jinliang Lu, and Jiajun Zhang. 2024. Bridg-ing the gap between different vocabularies for LLM en-semble. In Proceedings of the Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies .An Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, Huan Lin, Jian Yang, Jianhong Tu, Jianwei Zhang, Jianxin Yang, Jiaxi Yang, Jingren Zhou, Junyang Lin, Kai Dang, Keming Lu, Keqin Bao, Kexin Yang, Le Yu, Mei Li, Mingfeng Xue, Pei Zhang, Qin Zhu, Rui Men, Runji Lin, Tianhao Li, Tianyi Tang, Tingyu Xia, Xingzhang Ren, Xuancheng Ren, Yang Fan, Yang Su, Yichang Zhang, Yu Wan, Yuqiong Liu, Zeyu Cui, Zhenru Zhang, and Zihan Qiu. 2025. Qwen2.5 technical report. Preprint , arXiv:2412.15115. Yuxuan Yao, Han Wu, Mingyang LIU, Sichun Luo, Xiong-wei Han, Jie Liu, Zhijiang Guo, and Linqi Song. 2025. Determine-then-ensemble: Necessity of top-k union for large language model ensembling. In International Con-ference on Learning Representations .Tao Yu, Rui Zhang, Kai Yang, Michihiro Yasunaga, Dongxu Wang, Zifan Li, James Ma, Irene Li, Qingning Yao, Shanelle Roman, Zilin Zhang, and Dragomir Radev. 2018. Spider: A large-scale human-labeled dataset for complex and cross-domain semantic parsing and text-to-SQL task. In Proceedings of the Conference on Empirical Methods in Natural Language Processing .Yao-Ching Yu, Chun Chih Kuo, Ye Ziqi, Chang Yucheng, and Yueh-Se Li. 2024. Breaking the ceiling of the LLM community by treating token generation as a classifica-tion for ensembling. In Findings of the Association for Computational Linguistics: EMNLP 2024 .Maosen Zhang, Nan Jiang, Lei Li, and Yexiang Xue. 2020. Language generation via combinatorial constraint satis-faction: A tree search enhanced Monte-Carlo approach. In Findings of the Association for Computational Linguis-tics: EMNLP 2020 .Stephen Zhao, Rob Brekelmans, Alireza Makhzani, and Roger Baker Grosse. 2024. Probabilistic inference in language models via twisted sequential Monte Carlo. In 
+
+International Conference on Machine Learning .11 Ensembling Language Models with Sequential Monte Carlo 
+
+A. Related Work 
+
+Ensembling Language Models. A recent survey by Chen et al. (2025) taxonomizes recent work around language model ensembling. Namely, they categorize these works into three major groups based on the stage where ensembling occurs: 
+
+before , during , and after decoding. Methods applied before decoding typically involve routing queries to specific models based on predicted performance or cost, such as the classification-based routing by Shnitzer et al. (2024) or reward-guided methods like Zooter (Lu et al., 2024). Conversely, after decoding approaches focus on selecting or fusing complete responses generated by multiple models; prominent examples include pairwise ranking in LLM-Blender (Jiang et al., 2023), best-of-N
+
+sampling (Lightman et al., 2024), or cascade systems (Jitkrittum et al., 2023; Gupta et al., 2024). Finally, ensembling during 
+
+decoding involves aggregating predictions at the token or span level to guide generation, which is the subject of this study. 
+
+Ensembling Language Models During Sampling. Existing methods for combining language models at the token level often grapple with the vocabulary alignment problem: incompatible tokenizers yield distributions over mismatching vocabularies. To address this, recent works have proposed mapping distributions into a shared space to enable probability aggregation. For instance, Yu et al. (2024) introduce a union vocabulary approach, projecting distributions onto a superset of tokens from all participating models, then computing the average token probability across models. Yao et al. (2025) refine this by constructing a union over only the top-k tokens, thereby reducing computational overhead while maintaining alignment. Alternatively, approaches like DeePEn (Huang et al., 2024) and EVA (Xu et al., 2024) bypass explicit vocabulary unification by projecting outputs into a shared relative embedding space or using pivot mechanisms to fuse distributions. Other techniques, such as PackLLM (Mavromatis et al., 2024), focus on dynamic weighting, adjusting the influence of each model based on step-wise perplexity. Most relatedly, Phan et al. (2025) implements an experiment for combining byte-level language models of different model families via probability averaging. Crucially, the main focus of many of these papers lies in developing heuristics for dealing with the vocabulary alignment problem, while applying averages (Yu et al., 2024; Xu et al., 2024; Yao et al., 2025) or some type of weighted averages (Huang et al., 2024; Mavromatis et al., 2024; Jin et al., 2024; Li et al., 2024) to the token probabilities. In our work, we leverage prior methods for mapping language models to a shared character vocabulary (Phan et al., 2025; Vieira et al., 2025a), which sidesteps the alignment problem entirely. This allows us to focus on a different question: in what other ways can language model distributions be combined? We explore alternatives to probability averaging and propose an SMC-based ensembling algorithm that enables, in the limit, consistent sampling from the combined distribution. 
+
+Approximate Posterior Inference for Large Language Models During Sampling. A growing line of work formulates constrained generation from language models as posterior inference, employing approximate inference algorithms to sample from intractable target distributions. Several approaches have been explored, including rejection sampling (Poesia et al., 2022; Lipkin et al., 2025), MCMC methods (Miao et al., 2019; Zhang et al., 2020; Qin et al., 2022), and sequential Monte Carlo (Lew et al., 2023; Zhao et al., 2024; Loula et al., 2025). Of these, SMC is particularly well-suited to language models as it exploits autoregressive factorization, avoiding the need to re-evaluate entire sequences after each modification. Lew et al. (2023) introduced SMC steering of LMs via probabilistic programs, enabling globally consistent sampling from conditional targets while only computing local constraints. Zhao et al. (2024) developed learned twist functions via contrastive training to guide SMC toward high-value completions, along with bidirectional bounds on the log-partition function for evaluating inference quality. Most recently, Loula et al. (2025) applied SMC to sample from the global product of a language model and various syntactic and semantic potentials, demonstrating improved performance from better posterior approximations. These prior works focus on combining a single language model with external constraints (e.g., grammars, semantic specifications). In contrast, we study the composition of multiple language models via general aggregation functions f ,where the target distribution arises from the models themselves rather than auxiliary constraints. This setting introduces distinct challenges: the choice of f induces qualitatively different ensemble behaviors, and we systematically study how both f and approximation quality affect downstream performance. 
+
+B. Limitations 
+
+We acknowledge the following limitations of our paper. 
+
+Computational cost. Our approach relies on sequential Monte Carlo, which, as noted by Loula et al. (2025), introduces inference-time overhead relative to standard decoding due to maintaining multiple particles and performing resampling. This cost is amplified at the byte level: sequences require more SMC steps, and computing byte-level next-symbol probabilities from tokenized LMs requires marginalizing over admissible tokenizations. However, we note that SMC can operate 12 Ensembling Language Models with Sequential Monte Carlo 
+
+in parallel across particles, and recent work on speculative decoding and efficient inference may help mitigate these costs. Moreover, for applications where output quality is important—such as high-stakes decision-making or constrained generation—the improved accuracy from better posterior approximations may justify the additional computation. 
+
+Number of experts. We focus on ensembling two language models to enable controlled analysis of pairwise interactions between experts and aggregation functions. This design choice allows us to isolate the effects of different f -ensembles without confounding factors from complex multi-expert dynamics. Our framework naturally extends to K > 2 experts, which may yield further performance gains through increased diversity. We leave systematic study of scaling the number of experts to future work. 
+
+Scope of ensembling. As discussed in Appendix A, our work focuses on ensembling language models during decoding, i.e., combining next-token distributions at each generation step. This is distinct from other inference—time combination strategies. Model routing (Shnitzer et al., 2024) selects a single model per query, avoiding the cost of running multiple models but forgoing the benefits of combining their predictions at the token level. Post-hoc methods like best-of-N
+
+(Lightman et al., 2024) or LLM-Blender (Jiang et al., 2023) generate complete outputs from each model and then select or fuse among them, enabling comparison of full sequences but requiring multiple complete generations. Our during-decoding approach intervenes at every token, allowing the ensemble to steer generation toward globally promising regions before committing to a full sequence. These paradigms are complementary: for instance, during-decoding ensembles could be combined with post-hoc reranking for further gains. 
+
+Model selection. We evaluate instruction-tuned models (Llama, Qwen, Phi) in the 7–14B parameter range. This choice balances experimental tractability with practical relevance; these models are widely deployed and accessible to practitioners. We do not evaluate reasoning-specialized models (e.g., models trained with chain-of-thought or process supervision) or larger frontier models, which may exhibit different ensembling dynamics. Exploring whether consensus-seeking ensembles can combine the strengths of specialized reasoners is a promising direction for future work. 
+
+Task selection. We evaluate on structured text generation tasks (JSON schema conformance, word sorting, text-to-SQL) with objective, binary correctness criteria. This choice is deliberate: structured tasks allow resampling effects to manifest over multiple generation steps, and objective evaluation enables rigorous comparison of methods. Our findings demonstrate clear benefits from consensus-seeking ensembles and better posterior approximations in this setting. Whether these benefits transfer to open-ended generation tasks (e.g., creative writing, dialogue) remains an open question, as evaluation in such settings is harder to evaluate. 
+
+C. Tokenized Language Models 
+
+Modern language models are typically designed as probability distributions over strings of tokens rather than over strings of bytes. Although one byte string admits only one tokenization, multiple sequences of tokens may correspond to the same string of bytes. This has two fundamental consequences. First, the LM may spread probability mass among multiple valid tokenizations of a byte string (Phan et al., 2025; Vieira et al., 2025a;b). Second, when comparing the probability that two different models assign to a given string—as we do in the ensemble framework—one cannot directly compare token-level probabilities because the models may tokenize the string differently. To combine such models, we must map them to a common space. As all valid tokenizations of a string ultimately decode to the string itself, one possible way is to consider the probability distribution over byte strings. 14,15 This section formalizes this connection through the notion of a tokenized language model . In order to introduce this notion, we define a tokenization model (Gastaldi et al., 2025) as a tuple ⟨Σ, ∆, τ , κ ⟩, where ∆ and Σ are respectively the token and byte alphabet, τ : Σ ∗ → ∆∗ is the tokenizer, and κ : ∆ ∗ → Σ∗ is a decoding function that must satisfy κ(τ (x)) = x.
+
+Definition C.1. Let ∆ be an alphabet of token symbols, Σ an alphabet of character symbols, and p∆ a language model over 
+
+∆∗. A tokenized language model pΣ is a language model over Σ∗ that is induced by the decoding function κ : ∆ ∗ → Σ∗:
+
+pΣ(x) def 
+
+= P 
+
+> Y∼p∆
+
+[κ(Y ) = x] (15) Note that pΣ(x) correctly accounts for the fact that many token strings Y may map to a given character string x through the      
+
+> 14 In practice, we first use a layer for mapping character strings to byte strings B∗, where B={0, ..., 255 }.
+> 15 Note that an alternative approach is to map a language model’s distribution to another language model’s tokenization space (Phan et al., 2026).
+
+13 Ensembling Language Models with Sequential Monte Carlo 
+
+decoding function κ. The prefix probability ⃗p Σ follows automatically from Eqs. (1) and (2). 
+
+D. Deferred Proofs 
+
+D.1. Importance Sampling Proposition D.1. Importance sampling has the following guarantees: 1. The estimated normalization constant is unbiased: 
+
+E  
+
+> x(1) ,..., x(M)i.i.d.
+> ∼r
+
+h bZ
+
+i
+
+= Z (16) 
+
+2. The estimated target function is unbiased: 
+
+E  
+
+> x(1) ,..., x(M)i.i.d.
+> ∼r
+
+[bφ(x)] = φ(x) (17) 
+
+3. The estimated distribution is consistent: 
+
+lim   
+
+> M→∞
+
+E  
+
+> x(1) ,..., x(M)i.i.d.
+> ∼r
+
+hbΦ( x)
+
+i
+
+= Φ( x) (18) 
+
+Proof. Part (1). The fact that bZ is an unbiased estimator of Z follows from the definition of E and its linearity under the assumption that r(x) = 0 = ⇒ φ(x) = 0 for all x ∈ Σ∗ (e.g., Ross, 2023): 
+
+E  
+
+> x(1) ,..., x(M)i.i.d.
+> ∼r
+
+h bZ
+
+i
+
+= E  
+
+> x(1) ,..., x(M)i.i.d.
+> ∼r
+
+"
+
+1
+
+M
+
+> M
+
+X
+
+> m=1
+
+w(m)
+
+#
+
+[Def. 5.1] (19a) 
+
+= 1
+
+M
+
+> M
+
+X
+
+> m=1
+
+E 
+
+> x(m)i.i.d.
+> ∼r
+
+h
+
+w(m)i
+
+[Independence] (19b) 
+
+= 1
+
+M
+
+> M
+
+X
+
+> m=1
+
+E
+
+> x∼r
+
+ φ(x)
+
+r(x)
+
+
+
+[Identicality] (19c) 
+
+= E
+
+> x∼r
+
+ φ(x)
+
+r(x)
+
+
+
+[Algebra] (19d) 
+
+= X
+
+> x∈Σ∗
+
+r(x) φ(x)
+
+r(x) [Def. of E] (19e) 
+
+= X
+
+> x∈Σ∗
+
+φ(x) [Algebra, Absolute Continuity] (19f) 
+
+= Z (19g) 
+
+Part (2). Under the same assumptions as above, we similarly show that bφ is an unbiased estimator of φ. Choose x ∈ Σ∗
+
+14 Ensembling Language Models with Sequential Monte Carlo 
+
+arbitrarily. 
+
+E  
+
+> x(1) ,..., x(M)i.i.d.
+> ∼r
+
+[bφ(x)] = E  
+
+> x(1) ,..., x(M)i.i.d.
+> ∼r
+
+"
+
+1
+
+M
+
+> M
+
+X
+
+> m=1
+
+w(m)1{x = x(m)}
+
+#
+
+[Eq. (8)] (20a) 
+
+= 1
+
+M
+
+> M
+
+X
+
+> m=1
+
+E 
+
+> x(m)i.i.d.
+> ∼r
+
+w(m)1{x = x(m)} [Independence] (20b) 
+
+= E
+
+> x′∼r
+
+ φ(x′)
+
+r(x′) 1{x = x′}
+
+
+
+[Definition of importance weight] (20c) 
+
+= X
+
+> x′∈Σ∗
+
+r(x′) φ(x′)
+
+r(x′) 1{x = x′} [Def. of E] (20d) 
+
+= X
+
+> x′∈Σ∗
+
+φ(x′)1{x = x′} [Algebra, Absolute Continuity] (20e) 
+
+= φ(x) (20f) 
+
+Part (3). Pick x ∈ Σ∗ arbitrarily, then consistency of the estimator follows under mild assumptions, the strong law of large numbers (SLLN) (e.g., Geweke, 1989; Owen, 2013), gives us the following 
+
+lim   
+
+> M→∞
+
+E  
+
+> x(1) ,..., x(M)i.i.d.
+> ∼r
+
+hbΦ( x)
+
+i
+
+= lim   
+
+> M→∞
+
+E  
+
+> x(1) ,..., x(M)i.i.d.
+> ∼r
+
+" 1
+
+> M
+
+PMm=1 w(m)1{x = x(m)}
+
+> 1
+> M
+
+PMm=1 w(m)
+
+#
+
+[Def. 5.1] (21a) 
+
+= Ex′∼r
+
+h φ(x′) 
+
+> r(x′)
+
+1{x = x′}
+
+i
+
+Ex′∼r
+
+h φ(x′)
+
+> r(x′)
+
+i [a.s. under SLLN] (21b) 
+
+= φ(x)
+
+Z [ bZ, bφ unbiased] (21c) 
+
+= Φ( x) [Def. 4.1] (21d) 
+
+■
+
+Proposition 5.2. The locally optimal proposal distribution i.e., the one that minimizes the variance of the importance weight update at each step, is ⃗r ∗(x′ | x) ∝⃗ ψ(x′ | x).Proof. Suppose we fix a given string x, and we wanted to choose the proposal distribution ⃗r(· | x) to minimize the variance of the importance weight 
+
+w(x′, x) def 
+
+=⃗ ψ(x′ | x)⃗r(x ′ | x) (22) The expected value of the importance weight is 
+
+E
+
+> x′∼⃗r(·| x)
+
+"⃗ψ(x′ | x)⃗r(x ′ | x)
+
+#
+
+= X
+
+> x′′ ∈Σ
+
+⃗r(x ′ | x)⃗ ψ(x′ | x)⃗r(x ′ | x) = X
+
+> x′∈Σ
+
+⃗ψ(x′ | x) (23a) Thus, the variance of the weight is 15 Ensembling Language Models with Sequential Monte Carlo 
+
+Var (w(x′, x)) x′∼⃗r(·| x) = E
+
+> x′∼⃗r(·| x)
+
+w(x′, x)2 − X
+
+> x′∈Σ
+
+⃗ψ(x′ | x)
+
+!2
+
+(24a) 
+
+= − X
+
+> x′∈Σ
+
+⃗ψ(x′ | x)
+
+!2
+
++ X
+
+> x′∈Σ
+
+⃗r(x ′ | x)⃗ ψ(x′ | x)2⃗r(x ′ | x)2 (24b) 
+
+= − X
+
+> x′∈Σ
+
+⃗ψ(x′ | x)
+
+!2
+
++ X
+
+> x′∈Σ
+
+⃗ψ(x′ | x)2⃗r(x ′ | x) (24c) Our goal is to minimize Eq. (24a) under the constraints that the proposal should be a valid probability distribution over tokens, i.e., ⃗r(x ′ | x) ≥ 0 for all x′ and P
+
+> x′∈Σ
+
+⃗r(x ′ | x) = 1 . We can formulate this problem using the method of Lagrange multipliers, i.e., 
+
+L = − X
+
+> x′∈Σ
+
+⃗ψ(x′ | x)
+
+!2
+
++ X
+
+> x′∈Σ
+
+⃗ψ(x′ | x)2⃗r(x ′ | x) − λ 1 − X
+
+> x′∈Σ
+
+⃗r(x ′ | x)
+
+!
+
+(25) as a function of the Lagrange multiplier λ. Then, 
+
+∂∂⃗ r(x ′′ | x) L = X
+
+> x′∈Σ
+
+∂∂⃗ r(x ′′ | x)⃗ψ(x′ | x)2⃗r(x ′ | x) + λ X
+
+> x′∈Σ
+
+∂∂⃗ r(x ′′ | x)⃗r(x ′ | x) (26a) 
+
+= X
+
+> x′∈Σ
+
+−⃗ ψ(x′ | x)2⃗r(x ′ | x)2 1{x′ = x′′ } + λ X
+
+> x′∈Σ
+
+1{x′ = x′′ } (26b) 
+
+= −⃗ ψ(x′′ | x)2⃗r(x ′′ | x)2 + λ (26c) Solving for ∂L ∂⃗ r(x ′′ |x) = 0 gives 
+
+0 = −⃗ ψ(x′′ | x)2⃗r(x ′′ | x)2 + λ (27a) ⃗r(x ′′ | x)2 =⃗ ψ(x′′ | x)2
+
+λ (27b) ⃗r(x ′′ | x) = ±
+
+s⃗ψ(x′′ | x)2
+
+λ (27c) As ⃗r(x ′ | x) ≥ 0, the only valid solution is ⃗r ∗(x′ | x) = ⃗ ψ(x′′ |x) 
+
+> √λ
+
+. Substituting the optimal choice into ⃗r(x ′ | x) into the constraint P
+
+> x′∈Σ
+
+⃗r(x ′ | x) = 1 and solving for the value of √λ that makes it hold 
+
+1 = X
+
+> x′′ ∈Σ
+
+⃗r ∗(x′′ | x) (28a) 
+
+= X
+
+> x′′ ∈Σ
+
+⃗ψ(x′′ | x)
+
+√λ (28b) 
+
+√λ = X
+
+> x′′ ∈Σ
+
+⃗ψ(x′′ | x) (28c) Thus, the optimal choice for ⃗r(· | x) is ⃗r ∗(x′′ | x) ∝⃗ ψ(x′′ | x). In the context of the Karush-Kuhn-Tucker conditions, the nonnegativity constraints are inactive at the optimum (since all components of ⃗r are strictly positive), which justifies why the Lagrangian can be formulated using only the equality constraint. We also note that this is a convex quadratic subject to linear constraints; thus, the solution is globally optimal (Chapter 4; Boyd and Vandenberghe, 2004). ■
+
+16 Ensembling Language Models with Sequential Monte Carlo 
+
+D.2. Absolute Continuity and f
+
+The discussion of absolute continuity raises a practical question: for what f does our standard choice of shaping function, ⃗ψ(x) = f (⃗p 1(x), ... ,⃗ p K (x)) , automatically satisfy this requirement? 
+
+Definition D.1. For our choice of shaping function (cf. §5.2), the absolute continuity condition ⃗ ψ(x) = 0 = ⇒⃗ Φ( x) = 0 
+
+imposes for f to fulfill 
+
+f (⃗p 1(x′), ... ,⃗ p K (x′)) = 0 = ⇒ f (p1(x), ... , p K (x)) = 0 (29) 
+
+for any prefix x′ of x. We call such a set of functions annihilative —that is, if any prefix of a string is mapped to zero, then the entire string must also be mapped to zero. 
+
+We note that when f does not satisfy annihilativity 16 ; this simply means that the standard shaping function ⃗ ψ(x) = 
+
+f (⃗p 1(x), ... , p K (x)) is not a suitable choice. However, simple modifications to our choice of ⃗ ψ(x) can recover absolute continuity. For instance, setting ⃗ ψ(x) = |f (⃗p 1(x′), ... ,⃗ p K (x′)) | + ϵ for ϵ > 0 may increase the variance of the importance weights, but ensures ⃗ ψ(x) > 0 for all x ∈ Σ∗.
+
+D.3. Alpha-Divergence Ensembles Theorem 4.1 (α-Divergence Ensembles) . Let Dα be the α-divergence with parameter α ∈ R \ { 0, 1}. The unique consensus distribution Φ∗ that minimizes the expert-weighted loss in Eq. (4) is the generalized mean of the experts, with power parameter τ def 
+
+= 1 − α:
+
+Φ∗(x) = 1
+
+Z
+
+> K
+
+X
+
+> k=1
+
+wkpk(x)τ
+
+! 1
+
+> τ
+
+(6) 
+
+where Z is the normalizer ensuring P 
+
+> x∈Σ∗
+
+Φ∗(x) = 1 .Proof. To find the optimal consensus distribution Φ∗, we minimize the expert-weighted sum of α-divergences subject to the constraint that Φ lies on the simplex (i.e., P 
+
+> x∈X
+
+Φ( x) = 1 ). We formulate the Lagrangian Λ:
+
+Λ(Φ , ν ) = 
+
+> K
+
+X
+
+> k=1
+
+wk
+
+α(1 − α) 1 − X
+
+> x∈X
+
+Φ( x)αpk(x)1−α
+
+!
+
++ ν X
+
+> x∈X
+
+Φ( x) − 1
+
+!
+
+.
+
+(30) We take the partial derivative with respect to Φ( x) for a specific element x ∈ X :
+
+∂Λ
+
+∂Φ( x) = −
+
+> K
+
+X
+
+> k=1
+
+wk
+
+α(1 − α) · αΦ( x)α−1pk(x)1−α + ν
+
+= − Φ( x)α−1
+
+1 − α
+
+> K
+
+X
+
+> k=1
+
+wkpk(x)1−α + ν. 
+
+(31) Setting the derivative to zero for stationarity: 
+
+ν = Φ( x)α−1
+
+1 − α
+
+> K
+
+X
+
+> k=1
+
+wkpk(x)1−α. (32) Rearranging to solve for Φ( x):
+
+Φ( x)α−1 = ν(1 − α)
+
+> K
+
+X
+
+> k=1
+
+wkpk(x)1−α
+
+!−1
+
+. (33) 
+
+> 16
+
+An example of non-annihilativity is the class of contrastive ensembles, e.g., f (p1, p 2) = ( p1(x) − p2(x)) 2, which are sometimes used for language model steering (Li et al., 2023; Dekoninck et al., 2024). 
+
+17 Ensembling Language Models with Sequential Monte Carlo 
+
+Raising both sides to the power of 1 
+
+> α−1
+
+(equivalently − 11−α ): 
+
+Φ( x) ∝
+
+> K
+
+X
+
+> k=1
+
+wkpk(x)1−α
+
+! 11−α
+
+. (34) Finally, enforcing the normalization constraint P 
+
+> x∈X
+
+Φ( x) = 1 yields the partition function Z, recovering the generalized mean form with exponent τ = 1 − α. ■
+
+Proposition D.2. The family of generalized means Mτ defined in Eq. (6) is annihilative for all τ ∈ R \ { 0} and the limit cases τ → ±∞ , and τ → 0.Proof. Let p1(x), ... , p K (x) denote the probabilities assigned to string x by K language models, and let x′ be a prefix of x.We denote the prefix probabilities by ⃗p 1(x′), ... ,⃗ p K (x′). We evaluate different domains of τ :1. τ > 0. For positive τ , we have 
+
+Mτ (⃗p 1(x′), ... ,⃗ p K (x′)) = 1
+
+K
+
+> K
+
+X
+
+> i=1
+
+⃗p i(x′)τ
+
+!1/τ 
+
+= 0 (35) if and only if PKi=1 ⃗p i(x′)τ = 0 . Since each term ⃗p i(x′)τ ≥ 0, this requires ⃗p i(x′) = 0 for all i ∈ { 1, ... , K }. By Eq. (3), this implies pk(x) = 0 , which implies 
+
+Mτ (p1(x), ... , p K (x)) = 0 . (36) Thus, annihilativity holds. 2. τ → 0. Taking the limit as τ → 0, we obtain the geometric mean: 
+
+M0(⃗p 1(x′), ... ,⃗ p K (x′)) = 
+
+> K
+
+Y
+
+> i=1
+
+⃗p i(x′)
+
+!1/K 
+
+= 0 (37) if and only if ⃗p i(x′) = 0 for at least one i ∈ { 1, ... , K }. By Eq. (3), if ⃗p i(x′) = 0 , then pi(x) = 0 , which implies 
+
+M0(p1(x), ... , p K (x)) = 
+
+
+
+> K
+
+Y
+
+> j=1
+
+pj (x)
+
+
+
+> 1/K
+
+= 0 . (38) Thus, annihilativity holds. 3. τ < 0. For negative τ , the generalized mean is defined by continuity: if any ⃗p i(x′) = 0 , we set Mτ = 0 . If 
+
+Mτ (⃗p 1(x′), ... ,⃗ p K (x′)) = 0 , then at least one ⃗p i(x′) = 0 . By Eq. (3), pi(x) = 0 , which implies 
+
+Mτ (p1(x), ... , p K (x)) = 0 . (39) Thus, annihilativity holds. 4. τ → ±∞ . In the limit τ → −∞ , we obtain M−∞ = min i⃗p i(x′), which equals zero if and only if at least one ⃗p i(x′) = 0 . In the limit τ → +∞, we obtain M+∞ = max i⃗p i(x′), which equals zero if and only if all ⃗p i(x′) = 0 . In both cases, by Eq. (3), the corresponding pi(x) = 0 , which implies M±∞ (p1(x), ... , p K (x)) = 0 . Thus, annihilativity holds. 
+
+■
+
+E. Experimental Details 
+
+We served models on two 24GB RTX 4090 GPUs and ran the SMC loop on one 24GB RTX 3090 GPU, where the generated predictions were aggregated. We used vLLM 17 for serving all models. The models are loaded in bfloat16 data type. The sampling temperature is set to 1.0.
+
+> 17 https://docs.vllm.ai/en/
+
+18 Ensembling Language Models with Sequential Monte Carlo 
+
+Runtime analysis. In Table 3, we show per sample, averaged runtimes for token-level, as well as byte-level SMC, and compare it to running inference on a single base model, and doing standard locally normalized ensembling. Local ensembling incurs approximately 3-4x overhead over base model inference, reflecting the cost of running two forward passes. Token-level SMC with M = 10 particles requires 15-24 seconds per instance, roughly 6-7x slower than local ensembling, with runtime scaling approximately linearly in M . Byte-level SMC is substantially more expensive, requiring 47-167 seconds per instance at M = 10 , comparable to token-level SMC with M = 75 . This increased cost reflects the longer sequence lengths at the byte level: each token expands to multiple bytes, proportionally increasing the number of SMC steps and the number of model calls required to score each particle. A way to improve runtimes is to enhance batching or optimize pruning in our byte-level language model.                                 
+
+> Table 3. Average per-instance runtime (seconds) on JSON. Token SMC and Byte SMC use Mparticles. Token SMC Byte SMC Model Base Model Local Ensemble M=10 M=25 M=75 M=10
+> Llama-3.1-8B 0.76 2.34 15.24 32.88 104.30 63.45 Phi-4 1.42 3.84 23.27 59.90 167.59 166.76 Qwen2.5-7B 0.79 2.96 18.89 45.64 124.50 47.52
+
+F. Prompts 
+
+As discussed in section 6, all of the models in our experiments are instruction-tuned. For SPIDER, we use the prompt from (Loula et al., 2025), which is based on the (Sun et al., 2023). For BBH, we use the prompt template from (Polo et al., 2024). The detailed prompt templates for SPIDER, Big-Bench Hard (Word Sorting), JSON Schema are given below. 19 Ensembling Language Models with Sequential Monte Carlo 
+
+F.1. JSON Schema 
+
+# Prompt 1 [{’role’: ’system’, ’content’: ’You need to generate a JSON object that matches the schema below. 
+
+,→ Output the JSON object on a single line. DO NOT use multiple lines and DO NOT 
+
+,→ output any other text.’ }, {’role’: user’, ’content’: ’<example schema input string>’}, {’role’: ’assistant’, ’content’: ’<example JSON output string>’}, {’role’: ’user’, ’content’: json.dumps(schema)}, ]# Prompt 2 [{’role’: ’system’, ’content’: ’Task: JSON object generation from schema specification.\n Input: JSON Schema (draft-04 or later)\n Output: Valid JSON object satisfying all schema constraints\n Format: Single-line JSON, no extraneous text’ }, {’role’: user’, ’content’: ’<example schema input string>’}, {’role’: ’assistant’, ’content’: ’<example JSON output string>’}, {’role’: ’user’, ’content’: json.dumps(schema)}, ]
+
+20 Ensembling Language Models with Sequential Monte Carlo 
+
+F.2. Big-Bench Hard (Word Sorting) 
+
+# Prompt 1 [{’role’: ’system’, ’content’: ’You are a helpful assistant that sorts words in alphabetical order. 
+
+,→ Your task is to take a list of words and return them sorted alphabetically. 
+
+,→ Alphabetical order means sorting words from A to Z, comparing character by 
+
+,→ character from left to right. For example, \’apple\’ comes before \’banana\’, and 
+
+,→ \’cat\’ comes before \’dog\’. When words start with the same letter, compare the 
+
+,→ next letters. Output ONLY the sorted words separated by commas, with no additional 
+
+,→ text, explanation, or commentary. Do not include any prefixes, suffixes, or extra 
+
+,→ formatting - just the comma-separated sorted words.’ }, {’role’: ’user’, ’content’: ’Sort the following words in alphabetical order.\n\nInput: <list of 
+
+,→ words>\nOutput:’ }]# Prompt 2 [{’role’: ’system’, ’content’: ’You are a helpful assistant that sorts words in alphabetical order. 
+
+,→ Your task is to take a list of words and return them sorted alphabetically. Output 
+
+,→ ONLY the sorted words separated by commas, with no additional text, explanation, 
+
+,→ or commentary.’ }, {’role’: ’user’, ’content’: ’<example input string> ->’}, {’role’: ’assistant’, ’content’: ’<example target string>’}, {’role’: ’user’, ’content’: ’<list of words> ->’} ]
+
+21 Ensembling Language Models with Sequential Monte Carlo 
+
+F.3. SPIDER 
+
+# Prompt 1 [{’role’: ’system’, ’content’: ’You are a coding assistant helping an analyst answer questions over 
+
+,→ business data in SQL. More specifically, the analyst provides you a database 
+
+,→ schema (tables in the database along with their column names and types) and asks a 
+
+,→ question about the data that can be solved by issuing a SQL query to the database. 
+
+,→ In response, you write the SQL statement that answers the question. You do not 
+
+,→ provide any commentary or explanation of what the code does, just the SQL 
+
+,→ statement ending in a semicolon.’ }, {’role’: ’user’, ’content’: ’Here is a database schema:\n\n<Table(Columns) Schema String> Please 
+
+,→ write me a SQL statement that answers the following question: <target question>\n\ 
+
+,→ nRemember, DO NOT provide any commentary or explanation of what the code does, 
+
+,→ just the SQL statement ending in a semicolon.’ }]# Prompt 2 [{’role’: ’system’, ’content’: ’You are a coding assistant helping an analyst answer questions over 
+
+,→ business data in SQL. More specifically, the analyst provides you a database 
+
+,→ schema (tables in the database along with their column names and types) and asks a 
+
+,→ question about the data that can be solved by issuing a SQL query to the database. 
+
+,→ In response, you write the SQL statement that answers the question. You do not 
+
+,→ provide any commentary or explanation of what the code does, just the SQL 
+
+,→ statement ending in a semicolon.\n Here is the database schema for all following 
+
+,→ queries: \n\n<Columns=[]+FK Schema String>’ }, {’role’: ’user’, ’content’: ’Please write me a SQL statement that answers the following question: 
+
+,→ <example question>\n\nRemember, DO NOT provide any commentary or explanation of 
+
+,→ what the code does, just the SQL statement ending in a semicolon.’ }, {’role’: ’assistant’, ’content’: ’<example SQL query>;’ }, {’role’: ’user’, ’content’: ’Please write me a SQL statement that answers the following question: 
+
+,→ <target question>\n\nRemember, DO NOT provide any commentary or explanation of 
+
+,→ what the code does, just the SQL statement ending in a semicolon.’ }]
+
+22 Ensembling Language Models with Sequential Monte Carlo 
+
+Table 4. Comparison of f -ensemble functions (token-level SMC). Bold : highest average expected accuracy in column. †: non-overlapping 95% CIs with best baseline. Shaded: strongest single-prompt baseline. JSON Schema BBH (Word Sorting) SPIDER (Text-to-SQL) 
+
+Method Qwen Phi Llama Qwen Phi Llama Qwen Phi Llama Prompt 1 95 .6±0.8 83 .5±1.9 86 .3±1.6 13 .9±1.0 27 .7±1.2 38 .6±1.5 40 .0±1.5 24 .2±1.5 38 .4±1.8
+
+Prompt 2 93 .8±0.9 79 .5±5.6 84 .3±2.5 5.8±0.9 24 .3±1.5 36 .5±1.9 53 .6±1.0 34 .5±1.7 36 .3±1.7
+
+min 95 .7±0.4 87 .4±0.3† 88 .9±1.1 15 .3±2.0 28 .2±1.1 42 .3±0.9† 51 .2±1.8 34 .2±0.7 41 .9±1.4†
+
+Product 96 .0±0.2 86 .4±1.0 88 .5±1.0 15 .2±1.4 27 .6±1.2 40 .9±0.7† 50 .9±1.1 30 .8±0.1 41 .7±1.7†
+
+Mixture 95 .3±0.8 81 .3±0.5 85 .1±1.3 9.8±1.0 26 .5±0.0 37 .4±0.7 45 .9±0.6 29 .4±0.1 38 .2±1.6
+
+max 95 .2±0.2 79 .3±1.1 83 .7±1.6 9.1±1.0 25 .4±1.3 34 .7±1.4 45 .9±0.7 29 .5±0.1 37 .9±1.7
+
+G. Additional Results 
+
+G.1. Detailed Ensembling Results 
+
+Complementarily to the condensed results shown in Table 2, we provide a version that is aggregated by ensembling method Table 4 which provides more detail on Figure 2, as well as the complete set of results in Table 5. 
+
+G.2. Prompt Performance Overlap and Resulting Ensemble Performance 
+
+Complementing our discussion in §6.2, we examine how base model agreement affects ensemble performance. Fig. 4 plots per-sample expected accuracy under each prompt, with color indicating product ensemble accuracy and marker opacity distinguishing samples where the ensemble exceeds the best single-prompt baseline. The results show that ensembles primarily improve performance on samples where prompts perform moderately (the diagonal), rather than those where one prompt dominates. This aligns with the mechanics of consensus-seeking: when experts disagree, the product ensemble’s gains are limited; however, when both partially succeed, the ensemble effectively concentrates probability on their intersection. The pattern varies across models. For Llama, substantial mass lies along the diagonal, providing ample opportunity for ensemble gains. In contrast, Qwen exhibits more polarized behavior: samples tend to cluster near the axes (one prompt succeeds, the other fails) or in corners (both succeed or both fail), leaving fewer samples on the diagonal, where ensembling may help. This may explain why Qwen shows smaller ensemble improvements in Table 5. 
+
+G.3. Particle Study 
+
+Finally, in Figure 5, Figure 6 and Figure 7, we plot the approximation quality as a function of the number of particles. As expected, as the number of particles increases, the approximation quality improves and variance reduces. Visually, we see that the increase in approximation quality saturates at around 10 to 25 particles for the evaluated scenarios. Following prior work by Loula et al. (2025), and to balance inference time with approximation cost, we choose to evaluate all setups using 10 particles. 
+
+G.4. Additional Correlation Computations 
+
+Complementing Figure 3, we provide complete plots for all models and datasets in Figure 8, Figure 9 and Figure 10, alongside the average per-sample Spearman correlation in Table 6. Note that these correlation values differ: the table reports the average per-sample correlation, whereas the figures display the correlation across the entire dataset using z-normalized values to account for sample difficulty. 23 Ensembling Language Models with Sequential Monte Carlo 
+
+Table 5. Table reporting expected ensemble and base model accuracy at equal model weights, 10 particles with 95% confidence intervals evaluated across 5 seeds. For cross-model ensembling, we choose the prompt which has the best overall average base performance across models. 
+
+f -Ensemble Big-Bench Hard (Word Sorting) SPIDER (Text-to-SQL) JSON Schema 
+
+Qwen phi Llama Qwen phi Llama Qwen phi Llama 
+
+Prompt 1 13 .9±1.0 27 .7±1.2 38 .6±1.5 40 .0±1.5 24 .2±1.5 38 .4±1.8 95 .6±0.8 83 .5±1.9 86 .3±1.6
+
+Prompt 2 5.8±0.9 24 .3±1.5 36 .5±1.9 53 .6±1.0 34 .5±1.7 36 .3±1.7 93 .8±0.9 79 .5±5.6 84 .3±2.5
+
+min , Token Local 15 .0±2.3 26 .8±5.1 45 .0±2.9 52 .6±1.4 36 .0±3.4 43 .2±2.1 95 .4±2.3 85 .0±1.5 87 .2±3.1
+
+min , Token SMC 15 .3±2.0 28 .2±1.1 42 .3±0.9 51 .2±1.8 34 .2±0.7 41 .9±1.4 95 .7±0.4 87 .4±0.3 88 .9±1.1
+
+min , Byte SMC 15 .5±0.1 23 .8±1.5 34 .0±1.4 47 .8±1.7 34 .5±0.9 41 .5±2.0 92 .8±1.0 87 .5±0.7 88 .9±1.4
+
+min ,Cross-Model Byte SMC Product, Token Local 14 .8±2.4 27 .2±5.1 43 .2±6.0 49 .4±2.9 32 .0±2.3 43 .6±3.4 95 .4±0.7 87 .2±4.4 88 .6±4.4
+
+Product, Token SMC 15 .2±1.4 27 .6±1.2 40 .9±0.7 50 .9±1.1 30 .8±0.1 41 .7±1.7 96 .0±0.2 86 .4±1.0 88 .5±1.0
+
+Product, Byte SMC 13 .9±1.9 22 .9±0.8 33 .9±1.8 48 .3±2.1 30 .1±3.1 42 .4±0.9 92 .6±0.6 87 .4±1.1 88 .4±0.7
+
+Product, Cross-Model Byte SMC Mixture, Token Local 9.6±3.0 25 .8±5.8 41 .2±6.5 45 .6±3.7 28 .4±4.8 39 .4±6.3 95 .2±3.2 82 .0±4.7 83 .4±3.5
+
+Mixture, Token SMC 9.8±1.0 26 .5±0.0 37 .4±0.7 45 .9±0.6 29 .4±0.1 38 .2±1.6 95 .3±0.8 81 .3±0.5 85 .1±1.3
+
+Mixture, Byte SMC 7.9±7.0 19 .3±0.5 26 .0±1.2 40 .2±3.3 25 .1±7.4 37 .0±2.2 92 .5±0.9 78 .2±4.2 86 .1±1.0
+
+Mixture, Cross-Model Byte SMC 
+
+max , Token Local 8.6±3.8 24 .6±5.8 37 .5±6.7 45 .8±4.2 28 .4±4.4 38 .0±4.3 96 .4±0.7 79 .4±4.5 82 .4±3.2
+
+max , Token SMC 9.1±1.0 25 .4±1.3 34 .7±1.4 45 .9±0.7 29 .5±0.1 37 .9±1.7 95 .2±0.2 79 .3±1.1 83 .7±1.6
+
+max , Byte SMC 8.2±0.6 18 .8±1.9 24 .2±1.9 40 .7±3.6 27 .9±2.1 37 .4±3.8 92 .1±1.6 76 .0±4.3 86 .1±1.2
+
+max ,Cross-Model Byte SMC 
+
+29 .4±1.7
+
+40 .0±2.8
+
+27 .6±1.6
+
+50 .9±2.3
+
+37 .6±1.7
+
+53 .4±1.9
+
+90 .8±1.3
+
+76 .6±3.0
+
+83 .6±1.9
+
+32 .6±1.1
+
+41 .1±1.0
+
+35 .1±3.9
+
+51 .7±2.9
+
+39 .1±3.0
+
+55 .5±1.1
+
+92 .6±0.9
+
+74 .8±4.6
+
+81 .9±3.7
+
+16 .7±5.6
+
+18 .7±4.4
+
+17 .9±0.3
+
+39 .5±2.4
+
+30 .2±1.7
+
+39 .1±2.3
+
+83 .7±1.8
+
+85 .1±1.3
+
+88 .3±0.9
+
+15 .1±0.1
+
+17 .5±1.5
+
+17 .2±2.1
+
+35 .8±2.3
+
+33 .3±2.3
+
+35 .3±4.6
+
+83 .1±1.8
+
+85 .2±1.0
+
+88 .7±1.1
+
+24 Ensembling Language Models with Sequential Monte Carlo 0.0 0.2 0.4 0.6 0.8 1.0
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> BBH Dataset Expected Accuracy, Prompt 2
+
+Qwen      
+
+> 0.00.20.40.60.81.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+
+Llama      
+
+> 0.00.20.40.60.81.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+
+Phi                     
+
+> 0.00.20.40.60.81.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Spider Dataset Expected Accuracy, Prompt 2
+> 0.00.20.40.60.81.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.00.20.40.60.81.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.00.20.40.60.81.0
+
+Expected Accuracy, Prompt 1      
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> JSON Dataset Expected Accuracy, Prompt 2
+> 0.00.20.40.60.81.0
+
+Expected Accuracy, Prompt 1      
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.00.20.40.60.81.0
+
+Expected Accuracy, Prompt 1       
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.00.20.40.60.81.0
+> Product Ensemble Expected Accuracy
+> Alpha encoding Acc ens <max(Acc 1,Acc 2)Acc ens ≥max(Acc 1,Acc 2)
+
+Figure 4. Scatter plots comparing expected accuracy of two prompt templates for all datasets and models. Color indicates product ensemble (token-level SMC) expected accuracy. Points with higher alpha indicate cases where the ensemble exceeds the best single template. Marker size scales with the improvement margin. 
+
+Table 6. Average per-sample Spearman correlation ( r) between log bZ and expected accuracy. Values are reported as the mean of sample-level correlations ± standard error. Significance levels ( ∗∗∗ p < 0.001 , ∗∗ p < 0.01 , ∗p < 0.05 ) are determined via a one-sample 
+
+t-test against zero. Note that these values deviate from those in Figure 3, Figure 8, Figure 10, Figure 9 because they are computed per sample and then averaged. BBH (Word Sorting) SPIDER (Text-to-SQL) JSON Schema 
+
+Method Qwen Phi Llama Qwen Phi Llama Qwen Phi Llama 
+
+min 0.01 ±0.07 0.15 ±0.04 ∗∗∗ 0.22 ±0.04 ∗∗∗ 0.04 ±0.03 −0.03 ±0.03 0.09 ±0.03 ∗∗ 0.08 ±0.03 ∗ 0.12 ±0.03 ∗∗∗ 0.12 ±0.02 ∗∗∗ 
+
+Product 0.03 ±0.06 0.18 ±0.04 ∗∗∗ 0.28 ±0.04 ∗∗∗ 0.08 ±0.05 0.09 ±0.05 0.16 ±0.04 ∗∗∗ 0.16 ±0.03 ∗∗∗ 0.21 ±0.02 ∗∗∗ 0.31 ±0.03 ∗∗∗ 
+
+Sum 0.03 ±0.03 0.00 ±0.03 −0.05 ±0.02 ∗ −0.03 ±0.03 −0.03 ±0.02 −0.02 ±0.02 0.03 ±0.03 −0.01 ±0.02 −0.02 ±0.02 
+
+max −0.07 ±0.06 −0.01 ±0.04 −0.14 ±0.04 ∗∗∗ −0.05 ±0.03 −0.09 ±0.03 ∗∗ 0.04 ±0.02 −0.05 ±0.04 −0.05 ±0.02 ∗ −0.01 ±0.02 
+
+25 Ensembling Language Models with Sequential Monte Carlo min product sum max 
+
+Llama-3.1-8B-Instruct 
+
+min product sum max 
+
+Phi-4 
+
+12 5 10 25 50 75 12 5 10 25 50 75 12 5 10 25 50 75 12 5 10 25 50 75 
+
+Method (Particle Count) min product sum max 
+
+Qwen2.5-7B-Instruct 
+
+-0.60 
+
+-0.58 
+
+-0.56 
+
+-0.54 
+
+-0.52 
+
+> est. log  Z−KL( qalg || Φ)
+
+-0.23 -0.23 -0.22 -0.22 -0.21 
+
+-4.00e-5 -2.00e-5 0.00 2.00e-5 4.00e-5 
+
+0.33 0.34 0.34 0.35 0.35 
+
+-0.76 
+
+-0.74 
+
+-0.72 
+
+-0.70 
+
+> est. log  Z−KL( qalg || Φ)
+
+-0.27 -0.26 -0.25 -0.24 
+
+0.00 2.00e-5 4.00e-5 
+
+0.37 0.38 0.39 
+
+-0.84 
+
+-0.82 
+
+-0.80 
+
+-0.78 
+
+-0.76 
+
+> est. log  Z−KL( qalg || Φ)
+
+-0.38 -0.36 -0.34 -0.32 
+
+-3.00e-5 -2.00e-5 -1.00e-5 0.00 
+
+0.35 0.36 0.37 0.38 
+
+Figure 5. Particle study for JSON. We evaluate the approximation quality estimate E[log bZ] as a function of the number of particles being used for SMC. min product sum max 
+
+Llama3.1-8b-Instruct 
+
+min product sum max 
+
+Phi-4 
+
+12 5 10 25 50 75 12 5 10 25 50 75 12 5 10 25 50 75 12 5 10 25 50 75 
+
+Method (Particle Count) min product sum max 
+
+Qwen2.5-7b-Instruct 
+
+−0.80 
+
+−0.75 
+
+−0.70 
+
+−0.65 
+
+> est. log  Z−KL( qalg || Φ)
+
+−0.38 
+
+−0.35 
+
+−0.33 
+
+−0.30 
+
+−0.28 
+
+−5.00 · 10 −5
+
+0.00 5.00 · 10 −5
+
+0.29 0.30 0.31 0.32 
+
+−1.10 
+
+−1.00 
+
+−0.90 
+
+−0.80 
+
+> est. log  Z−KL( qalg || Φ)
+
+−0.55 
+
+−0.50 
+
+−0.45 
+
+−0.40 
+
+−5.00 · 10 −5
+
+0.00 5.00 · 10 −5
+
+0.34 0.36 0.38 
+
+−3.25 
+
+−3.00 
+
+−2.75 
+
+−2.50 
+
+−2.25 
+
+> est. log  Z−KL( qalg || Φ)
+
+−1.80 
+
+−1.70 
+
+−1.60 
+
+−1.50 
+
+−1.25 · 10 −4
+
+−1.00 · 10 −4
+
+−7.50 · 10 −5
+
+−5.00 · 10 −5
+
+−2.50 · 10 −5
+
+0.00 
+
+0.53 0.55 0.57 0.60 0.62 
+
+Figure 6. Particle study for BBH. We evaluate the approximation quality estimate E[log bZ] as a function of the number of particles being used for SMC. 
+
+26 Ensembling Language Models with Sequential Monte Carlo min product sum max 
+
+Llama3.1-8b-Instruct 
+
+min product sum max 
+
+Phi-4 
+
+12 5 10 25 50 75 12 5 10 25 50 75 12 5 10 25 50 75 12 5 10 25 50 75 
+
+Method (Particle Count) min product sum max 
+
+Qwen2.5-7b-Instruct                         
+
+> −1.68
+> −1.66
+> −1.64
+> −1.62
+> est. log  Z−KL( qalg || Φ)
+> −0.94
+> −0.93
+> −0.92
+> −0.91
+> −2.00 ·10 −5
+> 0.00 2.00 ·10 −5
+> 4.00 ·10 −5
+> 6.00 ·10 −5
+> 0.53 0.54 0.55 0.56 0.57 0.58
+> −4.45
+> −4.43
+> −4.40
+> −4.38
+> −4.35
+> est. log  Z−KL( qalg || Φ)
+> −2.60
+> −2.58
+> −2.56
+> −2.54
+> −4.00 ·10 −5
+> −2.00 ·10 −5
+> 0.00 2.00 ·10 −5
+> 4.00 ·10 −5
+> 0.64 0.65 0.66 0.67 0.68
+> −8.00
+> −7.90
+> −7.80
+> −7.70
+> −7.60
+> est. log  Z−KL( qalg || Φ)
+> −5.10
+> −5.00
+> −4.90
+> −4.80
+> −3.00 ·10 −5
+> −2.00 ·10 −5
+> −1.00 ·10 −5
+> 0.00 1.00 ·10 −5
+> 0.69 0.69 0.69 0.69 0.69
+
+Figure 7. Particle study for SPIDER. We evaluate the approximation quality estimate E[log bZ] as a function of the number of particles being used for SMC. −1 0 1
+
+−2
+
+−1
+
+0
+
+1
+
+> Expected Accuracy (z-scored)
+
+ρ = 0 .142 ∗∗∗ 
+
+min 
+
+−1 0 1
+
+−2
+
+−1
+
+0
+
+1
+
+ρ = 0 .328 ∗∗∗ 
+
+product 
+
+−2 0 2
+
+−2
+
+−1
+
+0
+
+1 ρ = 0 .003 
+
+sum 
+
+−1 0 1 2
+
+−1
+
+0
+
+1
+
+ρ = −0.027 
+
+max 
+
+−2 0 2
+
+−2
+
+−1
+
+0
+
+1
+
+> Expected Accuracy (z-scored)
+
+ρ = 0 .274 ∗∗∗ 
+
+−2 0 2
+
+−2
+
+−1
+
+0
+
+1
+
+ρ = 0 .265 ∗∗∗ 
+
+−2 0 2
+
+−2
+
+−1
+
+0
+
+1
+
+2 ρ = 0 .020 
+
+−2 0 2
+
+−2
+
+−1
+
+0
+
+1
+
+2 ρ = −0.207 ∗∗∗ 
+
+−2 0
+
+est. log Z−KL( qalg || q)(z-scored) 
+
+−1
+
+0
+
+1
+
+> Expected Accuracy (z-scored)
+
+ρ = −0.045 
+
+−1 0 1
+
+est. log Z−KL( qalg || q)(z-scored) 
+
+−1
+
+0
+
+1 ρ = 0 .146 ∗∗ 
+
+−2 0 2
+
+est. log Z−KL( qalg || q)(z-scored) 
+
+−2
+
+−1
+
+0
+
+1 ρ = 0 .042 
+
+−1 0 1 2
+
+est. log Z−KL( qalg || q)(z-scored) 
+
+−2
+
+−1
+
+0
+
+1
+
+ρ = −0.083 
+
+Llama-3.1-8B-Instruct Phi-4 Qwen2.5-7B-Instruct Particles 1 (Local) 2510 25 50 75 
+
+Figure 8. Relationship between expected accuracy and the estimated log marginal likelihood, log bZ, on JSON for all models. Each datapoint represents (sample, particle) configurations aggregated across seeds. Both metrics are z-scored per example to normalize for variations in problem difficulty and scale. Points are colored by the number of particles used for estimation. Marginal plots display the kernel density estimates for the respective axes. The grey line and shaded band indicate a linear regression fit with a 95% confidence interval. Pearson correlation coefficients ρ are annotated in the top-left ( ∗∗∗ p < 0.001 , ∗p < 0.05 ). 
+
+27 Ensembling Language Models with Sequential Monte Carlo −4 −2 0
+
+> −2
+> 0
+> 2
+> Expected Accuracy (z-scored)
+
+ρ = 0 .235 ∗∗∗ 
+
+min   
+
+> −20
+> −1
+> 0
+> 1
+> 2
+
+ρ = 0 .309 ∗∗∗ 
+
+product    
+
+> −202
+> −2
+> −1
+> 0
+> 1
+> 2
+
+ρ = −0.044 
+
+sum    
+
+> −2024
+> −2
+> 0
+> 2
+> 4
+
+ρ = −0.082 ∗
+
+max    
+
+> −4−202
+> −4
+> −2
+> 0
+> 2
+> 4
+> Expected Accuracy (z-scored)
+
+ρ = 0 .222 ∗∗∗     
+
+> −4−202
+> −4
+> −2
+> 0
+> 2
+
+ρ = 0 .310 ∗∗∗    
+
+> −202
+> −4
+> −2
+> 0
+> 2
+> 4
+
+ρ = 0 .005   
+
+> 024
+> −2
+> 0
+> 2
+> 4
+
+ρ = −0.105 ∗ 
+
+> 02
+
+est. log Z−KL( qalg || q)(z-scored) 
+
+> −2
+> −1
+> 0
+> 1
+> 2
+> Expected Accuracy (z-scored)
+
+ρ = −0.113   
+
+> −101
+
+est. log Z−KL( qalg || q)(z-scored)  
+
+> −4
+> −2
+> 0
+> 2
+
+ρ = 0 .113   
+
+> −202
+
+est. log Z−KL( qalg || q)(z-scored)  
+
+> −1
+> 0
+> 1
+> 2
+
+ρ = 0 .092   
+
+> −101
+
+est. log Z−KL( qalg || q)(z-scored) 
+
+> 0
+> 2
+> 4
+
+ρ = 0 .042 
+
+Llama3.1-8b-Instruct Phi-4 Qwen2.5-7b-Instruct Particles 1 (Local) 2510 25 50 75 
+
+Figure 9. Relationship between expected accuracy and the estimated log marginal likelihood, log bZ, on BBH for all models. Each datapoint represents (sample, particle) configurations aggregated across seeds. Both metrics are z-scored per example to normalize for variations in problem difficulty and scale. Points are colored by the number of particles used for estimation. Marginal plots display the kernel density estimates for the respective axes. The grey line and shaded band indicate a linear regression fit with a 95% confidence interval. Pearson correlation coefficients ρ are annotated in the top-left ( ∗∗∗ p < 0.001 , ∗p < 0.05 ). 
+
+28 Ensembling Language Models with Sequential Monte Carlo −2 0 2                                           
+
+> −1
+> 0
+> 1
+> Expected Accuracy (z-scored)
+> ρ= 0 .120 ∗∗
+> min
+> −202
+> −2
+> −1
+> 0
+> 1
+> 2ρ= 0 .170 ∗∗∗
+> product
+> −202
+> −2
+> −1
+> 0
+> 1
+> 2ρ= 0 .033
+> sum
+> −202
+> −1
+> 0
+> 1
+> 2ρ= 0 .035
+> max
+> −202
+> −2
+> −1
+> 0
+> 1
+> Expected Accuracy (z-scored)
+> ρ= 0 .014
+> −20
+> −2
+> −1
+> 0
+> 1
+> 2ρ= 0 .144 ∗∗
+> −202
+> −1
+> 0
+> 1
+> ρ= 0 .001
+> −20
+> −1
+> 0
+> 1
+> 2ρ=−0.007
+> −202
+> est. log Z−KL( qalg || q)(z-scored)
+> −1
+> 0
+> 1
+> 2
+> Expected Accuracy (z-scored)
+> ρ=−0.003
+> −202
+> est. log Z−KL( qalg || q)(z-scored)
+> −1
+> 0
+> 1
+> ρ= 0 .155 ∗∗∗
+> −202
+> est. log Z−KL( qalg || q)(z-scored)
+> −2
+> −1
+> 0
+> 1
+> ρ= 0 .020
+> −202
+> est. log Z−KL( qalg || q)(z-scored)
+> −2
+> −1
+> 0
+> 1
+> ρ= 0 .028
+> Llama3.1-8b-Instruct Phi-4 Qwen2.5-7b-Instruct Particles 1 (Local) 2510 25 50 75
+
+Figure 10. Relationship between expected accuracy and the estimated log marginal likelihood, log bZ, on SPIDER for all models. Each datapoint represents (sample, particle) configurations aggregated across seeds. Both metrics are z-scored per example to normalize for variations in problem difficulty and scale. Points are colored by the number of particles used for estimation. Marginal plots display the kernel density estimates for the respective axes. The grey line and shaded band indicate a linear regression fit with a 95% confidence interval. Pearson correlation coefficients ρ are annotated in the top-left ( ∗∗∗ p < 0.001 , ∗p < 0.05 ). 
+
+29

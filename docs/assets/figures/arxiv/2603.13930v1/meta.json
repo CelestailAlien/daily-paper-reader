@@ -1,0 +1,126 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-001.webp",
+      "caption": "Figure 13: Spatial plots of the coefficient function estimates obtained using the SVMMA method.",
+      "page": 25,
+      "index": 1,
+      "width": 979,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-002.webp",
+      "caption": "Figure 11: Under Design 3, the MSE results in the left column were obtained via (9), while those in the right column were obtained via (12).",
+      "page": 21,
+      "index": 2,
+      "width": 823,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-003.webp",
+      "caption": "Figure 10: Under Design 3, the sum of quasi-correct model weights is obtained by two methods: (9) for the left column, and (12) for the right column.",
+      "page": 21,
+      "index": 3,
+      "width": 823,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-004.webp",
+      "caption": "Figure 12: Location map of the 689 sampling sites in the Liudaogou watershed, west of Shenmu City, Shaanxi Province, China.",
+      "page": 22,
+      "index": 4,
+      "width": 496,
+      "height": 596
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-005.webp",
+      "caption": "Figure 6: Risk Comparisons under Design 2 for Case iii. The relative risk is measured against the infeasible OSVCMA risk.",
+      "page": 18,
+      "index": 5,
+      "width": 823,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-006.webp",
+      "caption": "Figure 7: Risk Comparisons under Design 2 for Case i.The relative risk is measured against the infeasible OLMA risk.",
+      "page": 18,
+      "index": 6,
+      "width": 823,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-007.webp",
+      "caption": "Table 1: The MSPE results when the candidate model is the linear model.",
+      "page": 23,
+      "index": 7,
+      "width": 846,
+      "height": 240
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-008.webp",
+      "caption": "Table 2: The MSPE results when the candidate model is the SVCM.",
+      "page": 23,
+      "index": 8,
+      "width": 756,
+      "height": 239
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-009.webp",
+      "caption": "Figure 8: Risk Comparisons under Design 2 for Case ii. The relative risk is measured against the infeasible OLMA risk.",
+      "page": 19,
+      "index": 9,
+      "width": 823,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-010.webp",
+      "caption": "Figure 9: Risk Comparisons under Design 2 for Case iii. The relative risk is measured against the infeasible OLMA risk.",
+      "page": 19,
+      "index": 10,
+      "width": 823,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-011.webp",
+      "caption": "Figure 4: Risk Comparisons under Design 2 for Case i. The relative risk is measured against the infeasible OSVCMA risk.",
+      "page": 17,
+      "index": 11,
+      "width": 823,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-012.webp",
+      "caption": "Figure 5: Risk Comparisons under Design 2 for Case ii. The relative risk is measured against the infeasible OSVCMA risk.",
+      "page": 17,
+      "index": 12,
+      "width": 823,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-013.webp",
+      "caption": "Table 3: Candidate models with weights exceeding 10−6 obtained via the SVMMAmethod",
+      "page": 24,
+      "index": 13,
+      "width": 896,
+      "height": 271
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-014.webp",
+      "caption": "Figure 2: Risk Comparisons under Design 1 for Case ii. The relative risk is measured against the infeasible OLMA risk.",
+      "page": 16,
+      "index": 14,
+      "width": 823,
+      "height": 654
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13930v1/fig-015.webp",
+      "caption": "Figure 3: Risk Comparisons under Design 1 for Case iii. The relative risk is measured against the infeasible OLMA risk.",
+      "page": 16,
+      "index": 15,
+      "width": 823,
+      "height": 654
+    }
+  ]
+}

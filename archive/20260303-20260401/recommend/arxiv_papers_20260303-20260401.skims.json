@@ -1,0 +1,1793 @@
+{
+  "mode": "skims",
+  "generated_at": "2026-04-01T09:31:21.030497+00:00",
+  "stats": {
+    "mode": "skims",
+    "forced_all_quick": true,
+    "min_score": 8.0,
+    "deep_divecandidates": 46,
+    "deep_cap": null,
+    "deep_selected": 0,
+    "quick_candidates": 46,
+    "quick_skim_target": null,
+    "quick_selected": 46
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2603.02945v1",
+      "source": "arxiv",
+      "title": "ACE-Merging: Data-Free Model Merging with Adaptive Covariance Estimation",
+      "abstract": "Model merging aims to combine multiple task-specific expert models into a single model while preserving generalization across diverse tasks. However, interference among experts, especially when they are trained on different objectives, often leads to significant performance degradation. Despite recent progress, resolving this interference without data access, retraining, or architectural modification remains a fundamental challenge. This paper provides a theoretical analysis demonstrating that the input covariance of each task, which is a key factor for optimal merging, can be implicitly estimated from the parameter differences of its fine-tuned model, even in a fully data-free setting. Building on this insight, we introduce \\acem, an Adaptive Covariance Estimation framework that effectively mitigates inter-task interference. Our approach features a principled, closed-form solution that contrasts with prior iterative or heuristic methods. Extensive experiments on both vision and language benchmarks demonstrate that \\acem sets a new state-of-the-art among data-free methods. It consistently outperforms existing baselines; for example, \\acem achieves an average absolute improvement of 4\\% over the previous methods across seven tasks on GPT-2. Owing to its efficient closed-form formulation, \\acem delivers superior performance with a modest computational cost, providing a practical and theoretically grounded solution for model merging.",
+      "authors": [
+        "Bo Xu",
+        "Haotian Wu",
+        "Hehai Lin",
+        "Weiquan Huang",
+        "Beier Zhu",
+        "Yao Shu",
+        "Chengwei Qin"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-03T12:53:04+00:00",
+      "link": "https://arxiv.org/pdf/2603.02945v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Data-free model merging with adaptive covariance estimation",
+      "llm_evidence_cn": "基于自适应协方差估计的无数据模型合并",
+      "llm_evidence": "基于自适应协方差估计的无数据模型合并",
+      "canonical_evidence": "基于自适应协方差估计的无数据模型合并",
+      "llm_tldr_en": "Proposes ACE-Merging for data-free model merging by estimating input covariance from parameter differences.",
+      "llm_tldr_cn": "提出ACE-Merging，通过参数差异估计协方差，实现无数据的模型合并。",
+      "llm_tldr": "提出ACE-Merging，通过参数差异估计协方差，实现无数据的模型合并。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.03535v1",
+      "source": "arxiv",
+      "title": "Trade-offs in Ensembling, Merging and Routing Among Parameter-Efficient Experts",
+      "abstract": "While large language models (LLMs) fine-tuned with lightweight adapters achieve strong performance across diverse tasks, their performance on individual tasks depends on the fine-tuning strategy. Fusing independently trained models with different strengths has shown promise for multi-task learning through three main strategies: ensembling, which combines outputs from independent models; merging, which fuses model weights via parameter averaging; and routing, which integrates models in an input-dependent fashion. However, many design decisions in these approaches remain understudied, and the relative benefits of more sophisticated ensembling, merging and routing techniques are not fully understood. We empirically evaluate their trade-offs, addressing two key questions: What are the advantages of going beyond uniform ensembling or merging? And does the flexibility of routing justify its complexity? Our findings indicate that non-uniform ensembling and merging improve performance, but routing offers even greater gains. To mitigate the computational cost of routing, we analyze expert selection techniques, showing that clustering and greedy subset selection can maintain reasonable performance with minimal overhead. These insights advance our understanding of model fusion for multi-task learning.",
+      "authors": [
+        "Sanae Lotfi",
+        "Lucas Caccia",
+        "Alessandro Sordoni",
+        "Jordan T. Ash",
+        "Miroslav Dudik"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-03T21:44:11+00:00",
+      "link": "https://arxiv.org/pdf/2603.03535v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Merging, parameter averaging, and routing in LLMs",
+      "llm_evidence_cn": "大模型中的合并、参数平均与路由",
+      "llm_evidence": "大模型中的合并、参数平均与路由",
+      "canonical_evidence": "大模型中的合并、参数平均与路由",
+      "llm_tldr_en": "Evaluates trade-offs between ensembling, merging, and routing for parameter-efficient experts.",
+      "llm_tldr_cn": "评估了参数高效专家模型在集成、合并和路由策略下的权衡与表现。",
+      "llm_tldr": "评估了参数高效专家模型在集成、合并和路由策略下的权衡与表现。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.03920v1",
+      "source": "arxiv",
+      "title": "BD-Merging: Bias-Aware Dynamic Model Merging with Evidence-Guided Contrastive Learning",
+      "abstract": "Model Merging (MM) has emerged as a scalable paradigm for multi-task learning (MTL), enabling multiple task-specific models to be integrated without revisiting the original training data. Despite recent progress, the reliability of MM under test-time distribution shift remains insufficiently understood. Most existing MM methods typically assume that test data are clean and distributionally aligned with both the training and auxiliary sources. However, this assumption rarely holds in practice, often resulting in biased predictions with degraded generalization. To address this issue, we present BD-Merging, a bias-aware unsupervised model merging framework that explicitly models uncertainty to achieve adaptive reliability under distribution shift. First, BD-Merging introduces a joint evidential head that learns uncertainty over a unified label space, capturing cross-task semantic dependencies in MM. Second, building upon this evidential foundation, we propose an Adjacency Discrepancy Score (ADS) that quantifies evidential alignment among neighboring samples. Third, guided by ADS, a discrepancy-aware contrastive learning mechanism refines the merged representation by aligning consistent samples and separating conflicting ones. Combined with general unsupervised learning, this process trains a debiased router that adaptively allocates task-specific or layer-specific weights on a per-sample basis, effectively mitigating the adverse effects of distribution shift. Extensive experiments across diverse tasks demonstrate that BD-Merging achieves superior effectiveness and robustness compared to state-of-the-art MM baselines.",
+      "authors": [
+        "Yuhan Xie",
+        "Chen Lyu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-04T10:27:56+00:00",
+      "link": "https://arxiv.org/pdf/2603.03920v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "dynamic model merging framework for multi-task learning",
+      "llm_evidence_cn": "用于多任务学习的动态模型合并框架",
+      "llm_evidence": "用于多任务学习的动态模型合并框架",
+      "canonical_evidence": "用于多任务学习的动态模型合并框架",
+      "llm_tldr_en": "Proposes BD-Merging to improve model merging reliability under distribution shifts using uncertainty modeling.",
+      "llm_tldr_cn": "提出BD-Merging框架，通过不确定性建模提高模型合并在分布偏移下的可靠性。",
+      "llm_tldr": "提出BD-Merging框架，通过不确定性建模提高模型合并在分布偏移下的可靠性。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.04972v1",
+      "source": "arxiv",
+      "title": "Functionality-Oriented LLM Merging on the Fisher--Rao Manifold",
+      "abstract": "Weight-space merging aims to combine multiple fine-tuned LLMs into a single model without retraining, yet most existing approaches remain fundamentally parameter-space heuristics. This creates three practical limitations. First, linear averaging, task vectors, and related rules operate on Euclidean coordinates, even though the desired goal is to merge functionality, i.e., predictive behaviors across tasks. Second, when the source checkpoints are farther apart or more heterogeneous, Euclidean blends often trigger representation collapse, manifested as activation variance shrinkage and effective-rank degradation, which sharply degrades accuracy. Third, many geometry-inspired methods are most natural for two-model interpolation and do not extend cleanly to merging N>2 experts with a principled objective.   We address these issues by formulating model merging as computing a weighted Karcher mean on the Fisher--Rao manifold, which is locally equivalent to minimizing a KL-based function distance between predictive distributions. We derive a practical fixed-point algorithm using a lightweight spherical proxy that preserves norms and generalizes directly to multi-expert merging. Across various benchmarks and collapse diagnostics, our method remains stable as the number and heterogeneity of merged models increase, consistently outperforming prior baselines.",
+      "authors": [
+        "Jiayu Wang",
+        "Zuojun Ye",
+        "Wenpeng Yin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-03-05T09:08:38+00:00",
+      "link": "https://arxiv.org/pdf/2603.04972v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "LLM merging on Fisher-Rao manifold and weight-space merging",
+      "llm_evidence_cn": "Fisher-Rao 流形上的大模型合并与权重空间合并",
+      "llm_evidence": "Fisher-Rao 流形上的大模型合并与权重空间合并",
+      "canonical_evidence": "Fisher-Rao 流形上的大模型合并与权重空间合并",
+      "llm_tldr_en": "Develops a functionality-oriented merging method for LLMs using the Fisher-Rao manifold to avoid collapse.",
+      "llm_tldr_cn": "开发了一种基于 Fisher-Rao 流形的功能导向大模型合并方法，以避免表征崩溃。",
+      "llm_tldr": "开发了一种基于 Fisher-Rao 流形的功能导向大模型合并方法，以避免表征崩溃。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.05354v1",
+      "source": "arxiv",
+      "title": "Exploring the potential and limitations of Model Merging for Multi-Domain Adaptation in ASR",
+      "abstract": "Model merging is a scalable alternative to multi-task training that combines the capabilities of multiple specialised models into a single model. This is particularly attractive for large speech foundation models, which are typically adapted through domain-specific fine-tuning, resulting in multiple customised checkpoints, for which repeating full fine-tuning when new data becomes available is computationally prohibitive. In this work, we study model merging for multi-domain ASR and benchmark 11 merging algorithms for 10 European Portuguese domains, evaluating in-domain accuracy, robustness under distribution shift, as well as English and multilingual performance. We further propose BoostedTSV-M, a new merging algorithm based on TSV-M that mitigates rank collapse via singular-value boosting and improves numerical stability. Overall, our approach outperforms full fine-tuning on European Portuguese while preserving out-of-distribution generalisation in a single model.",
+      "authors": [
+        "Carlos Carvalho",
+        "Francisco Teixeira",
+        "Thomas Rolland",
+        "Alberto Abad"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "eess.AS"
+      ],
+      "published": "2026-03-05T16:34:24+00:00",
+      "link": "https://arxiv.org/pdf/2603.05354v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Model merging for multi-domain adaptation and benchmarking merging algorithms",
+      "llm_evidence_cn": "用于多领域自适应的模型合并及合并算法基准测试",
+      "llm_evidence": "用于多领域自适应的模型合并及合并算法基准测试",
+      "canonical_evidence": "用于多领域自适应的模型合并及合并算法基准测试",
+      "llm_tldr_en": "Benchmarks 11 model merging algorithms for ASR and proposes a new merging algorithm called BoostedTSV-M.",
+      "llm_tldr_cn": "对10个领域的语音识别模型合并算法进行了基准测试，并提出了一种新的合并算法 BoostedTSV-M。",
+      "llm_tldr": "对10个领域的语音识别模型合并算法进行了基准测试，并提出了一种新的合并算法 BoostedTSV-M。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.09463v1",
+      "source": "arxiv",
+      "title": "An Empirical Study and Theoretical Explanation on Task-Level Model-Merging Collapse",
+      "abstract": "Model merging unifies independently fine-tuned LLMs from the same base, enabling reuse and integration of parallel development efforts without retraining. However, in practice we observe that merging does not always succeed: certain combinations of task-specialist models suffer from catastrophic performance degradation after merging. We refer to this failure mode as merging collapse. Intuitively, collapse arises when the learned representations or parameter adjustments for different tasks are fundamentally incompatible, so that merging forces destructive interference rather than synergy. In this paper, we identify and characterize the phenomenon of task-level merging collapse, where certain task combinations consistently trigger huge performance degradation across all merging methods. Through extensive experiments and statistical analysis, we demonstrate that representational incompatibility between tasks is strongly correlated with merging collapse, while parameter-space conflict metrics show minimal correlation, challenging conventional wisdom in model merging literature. We provide a theoretical explanation on this phenomenon through rate-distortion theory with a dimension-dependent bound, establishing fundamental limits on task mergeability regardless of methodology.",
+      "authors": [
+        "Yuan Cao",
+        "Dezhi Ran",
+        "Yuzhe Guo",
+        "Mengzhou Wu",
+        "Simin Chen",
+        "Linyi Li",
+        "Wei Yang",
+        "Tao Xie"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-10T10:18:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.09463v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Theoretical explanation of performance collapse in LLM model merging",
+      "llm_evidence_cn": "大模型合并中性能崩溃的理论解释",
+      "llm_evidence": "大模型合并中性能崩溃的理论解释",
+      "canonical_evidence": "大模型合并中性能崩溃的理论解释",
+      "llm_tldr_en": "Identifies and explains 'merging collapse' where task-specialist LLMs fail to synergize during merging.",
+      "llm_tldr_cn": "识别并解释了“合并崩溃”现象，即特定任务专家模型在合并时因不兼容导致性能剧降。",
+      "llm_tldr": "识别并解释了“合并崩溃”现象，即特定任务专家模型在合并时因不兼容导致性能剧降。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.09938v1",
+      "source": "arxiv",
+      "title": "Model Merging in the Era of Large Language Models: Methods, Applications, and Future Directions",
+      "abstract": "Model merging has emerged as a transformative paradigm for combining the capabilities of multiple neural networks into a single unified model without additional training. With the rapid proliferation of fine-tuned large language models~(LLMs), merging techniques offer a computationally efficient alternative to ensembles and full retraining, enabling practitioners to compose specialized capabilities at minimal cost. This survey presents a comprehensive and structured examination of model merging in the LLM era through the \\textbf{FUSE} taxonomy, a four-dimensional framework organized along \\textbf{F}oundations, \\textbf{U}nification Strategies, \\textbf{S}cenarios, and \\textbf{E}cosystem. We first establish the theoretical underpinnings of merging, including loss landscape geometry, mode connectivity, and the linear mode connectivity hypothesis. We then systematically review the algorithmic landscape, spanning weight averaging, task vector arithmetic, sparsification-enhanced methods, mixture-of-experts architectures, and evolutionary optimization approaches. For each method family, we analyze the core formulation, highlight representative works, and discuss practical trade-offs. We further examine downstream applications across multi-task learning, safety alignment, domain specialization, multilingual transfer, and federated learning. Finally, we survey the supporting ecosystem of open-source tools, community platforms, and evaluation benchmarks, and identify key open challenges including theoretical gaps, scalability barriers, and standardization needs. This survey aims to equip researchers and practitioners with a structured foundation for advancing model merging.",
+      "authors": [
+        "Mingyang Song",
+        "Mao Zheng"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-10T17:31:55+00:00",
+      "link": "https://arxiv.org/pdf/2603.09938v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "comprehensive survey on model merging in the LLM era",
+      "llm_evidence_cn": "大模型时代模型合并的全面综述",
+      "llm_evidence": "大模型时代模型合并的全面综述",
+      "canonical_evidence": "大模型时代模型合并的全面综述",
+      "llm_tldr_en": "A comprehensive survey of model merging methods, applications, and taxonomies for large language models.",
+      "llm_tldr_cn": "关于大语言模型合并方法、应用和分类体系的全面综述。",
+      "llm_tldr": "关于大语言模型合并方法、应用和分类体系的全面综述。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.10156v1",
+      "source": "arxiv",
+      "title": "Mashup Learning: Faster Finetuning by Remixing Past Checkpoints",
+      "abstract": "Finetuning on domain-specific data is a well-established method for enhancing LLM performance on downstream tasks. Training on each dataset produces a new set of model weights, resulting in a multitude of checkpoints saved in-house or on open-source platforms. However, these training artifacts are rarely reused for subsequent experiments despite containing improved model abilities for potentially similar tasks. In this paper, we propose Mashup Learning, a simple method to leverage the outputs of prior training runs to enhance model adaptation to new tasks. Our procedure identifies the most relevant historical checkpoints for a target dataset, aggregates them with model merging, and uses the result as an improved initialization for training. Across 8 standard LLM benchmarks, four models, and two collections of source checkpoints, Mashup Learning consistently improves average downstream accuracy by 0.5-5 percentage points over training from scratch. It also accelerates convergence, requiring 41-46% fewer training steps and up to 37% less total wall-clock time to match from-scratch accuracy, including all selection and merging overhead.",
+      "authors": [
+        "Sofia Maria Lo Cicero Vaina",
+        "Artem Chumachenko",
+        "Max Ryabinin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-10T18:46:26+00:00",
+      "link": "https://arxiv.org/pdf/2603.10156v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "aggregates past checkpoints with model merging",
+      "llm_evidence_cn": "通过模型合并聚合历史检查点",
+      "llm_evidence": "通过模型合并聚合历史检查点",
+      "canonical_evidence": "通过模型合并聚合历史检查点",
+      "llm_tldr_en": "Proposes Mashup Learning to improve LLM adaptation by merging relevant historical checkpoints.",
+      "llm_tldr_cn": "提出 Mashup Learning，通过合并相关的历史检查点来改进大模型的任务自适应。",
+      "llm_tldr": "提出 Mashup Learning，通过合并相关的历史检查点来改进大模型的任务自适应。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13467v1",
+      "source": "arxiv",
+      "title": "Resolving Interference (RI): Disentangling Models for Improved Model Merging",
+      "abstract": "Model merging has shown that multitask models can be created by directly combining the parameters of different models that are each specialized on tasks of interest. However, models trained independently on distinct tasks often exhibit interference that degrades the merged model's performance. To solve this problem, we formally define the notion of Cross-Task Interference as the drift in the representation of the merged model relative to its constituent models. Reducing cross-task interference is key to improving merging performance. To address this issue, we propose our method, Resolving Interference (RI), a light-weight adaptation framework which disentangles expert models to be functionally orthogonal to the space of other tasks, thereby reducing cross-task interference. RI does this whilst using only unlabeled auxiliary data as input (i.e., no task-data is needed), allowing it to be applied in data-scarce scenarios. RI consistently improves the performance of state-of-the-art merging methods by up to 3.8% and generalization to unseen domains by up to 2.3%. We also find RI to be robust to the source of auxiliary input while being significantly less sensitive to tuning of merging hyperparameters. Our codebase is available at: https://github.com/pramesh39/resolving_interference",
+      "authors": [
+        "Pratik Ramesh",
+        "George Stoica",
+        "Arun Iyer",
+        "Leshem Choshen",
+        "Judy Hoffman"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL",
+        "cs.CV"
+      ],
+      "published": "2026-03-13T17:59:50+00:00",
+      "link": "https://arxiv.org/pdf/2603.13467v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "disentangling models to reduce cross-task interference in merging",
+      "llm_evidence_cn": "解耦模型以减少合并中的跨任务干扰",
+      "llm_evidence": "解耦模型以减少合并中的跨任务干扰",
+      "canonical_evidence": "解耦模型以减少合并中的跨任务干扰",
+      "llm_tldr_en": "Introduces Resolving Interference (RI) to improve model merging by making expert models functionally orthogonal.",
+      "llm_tldr_cn": "提出RI方法，通过使专家模型功能正交化来减少合并干扰并提升多任务性能。",
+      "llm_tldr": "提出RI方法，通过使专家模型功能正交化来减少合并干扰并提升多任务性能。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14405v1",
+      "source": "arxiv",
+      "title": "ES-Merging: Biological MLLM Merging via Embedding Space Signals",
+      "abstract": "Biological multimodal large language models (MLLMs) have emerged as powerful foundation models for scientific discovery. However, existing models are specialized to a single modality, limiting their ability to solve inherently cross-modal scientific problems. While model merging is an efficient method to combine the different modalities into a unified MLLM, existing methods rely on input-agnostic parameter space heuristics that fail to faithfully capture modality specialization. To overcome this limitation, we propose a representation-aware merging framework that estimates merging coefficients from embedding space signals. We first design a probe input that consists of different modality tokens and forward it through each specialized MLLM to obtain layer-wise embedding responses that reflect modality-specific representation changes. We then estimate complementary merging coefficients at two granularities from the embedding space: layer-wise coefficients from coarse-grained signals and element-wise coefficients from fine-grained signals, which are jointly combined for robust coefficient estimation. Experiments on interactive effect prediction benchmarks show that our method outperforms existing merging methods and even surpasses task-specific fine-tuned models, establishing that embedding space signals provide a principled and effective foundation for cross-modal MLLM merging.",
+      "authors": [
+        "Wonbin Lee",
+        "Dongki Kim",
+        "Sung Ju Hwang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-15T14:38:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.14405v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "merging biological MLLMs via embedding space signals",
+      "llm_evidence_cn": "通过嵌入空间信号合并生物多模态大模型",
+      "llm_evidence": "通过嵌入空间信号合并生物多模态大模型",
+      "canonical_evidence": "通过嵌入空间信号合并生物多模态大模型",
+      "llm_tldr_en": "Proposes ES-Merging, a representation-aware framework for merging specialized biological multimodal models.",
+      "llm_tldr_cn": "提出ES-Merging，一种基于表示感知的生物多模态大模型合并框架。",
+      "llm_tldr": "提出ES-Merging，一种基于表示感知的生物多模态大模型合并框架。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.20470v1",
+      "source": "arxiv",
+      "title": "DiffGraph: An Automated Agent-driven Model Merging Framework for In-the-Wild Text-to-Image Generation",
+      "abstract": "The rapid growth of the text-to-image (T2I) community has fostered a thriving online ecosystem of expert models, which are variants of pretrained diffusion models specialized for diverse generative abilities. Yet, existing model merging methods remain limited in fully leveraging abundant online expert resources and still struggle to meet diverse in-the-wild user needs. We present DiffGraph, a novel agent-driven graph-based model merging framework, which automatically harnesses online experts and flexibly merges them for diverse user needs. Our DiffGraph constructs a scalable graph and organizes ever-expanding online experts within it through node registration and calibration. Then, DiffGraph dynamically activates specific subgraphs based on user needs, enabling flexible combinations of different experts to achieve user-desired generation. Extensive experiments show the efficacy of our method.",
+      "authors": [
+        "Zhuoling Li",
+        "Hossein Rahmani",
+        "Jiarui Zhang",
+        "Yu Xue",
+        "Majid Mirmehdi",
+        "Jason Kuen",
+        "Jiuxiang Gu",
+        "Jun Liu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-20T19:54:41+00:00",
+      "link": "https://arxiv.org/pdf/2603.20470v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "automated agent-driven model merging framework",
+      "llm_evidence_cn": "自动化智能体驱动的模型合并框架",
+      "llm_evidence": "自动化智能体驱动的模型合并框架",
+      "canonical_evidence": "自动化智能体驱动的模型合并框架",
+      "llm_tldr_en": "Introduces DiffGraph, an automated framework for merging expert diffusion models for text-to-image generation.",
+      "llm_tldr_cn": "介绍了DiffGraph，一个用于合并文本生成图像专家扩散模型的自动化框架。",
+      "llm_tldr": "介绍了DiffGraph，一个用于合并文本生成图像专家扩散模型的自动化框架。",
+      "llm_tags": [
+        "query:modelmerge"
+      ],
+      "matched_query_tag": "query:modelmerge",
+      "matched_query_text": "model merging",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.21584v1",
+      "source": "arxiv",
+      "title": "SSAM: Singular Subspace Alignment for Merging Multimodal Large Language Models",
+      "abstract": "Multimodal large language models (MLLMs) achieve strong performance by jointly processing inputs from multiple modalities, such as vision, audio, and language. However, building such models or extending them to new modalities often requires large paired datasets and substantial computational resources. Since many pretrained MLLMs (e.g., vision-language or audio-language) are publicly available, we ask whether we can merge them into a single MLLM that can handle multiple modalities? Merging MLLMs with different input modalities remains challenging, partly because of differences in the learned representations and interference between their parameter spaces. To address these challenges, we propose Singular Subspace Alignment and Merging (SSAM), a training-free model merging framework that unifies independently trained specialist MLLMs into a single model capable of handling any combination of input modalities. SSAM maintains modality-specific parameter updates separately and identifies a shared low-rank subspace for language-related parameter updates, aligns them within this subspace, and merges them to preserve complementary knowledge while minimizing parameter interference. Without using any multimodal training data, SSAM achieves state-of-the-art performance across four datasets, surpassing prior training-free merging methods and even jointly trained multimodal models. These results demonstrate that aligning models in parameter space provides a scalable and resource-efficient alternative to conventional joint multimodal training.",
+      "authors": [
+        "Md Kaykobad Reza",
+        "Ameya Patil",
+        "Edward Ayrapetian",
+        "M. Salman Asif"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CV"
+      ],
+      "published": "2026-03-23T05:24:52+00:00",
+      "link": "https://arxiv.org/pdf/2603.21584v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "merging multimodal large language models via subspace alignment",
+      "llm_evidence_cn": "通过子空间对齐合并多模态大语言模型",
+      "llm_evidence": "通过子空间对齐合并多模态大语言模型",
+      "canonical_evidence": "通过子空间对齐合并多模态大语言模型",
+      "llm_tldr_en": "Proposes SSAM to merge different multimodal LLMs by aligning their singular subspaces without retraining.",
+      "llm_tldr_cn": "提出 SSAM 方法，通过对齐奇异子空间在无需重新训练的情况下合并不同的多模态大模型。",
+      "llm_tldr": "提出 SSAM 方法，通过对齐奇异子空间在无需重新训练的情况下合并不同的多模态大模型。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.21705v1",
+      "source": "arxiv",
+      "title": "Data-Free Layer-Adaptive Merging via Fisher Information for Long-to-Short Reasoning LLMs",
+      "abstract": "Model merging has emerged as a practical approach to combine capabilities of specialized large language models (LLMs) without additional training. In the Long-to-Short (L2S) scenario, merging a base model with a long-chain-of-thought reasoning model aims to preserve reasoning accuracy while reducing output length. Existing methods rely on Task Arithmetic and its variants, which implicitly assume that model outputs vary linearly with the merging coefficient -- an assumption we show is systematically violated in L2S settings. We provide the first theoretical justification for layer-adaptive merging: we prove that merging error is bounded by a term proportional to the per-layer Hessian norm (Proposition~1), and establish that the Fisher Information Matrix (FIM) is a principled, computable proxy for this bound via the Fisher-Hessian equivalence at local optima. Building on this theory, we propose \\textbf{FIM-Merging}, which computes diagonal FIM using only random token inputs (no domain-specific calibration data required) and uses it to assign per-layer merging coefficients. On the 7B L2S benchmark, FIM-TIES achieves state-of-the-art performance on five out of six evaluation benchmarks, including a \\textbf{+6.2} point gain on MATH500 over ACM-TIES (90.2 vs.\\ 84.0), while requiring no calibration data. On the 1.5B benchmark, FIM-TIES achieves an average accuracy of \\textbf{47.3}, surpassing the previous best ACM-TIES (43.3) by \\textbf{+3.9} points, while reducing average response length by \\textbf{91.9\\%} relative to the long-CoT model. Our framework also provides a unified theoretical explanation for why existing layer-adaptive methods such as ACM empirically outperform uniform merging.",
+      "authors": [
+        "Tian Xia"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-23T08:45:37+00:00",
+      "link": "https://arxiv.org/pdf/2603.21705v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "layer-adaptive merging via Fisher information for LLMs",
+      "llm_evidence_cn": "基于Fisher信息的LLM层自适应合并",
+      "llm_evidence": "基于Fisher信息的LLM层自适应合并",
+      "canonical_evidence": "基于Fisher信息的LLM层自适应合并",
+      "llm_tldr_en": "Provides theoretical justification and a Fisher-based method for layer-adaptive merging of reasoning LLMs.",
+      "llm_tldr_cn": "为推理大模型的层自适应合并提供了理论依据和基于Fisher信息的方法。",
+      "llm_tldr": "为推理大模型的层自适应合并提供了理论依据和基于Fisher信息的方法。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.26299v1",
+      "source": "arxiv",
+      "title": "Preference-Aligned LoRA Merging: Preserving Subspace Coverage and Addressing Directional Anisotropy",
+      "abstract": "Merging multiple Low-Rank Adaptation (LoRA) modules is promising for constructing general-purpose systems, yet challenging because LoRA update directions span different subspaces and contribute unevenly. When merged naively, such mismatches can weaken the directions most critical to certain task losses while overemphasizing relatively less important ones, ultimately reducing the model's ability to represent all tasks faithfully. We revisit this problem through two perspectives: subspace coverage, which captures how broadly LoRA directions cover diverse representational directions, and anisotropy, which reflects the imbalance of influence across those directions. We propose TARA-Merging (Task-Rank Anisotropy Alignment), which aligns merging weights using a preference-weighted cross-entropy pseudo-loss while preserving task-relevant LoRA subspaces. This ensures broad subspace coverage and mitigates anisotropy via direction-wise reweighting. Across eight vision and six NLI benchmarks, TARA-Merging consistently outperforms vanilla and LoRA-aware baselines, demonstrating strong robustness and generalization, and highlighting the importance of addressing both subspace coverage and anisotropy in LoRA merging.",
+      "authors": [
+        "Wooseong Jeong",
+        "Wonyoung Lee",
+        "Kuk-Jin Yoon"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-27T11:07:46+00:00",
+      "link": "https://arxiv.org/pdf/2603.26299v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Merging multiple LoRA modules and parameter alignment",
+      "llm_evidence_cn": "合并多个LoRA模块与参数对齐",
+      "llm_evidence": "合并多个LoRA模块与参数对齐",
+      "canonical_evidence": "合并多个LoRA模块与参数对齐",
+      "llm_tldr_en": "Proposes TARA-Merging to address subspace coverage and anisotropy when merging LoRA modules.",
+      "llm_tldr_cn": "提出TARA-Merging方法，解决LoRA模块合并中的子空间覆盖和各向异性问题。",
+      "llm_tldr": "提出TARA-Merging方法，解决LoRA模块合并中的子空间覆盖和各向异性问题。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.26317v1",
+      "source": "arxiv",
+      "title": "Label-Free Cross-Task LoRA Merging with Null-Space Compression",
+      "abstract": "Model merging combines independently fine-tuned checkpoints without joint multi-task training. In the era of foundation-model, fine-tuning with Low-Rank Adaptation (LoRA) is prevalent, making LoRA merging a promising target. Existing approaches can work in homogeneous settings where all target tasks are classification but often fail when tasks span classification and regression. Approaches using entropy-based surrogates do not apply to regression and are costly for large language models due to long token sequences. We introduce Null-Space Compression (NSC) Merging, a label-free, output-agnostic method that sets merge weights from adapter geometry. Our key observation is that during LoRA finetuning the down-projection factor $A$ in $ΔW = BA$ compresses its null space, and the compression correlates with performance. NSC uses this as an optimization signal for merging that can generalize across classification, regression, and sequence generation. NSC achieves state-of-the-art performance across twenty heterogeneous vision tasks with balanced gains where prior methods overfit subsets of tasks. It also outperforms baselines on six NLI benchmarks and on vision-language evaluations for VQA and image captioning, demonstrating scalability and effectiveness.",
+      "authors": [
+        "Wonyoung Lee",
+        "Wooseong Jeong",
+        "Kuk-Jin Yoon"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-27T11:34:41+00:00",
+      "link": "https://arxiv.org/pdf/2603.26317v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Label-free LoRA merging method using adapter geometry for LLMs",
+      "llm_evidence_cn": "针对大语言模型的基于适配器几何结构的无标签LoRA合并方法",
+      "llm_evidence": "针对大语言模型的基于适配器几何结构的无标签LoRA合并方法",
+      "canonical_evidence": "针对大语言模型的基于适配器几何结构的无标签LoRA合并方法",
+      "llm_tldr_en": "Introduces Null-Space Compression for label-free LoRA merging across classification and regression tasks.",
+      "llm_tldr_cn": "引入零空间压缩方法，实现跨分类与回归任务的无标签LoRA模型合并。",
+      "llm_tldr": "引入零空间压缩方法，实现跨分类与回归任务的无标签LoRA模型合并。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.28263v1",
+      "source": "arxiv",
+      "title": "Merge and Conquer: Instructing Multilingual Models by Adding Target Language Weights",
+      "abstract": "Large Language Models (LLMs) remain heavily centered on English, with limited performance in low-resource languages. Existing adaptation approaches, such as continual pre-training, demand significant computational resources. In the case of instructed models, high-quality instruction data is also required, both of which are often inaccessible for low-resource language communities. Under these constraints, model merging offers a lightweight alternative, but its potential in low-resource contexts has not been systematically explored. In this work, we explore whether it is possible to transfer language knowledge to an instruction-tuned LLM by merging it with a language-specific base model, thereby eliminating the need of language-specific instructions and repeated fine-tuning processes whenever stronger instructed variants become available. Through experiments covering four Iberian languages (Basque, Catalan, Galician, and Spanish) and two model families, we show that merging enables effective instruction following behavior in new languages and even supports multilingual capability through the combination of multiple language-specific models. Our results indicate that model merging is a viable and efficient alternative to traditional adaptation methods for low-resource languages, achieving competitive performance while greatly reducing computational cost.",
+      "authors": [
+        "Eneko Valero",
+        "Maria Ribalta i Albado",
+        "Oscar Sainz",
+        "Naiara Perez",
+        "German Rigau"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-30T10:46:50+00:00",
+      "link": "https://arxiv.org/pdf/2603.28263v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "model merging for multilingual LLMs",
+      "llm_evidence_cn": "多语言大模型的模型合并",
+      "llm_evidence": "多语言大模型的模型合并",
+      "canonical_evidence": "多语言大模型的模型合并",
+      "llm_tldr_en": "Explores transferring language knowledge to instruction-tuned LLMs by merging them with language-specific base models.",
+      "llm_tldr_cn": "探索通过将指令微调模型与特定语言基座模型合并来转移语言知识的方法。",
+      "llm_tldr": "探索通过将指令微调模型与特定语言基座模型合并来转移语言知识的方法。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.28858v1",
+      "source": "arxiv",
+      "title": "OptiMer: Optimal Distribution Vector Merging Is Better than Data Mixing for Continual Pre-Training",
+      "abstract": "Continual pre-training is widely used to adapt LLMs to target languages and domains, yet the mixture ratio of training data remains a sensitive hyperparameter that is expensive to tune: they must be fixed before training begins, and a suboptimal choice can waste weeks of compute. In this work, we propose OptiMer, which decouples ratio selection from training: we train one CPT model per dataset, extract each model's distribution vector, which represents the parameter shift induced by that dataset, and search for optimal composition weights post-hoc via Bayesian optimization. Experiments on Gemma 3 27B across languages (Japanese, Chinese) and domains (Math, Code) show that OptiMer consistently outperforms data mixture and model averaging baselines with 15-35 times lower search cost. Key findings reveal that 1) the optimized weights can be interpreted as data mixture ratios, and retraining with these ratios improves data mixture CPT, and 2) the same vector pool can be re-optimized for a given objective without any retraining, producing target-tailored models on demand. Our work establishes that data mixture ratio selection, traditionally a pre-training decision, can be reformulated as a post-hoc optimization over distribution vectors, offering a more flexible paradigm for continual pre-training.",
+      "authors": [
+        "Haiyue Song",
+        "Masao Utiyama"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-30T18:00:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.28858v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "merging distribution vectors for model composition post-hoc",
+      "llm_evidence_cn": "事后合并分布向量以进行模型组合",
+      "llm_evidence": "事后合并分布向量以进行模型组合",
+      "canonical_evidence": "事后合并分布向量以进行模型组合",
+      "llm_tldr_en": "Introduces OptiMer for merging model distribution vectors to optimize continual pre-training weights.",
+      "llm_tldr_cn": "引入OptiMer，通过合并模型分布向量来优化持续预训练的权重。",
+      "llm_tldr": "引入OptiMer，通过合并模型分布向量来优化持续预训练的权重。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.02633v1",
+      "source": "arxiv",
+      "title": "Robust Heterogeneous Analog-Digital Computing for Mixture-of-Experts Models with Theoretical Generalization Guarantees",
+      "abstract": "Sparse Mixture-of-Experts (MoE) models enable efficient scalability by activating only a small sub-set of experts per input, yet their massive parameter counts lead to substantial memory and energy inefficiency during inference. Analog in-memory computing (AIMC) offers a promising solution by eliminating frequent data movement between memory and compute units. However, mitigating hardware nonidealities of AIMC typically requires noise-aware retraining, which is infeasible for large MoE models. In this paper, we propose a retraining-free heterogeneous computation framework in which noise-sensitive experts, which are provably identifiable by their maximum neuron norm, are computed digitally while the majority of the experts are executed on AIMC hardware. We further assign densely activated modules, such as attention layers, to digital computation due to their high noise sensitivity despite comprising a small fraction of parameters. Extensive experiments on large MoE language models, including DeepSeekMoE and OLMoE, across multiple benchmark tasks validate the robustness of our approach in maintaining accuracy under analog nonidealities.",
+      "authors": [
+        "Mohammed Nowaz Rabbani Chowdhury",
+        "Hsinyu Tsai",
+        "Geoffrey W. Burr",
+        "Kaoutar El Maghraoui",
+        "Liu Liu",
+        "Meng Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-03T06:00:57+00:00",
+      "link": "https://arxiv.org/pdf/2603.02633v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Mixture-of-Experts models and retraining-free framework",
+      "llm_evidence_cn": "混合专家模型与免微调框架",
+      "llm_evidence": "混合专家模型与免微调框架",
+      "canonical_evidence": "混合专家模型与免微调框架",
+      "llm_tldr_en": "A retraining-free framework for MoE models using heterogeneous analog-digital computing.",
+      "llm_tldr_cn": "提出一种无需重新训练的异构模拟-数字计算框架，用于优化MoE模型的推理效率。",
+      "llm_tldr": "提出一种无需重新训练的异构模拟-数字计算框架，用于优化MoE模型的推理效率。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.04772v1",
+      "source": "arxiv",
+      "title": "TSEmbed: Unlocking Task Scaling in Universal Multimodal Embeddings",
+      "abstract": "Despite the exceptional reasoning capabilities of Multimodal Large Language Models (MLLMs), their adaptation into universal embedding models is significantly impeded by task conflict. To address this, we propose TSEmbed, a universal multimodal embedding framework that synergizes Mixture-of-Experts (MoE) with Low-Rank Adaptation (LoRA) to explicitly disentangle conflicting task objectives. Moreover, we introduce Expert-Aware Negative Sampling (EANS), a novel strategy that leverages expert routing distributions as an intrinsic proxy for semantic similarity. By dynamically prioritizing informative hard negatives that share expert activation patterns with the query, EANS effectively sharpens the model's discriminative power and refines embedding boundaries. To ensure training stability, we further devise a two-stage learning paradigm that solidifies expert specialization before optimizing representations via EANS. TSEmbed achieves state-of-the-art performance on both the Massive Multimodal Embedding Benchmark (MMEB) and real-world industrial production datasets, laying a foundation for task-level scaling in universal multimodal embeddings.",
+      "authors": [
+        "Yebo Wu",
+        "Feng Liu",
+        "Ziwei Xie",
+        "Zhiyuan Liu",
+        "Changwang Zhang",
+        "Jun Wang",
+        "Li Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-05T03:43:52+00:00",
+      "link": "https://arxiv.org/pdf/2603.04772v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "synergizes Mixture-of-Experts (MoE) for multimodal embeddings",
+      "llm_evidence_cn": "结合混合专家模型 (MoE) 处理多模态嵌入",
+      "llm_evidence": "结合混合专家模型 (MoE) 处理多模态嵌入",
+      "canonical_evidence": "结合混合专家模型 (MoE) 处理多模态嵌入",
+      "llm_tldr_en": "TSEmbed uses MoE and LoRA to disentangle conflicting task objectives in universal multimodal embeddings.",
+      "llm_tldr_cn": "TSEmbed 利用 MoE 和 LoRA 解决通用多模态嵌入中的任务冲突问题。",
+      "llm_tldr": "TSEmbed 利用 MoE 和 LoRA 解决通用多模态嵌入中的任务冲突问题。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.05046v1",
+      "source": "arxiv",
+      "title": "NeuronMoE: Neuron-Guided Mixture-of-Experts for Efficient Multilingual LLM Extension",
+      "abstract": "Extending large language models to low-resource languages is essential for global accessibility, but training separate models per language is prohibitively expensive. Mixture-of-Experts (MoE) architectures address this by adding sparse language-specific parameters, but determining how many experts each layer needs remains an open question. Current approaches allocate experts based on layer-level similarity, yet language processing exhibits fine-grained specialization at individual neurons. We propose $\\textbf{NeuronMoE}$, a method that analyzes language-specific neurons across all transformer components to guide expert allocation per layer based on empirically measured cross-lingual neuron diversity. Applied to Llama-3.2-3B for low-resource languages (Greek, Turkish, and Hungarian), this approach achieves approximately 40% average parameter reduction while matching the performance of the LayerMoE baseline. We find that low-resource language experts independently develop neuron specialization patterns mirroring the high-resource language, which are concentrated in early and late layers. This reveals potential universal architectural principles in how multilingual models organize linguistic knowledge.",
+      "authors": [
+        "Rongzhi Li",
+        "Hitomi Yanaka"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-05T10:55:26+00:00",
+      "link": "https://arxiv.org/pdf/2603.05046v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Mixture-of-Experts for LLM extension",
+      "llm_evidence_cn": "用于大模型扩展的混合专家模型",
+      "llm_evidence": "用于大模型扩展的混合专家模型",
+      "canonical_evidence": "用于大模型扩展的混合专家模型",
+      "llm_tldr_en": "Proposes NeuronMoE to guide expert allocation in MoE architectures for multilingual LLM extension.",
+      "llm_tldr_cn": "提出 NeuronMoE，通过神经元引导 MoE 架构中的专家分配，实现高效的多语言大模型扩展。",
+      "llm_tldr": "提出 NeuronMoE，通过神经元引导 MoE 架构中的专家分配，实现高效的多语言大模型扩展。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.10090v1",
+      "source": "arxiv",
+      "title": "A Survey of Weight Space Learning: Understanding, Representation, and Generation",
+      "abstract": "Neural network weights are typically viewed as the end product of training, while most deep learning research focuses on data, features, and architectures. However, recent advances show that the set of all possible weight values (weight space) itself contains rich structure: pretrained models form organized distributions, exhibit symmetries, and can be embedded, compared, or even generated. Understanding such structures has tremendous impact on how neural networks are analyzed and compared, and on how knowledge is transferred across models, beyond individual training instances. This emerging research direction, which we refer to as Weight Space Learning (WSL), treats neural weights as a meaningful domain for analysis and modeling. This survey provides the first unified taxonomy of WSL. We categorize existing methods into three core dimensions: Weight Space Understanding (WSU), which studies the geometry and symmetries of weights; Weight Space Representation (WSR), which learns embeddings over model weights; and Weight Space Generation (WSG), which synthesizes new weights through hypernetworks or generative models. We further show how these developments enable practical applications, including model retrieval, continual and federated learning, neural architecture search, and data-free reconstruction. By consolidating fragmented progress under a coherent framework, this survey highlights weight space as a learnable, structured domain with growing impact across model analysis, transferring, and weight generation. We release an accompanying resource at https://github.com/Zehong-Wang/Awesome-Weight-Space-Learning.",
+      "authors": [
+        "Xiaolong Han",
+        "Zehong Wang",
+        "Bo Zhao",
+        "Binchi Zhang",
+        "Jundong Li",
+        "Damian Borth",
+        "Rose Yu",
+        "Haggai Maron",
+        "Yanfang Ye",
+        "Lu Yin",
+        "Ferrante Neri"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-10T15:32:23+00:00",
+      "link": "https://arxiv.org/pdf/2603.10090v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Survey of weight space learning, symmetries, and knowledge transfer across models",
+      "llm_evidence_cn": "权重空间学习综述，涉及模型间的对称性与知识迁移",
+      "llm_evidence": "权重空间学习综述，涉及模型间的对称性与知识迁移",
+      "canonical_evidence": "权重空间学习综述，涉及模型间的对称性与知识迁移",
+      "llm_tldr_en": "A comprehensive survey on Weight Space Learning, covering how neural weights can be analyzed, compared, and merged.",
+      "llm_tldr_cn": "关于权重空间学习的全面综述，涵盖了如何对神经权重进行分析、比较和合并。",
+      "llm_tldr": "关于权重空间学习的全面综述，涵盖了如何对神经权重进行分析、比较和合并。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.18113v1",
+      "source": "arxiv",
+      "title": "VC-Soup: Value-Consistency Guided Multi-Value Alignment for Large Language Models",
+      "abstract": "As large language models (LLMs) increasingly shape content generation, interaction, and decision-making across the Web, aligning them with human values has become a central objective in trustworthy AI. This challenge becomes even more pronounced when aligning multiple, potentially conflicting human values. Although recent approaches, such as reward reweighting, prompt-based supervised fine-tuning, and model merging, attempt to tackle multi-value alignment, they still face two major limitations: (1) training separate models for each value combination is prohibitively expensive; (2) value conflicts substantially degrade alignment performance. These limitations make it difficult to achieve favorable trade-offs across diverse human values. To address these challenges, we revisit multi-value alignment from the perspective of value consistency in data and propose VC-soup, a data filtering and parameter merging framework grounded in value-consistent learning. We first design a value consistency metric based on the cosine similarity between the reward-gap vector of each preference pair and an all-ones vector, which quantifies its cross-value coherence. We then filter out low-consistency preference pairs in each value dataset and train on the remaining data to obtain smooth, value-consistent policy models that better preserve linear mode connectivity. Finally, we linearly combine these policies and apply Pareto filtering across values to obtain solutions with balanced multi-value performance. Extensive experiments and theoretical analysis demonstrate that VC-soup effectively mitigates conflicts and consistently outperforms existing multi-value alignment methods.",
+      "authors": [
+        "Hefei Xu",
+        "Le Wu",
+        "Yu Wang",
+        "Min Hou",
+        "Han Wu",
+        "Zhen Zhang",
+        "Meng Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-18T14:05:51+00:00",
+      "link": "https://arxiv.org/pdf/2603.18113v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "model merging for multi-value alignment in LLMs",
+      "llm_evidence_cn": "用于大语言模型多价值观对齐的模型合并",
+      "llm_evidence": "用于大语言模型多价值观对齐的模型合并",
+      "canonical_evidence": "用于大语言模型多价值观对齐的模型合并",
+      "llm_tldr_en": "Presents VC-Soup, using model merging and value-consistency to align LLMs with multiple conflicting human values.",
+      "llm_tldr_cn": "提出VC-Soup，利用模型合并和价值一致性引导大模型实现多价值观对齐。",
+      "llm_tldr": "提出VC-Soup，利用模型合并和价值一致性引导大模型实现多价值观对齐。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.18908v2",
+      "source": "arxiv",
+      "title": "Secure Linear Alignment of Large Language Models",
+      "abstract": "Language models increasingly appear to learn similar representations, despite differences in training objectives, architectures, and data modalities. This emerging compatibility between independently trained models introduces new opportunities for cross-model alignment to downstream objectives. Moreover, it unlocks new potential application domains, such as settings where security, privacy, or competitive constraints prohibit direct data or model sharing. In this work, we propose a privacy-preserving framework that exploits representational convergence to enable cross-silo inference between independent language models. The framework learns an affine transformation over a shared public dataset and applies homomorphic encryption to protect client queries during inference. By encrypting only the linear alignment and classification operations, the method achieves sub-second inference latency while maintaining strong security guarantees. We support this framework with an empirical investigation into representational convergence, in which we learn linear transformations between the final hidden states of independent models. We evaluate these cross-model mappings on embedding classification and out-of-distribution detection, observing minimal performance degradation across model pairs. Additionally, we show for the first time that linear alignment sometimes enables text generation across independently trained models.",
+      "authors": [
+        "Matt Gorbett",
+        "Suman Jana"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-19T13:43:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.18908v2",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "cross-model alignment and representational convergence",
+      "llm_evidence_cn": "跨模型对齐与表示收敛",
+      "llm_evidence": "跨模型对齐与表示收敛",
+      "canonical_evidence": "跨模型对齐与表示收敛",
+      "llm_tldr_en": "Proposes a privacy-preserving framework for linear alignment between independent language models.",
+      "llm_tldr_cn": "提出一种隐私保护框架，用于独立语言模型之间的线性对齐。",
+      "llm_tldr": "提出一种隐私保护框架，用于独立语言模型之间的线性对齐。",
+      "llm_tags": [
+        "query:modelmerge"
+      ],
+      "matched_query_tag": "query:modelmerge",
+      "matched_query_text": "parameter alignment",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.18908v3",
+      "source": "arxiv",
+      "title": "Characterizing Linear Alignment Across Language Models",
+      "abstract": "Language models increasingly appear to learn similar representations, despite differences in training objectives, architectures, and data modalities. This emerging compatibility between independently trained models introduces new opportunities for cross-model alignment to downstream objectives. Moreover, this capability unlocks new potential application domains, such as settings where security, privacy, or competitive constraints prohibit direct data or model sharing. In this work, we investigate the extent to which representational convergence enables practical linear alignment between large language models. Specifically, we learn affine transformations between the final hidden states of independent models and empirically evaluate these mappings across text generation, embedding classification, and out-of-distribution detection. We find that performance is largely preserved across model pairs, and show for the first time that linear alignment sometimes enables text generation across independently trained models. We further highlight a potential application of linear alignment for privacy-preserving cross-silo inference. The framework learns an affine transformation over a shared public dataset and uses homomorphic encryption to protect client queries. By encrypting only the linear classification operation, the method achieves sub-second inference latency.",
+      "authors": [
+        "Matt Gorbett",
+        "Suman Jana"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-19T13:43:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.18908v3",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Linear alignment across language models and representational convergence",
+      "llm_evidence_cn": "跨语言模型的线性对齐与表征收敛",
+      "llm_evidence": "跨语言模型的线性对齐与表征收敛",
+      "canonical_evidence": "跨语言模型的线性对齐与表征收敛",
+      "llm_tldr_en": "Investigates representational convergence to enable linear alignment between independently trained LLMs.",
+      "llm_tldr_cn": "研究表征收敛性，以实现独立训练的大语言模型之间的线性对齐。",
+      "llm_tldr": "研究表征收敛性，以实现独立训练的大语言模型之间的线性对齐。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.21276v1",
+      "source": "arxiv",
+      "title": "Aggregation Alignment for Federated Learning with Mixture-of-Experts under Data Heterogeneity",
+      "abstract": "Large language models (LLMs) increasingly adopt Mixture-of-Experts (MoE) architectures to scale model capacity while reducing computation. Fine-tuning these MoE-based LLMs often requires access to distributed and privacy-sensitive data, making centralized fine-tuning impractical. Federated learning (FL) therefore provides a paradigm to collaboratively fine-tune MoE-based LLMs, enabling each client to integrate diverse knowledge without compromising data privacy. However, the integration of MoE-based LLM fine-tuning into FL encounters two critical aggregation challenges due to inherent data heterogeneity across clients: (i) divergent local data distributions drive clients to develop distinct gating preference for localized expert selection, causing direct parameter aggregation to produce a ``one-size-fits-none'' global gating network, and (ii) same-indexed experts develop disparate semantic roles across clients, leading to expert semantic blurring and the degradation of expert specialization. To address these challenges, we propose FedAlign-MoE, a federated aggregation alignment framework that jointly enforces routing consistency and expert semantic alignment. Specifically, FedAlign-MoE aggregates gating behaviors by aligning routing distributions through consistency weighting and optimizes local gating networks through distribution regularization, maintaining cross-client stability without overriding discriminative local preferences. Meanwhile, FedAlign-MoE explicitly quantifies semantic consistency among same-indexed experts across clients and selectively aggregates updates from semantically aligned clients, ensuring stable and specialized functional roles for global experts. Extensive experiments demonstrate that FedAlign-MoE outperforms state-of-the-art benchmarks, achieving faster convergence and superior accuracy in non-IID federated environments.",
+      "authors": [
+        "Zihan Fang",
+        "Qianru Wang",
+        "Haonan An",
+        "Zheng Lin",
+        "Yiqin Deng",
+        "Xianhao Chen",
+        "Yuguang Fang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-22T15:07:39+00:00",
+      "link": "https://arxiv.org/pdf/2603.21276v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Federated Learning with Mixture-of-Experts",
+      "llm_evidence_cn": "混合专家模型的联邦学习",
+      "llm_evidence": "混合专家模型的联邦学习",
+      "canonical_evidence": "混合专家模型的联邦学习",
+      "llm_tldr_en": "Addresses aggregation challenges in federated fine-tuning of MoE-based LLMs under data heterogeneity.",
+      "llm_tldr_cn": "解决了数据异构环境下 MoE 大模型联邦微调中的聚合挑战。",
+      "llm_tldr": "解决了数据异构环境下 MoE 大模型联邦微调中的聚合挑战。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.25041v1",
+      "source": "arxiv",
+      "title": "AdaLTM: Adaptive Layer-wise Task Vector Merging for Categorical Speech Emotion Recognition with ASR Knowledge Integration",
+      "abstract": "Integrating Automatic Speech Recognition (ASR) into Speech Emotion Recognition (SER) enhances modeling by providing linguistic context. However, conventional feature fusion faces performance bottlenecks, and multi-task learning often suffers from optimization conflicts. While task vectors and model merging have addressed such conflicts in NLP and CV, their potential in speech tasks remains largely unexplored. In this work, we propose an Adaptive Layer-wise Task Vector Merging (AdaLTM) framework based on WavLM-Large. Instead of joint optimization, we extract task vectors from in-domain ASR and SER models fine-tuned on emotion datasets. These vectors are integrated into a frozen base model using layer-wise learnable coefficients. This strategy enables depth-aware balancing of linguistic and paralinguistic knowledge across transformer layers without gradient interference. Experiments on the MSP-Podcast demonstrate that the proposed approach effectively mitigates conflicts between ASR and SER.",
+      "authors": [
+        "Chia-Yu Lee",
+        "Huang-Cheng Chou",
+        "Tzu-Quan Lin",
+        "Yuanchao Li",
+        "Ya-Tse Wu",
+        "Shrikanth Narayanan",
+        "Chi-Chun Lee"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-03-26T05:22:43+00:00",
+      "link": "https://arxiv.org/pdf/2603.25041v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Adaptive Layer-wise Task Vector Merging and model merging",
+      "llm_evidence_cn": "自适应逐层任务向量合并与模型合并",
+      "llm_evidence": "自适应逐层任务向量合并与模型合并",
+      "canonical_evidence": "自适应逐层任务向量合并与模型合并",
+      "llm_tldr_en": "Applies task vector merging to integrate ASR knowledge into speech emotion recognition models.",
+      "llm_tldr_cn": "应用任务向量合并技术将语音识别知识集成到语音情感识别模型中。",
+      "llm_tldr": "应用任务向量合并技术将语音识别知识集成到语音情感识别模型中。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.27960v1",
+      "source": "arxiv",
+      "title": "Efficient Inference of Large Vision Language Models",
+      "abstract": "Although Large Vision Language Models (LVLMs) have demonstrated impressive multimodal reasoning capabilities, their scalability and deployment are constrained by massive computational requirements. In particular, the massive amount of visual tokens from high-resolution input data aggravates the situation due to the quadratic complexity of attention mechanisms. To address these issues, the research community has developed several optimization frameworks. This paper presents a comprehensive survey of the current state-of-the-art techniques for accelerating LVLM inference. We introduce a systematic taxonomy that categorizes existing optimization frameworks into four primary dimensions: visual token compression, memory management and serving, efficient architectural design, and advanced decoding strategies. Furthermore, we critically examine the limitations of these current methodologies and identify critical open problems to inspire future research directions in efficient multimodal systems.",
+      "authors": [
+        "Surendra Pathak"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL",
+        "cs.CV"
+      ],
+      "published": "2026-03-30T02:23:37+00:00",
+      "link": "https://arxiv.org/pdf/2603.27960v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Survey of Large Vision Language Models and efficient design",
+      "llm_evidence_cn": "大视觉语言模型综述与高效设计",
+      "llm_evidence": "大视觉语言模型综述与高效设计",
+      "canonical_evidence": "大视觉语言模型综述与高效设计",
+      "llm_tldr_en": "A comprehensive survey on accelerating inference for Large Vision Language Models.",
+      "llm_tldr_cn": "关于加速大视觉语言模型（LVLM）推理技术的全面综述。",
+      "llm_tldr": "关于加速大视觉语言模型（LVLM）推理技术的全面综述。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.04890v1",
+      "source": "arxiv",
+      "title": "FedAFD: Multimodal Federated Learning via Adversarial Fusion and Distillation",
+      "abstract": "Multimodal Federated Learning (MFL) enables clients with heterogeneous data modalities to collaboratively train models without sharing raw data, offering a privacy-preserving framework that leverages complementary cross-modal information. However, existing methods often overlook personalized client performance and struggle with modality/task discrepancies, as well as model heterogeneity. To address these challenges, we propose FedAFD, a unified MFL framework that enhances client and server learning. On the client side, we introduce a bi-level adversarial alignment strategy to align local and global representations within and across modalities, mitigating modality and task gaps. We further design a granularity-aware fusion module to integrate global knowledge into the personalized features adaptively. On the server side, to handle model heterogeneity, we propose a similarity-guided ensemble distillation mechanism that aggregates client representations on shared public data based on feature similarity and distills the fused knowledge into the global model. Extensive experiments conducted under both IID and non-IID settings demonstrate that FedAFD achieves superior performance and efficiency for both the client and the server.",
+      "authors": [
+        "Min Tan",
+        "Junchao Ma",
+        "Yinfu Feng",
+        "Jiajun Ding",
+        "Wenwen Pan",
+        "Tingting Han",
+        "Qian Zheng",
+        "Zhenzhong Kuang",
+        "Zhou Yu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-03-05T07:30:51+00:00",
+      "link": "https://arxiv.org/pdf/2603.04890v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "adversarial fusion and representation alignment in multimodal federated learning",
+      "llm_evidence_cn": "多模态联邦学习中的对抗融合与表示对齐",
+      "llm_evidence": "多模态联邦学习中的对抗融合与表示对齐",
+      "canonical_evidence": "多模态联邦学习中的对抗融合与表示对齐",
+      "llm_tldr_en": "A multimodal federated learning framework using adversarial alignment and fusion.",
+      "llm_tldr_cn": "一种通过对抗性对齐和粒度感知融合来增强多模态联邦学习的框架。",
+      "llm_tldr": "一种通过对抗性对齐和粒度感知融合来增强多模态联邦学习的框架。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.04945v1",
+      "source": "arxiv",
+      "title": "Federated Heterogeneous Language Model Optimization for Hybrid Automatic Speech Recognition",
+      "abstract": "Training automatic speech recognition (ASR) models increasingly relies on decentralized federated learning to ensure data privacy and accessibility, producing multiple local models that require effective merging. In hybrid ASR systems, while acoustic models can be merged using established methods, the language model (LM) for rescoring the N-best speech recognition list faces challenges due to the heterogeneity of non-neural n-gram models and neural network models. This paper proposes a heterogeneous LM optimization task and introduces a match-and-merge paradigm with two algorithms: the Genetic Match-and-Merge Algorithm (GMMA), using genetic operations to evolve and pair LMs, and the Reinforced Match-and-Merge Algorithm (RMMA), leveraging reinforcement learning for efficient convergence. Experiments on seven OpenSLR datasets show RMMA achieves the lowest average Character Error Rate and better generalization than baselines, converging up to seven times faster than GMMA, highlighting the paradigm's potential for scalable, privacy-preserving ASR systems.",
+      "authors": [
+        "Mengze Hong",
+        "Yi Gu",
+        "Di Jiang",
+        "Hanlin Gu",
+        "Chen Jason Zhang",
+        "Lu Wang",
+        "Zhiyang Su"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-05T08:42:17+00:00",
+      "link": "https://arxiv.org/pdf/2603.04945v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "merging multiple local models in federated learning",
+      "llm_evidence_cn": "联邦学习中多个本地模型的合并",
+      "llm_evidence": "联邦学习中多个本地模型的合并",
+      "canonical_evidence": "联邦学习中多个本地模型的合并",
+      "llm_tldr_en": "Proposes a match-and-merge paradigm for optimizing heterogeneous language models in federated ASR systems.",
+      "llm_tldr_cn": "提出了一种在联邦语音识别系统中优化异构语言模型的匹配合并范式。",
+      "llm_tldr": "提出了一种在联邦语音识别系统中优化异构语言模型的匹配合并范式。",
+      "llm_tags": [
+        "query:modelmerge"
+      ],
+      "matched_query_tag": "query:modelmerge",
+      "matched_query_text": "model merging",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.05432v1",
+      "source": "arxiv",
+      "title": "Ensembling Language Models with Sequential Monte Carlo",
+      "abstract": "Practitioners have access to an abundance of language models and prompting strategies for solving many language modeling tasks; yet prior work shows that modeling performance is highly sensitive to both choices. Classical machine learning ensembling techniques offer a principled approach: aggregate predictions from multiple sources to achieve better performance than any single one. However, applying ensembling to language models during decoding is challenging: naively aggregating next-token probabilities yields samples from a locally normalized, biased approximation of the generally intractable ensemble distribution over strings. In this work, we introduce a unified framework for composing $K$ language models into $f$-ensemble distributions for a wide range of functions $f\\colon\\mathbb{R}_{\\geq 0}^{K}\\to\\mathbb{R}_{\\geq 0}$. To sample from these distributions, we propose a byte-level sequential Monte Carlo (SMC) algorithm that operates in a shared character space, enabling ensembles of models with mismatching vocabularies and consistent sampling in the limit. We evaluate a family of $f$-ensembles across prompt and model combinations for various structured text generation tasks, highlighting the benefits of alternative aggregation strategies over traditional probability averaging, and showing that better posterior approximations can yield better ensemble performance.",
+      "authors": [
+        "Robin Shing Moon Chan",
+        "Tianyu Liu",
+        "Samuel Kiegeland",
+        "Clemente Pasti",
+        "Jacob Hoover Vigly",
+        "Timothy J. O'Donnell",
+        "Ryan Cotterell",
+        "Tim Vieira"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-05T17:54:31+00:00",
+      "link": "https://arxiv.org/pdf/2603.05432v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "composing K language models into ensemble distributions",
+      "llm_evidence_cn": "将K个语言模型组合成集成分布",
+      "llm_evidence": "将K个语言模型组合成集成分布",
+      "canonical_evidence": "将K个语言模型组合成集成分布",
+      "llm_tldr_en": "Introduces a framework for composing multiple language models using Sequential Monte Carlo ensembling.",
+      "llm_tldr_cn": "引入了一个使用序贯蒙特卡洛集成方法组合多个语言模型的框架。",
+      "llm_tldr": "引入了一个使用序贯蒙特卡洛集成方法组合多个语言模型的框架。",
+      "llm_tags": [
+        "query:modelmerge"
+      ],
+      "matched_query_tag": "query:modelmerge",
+      "matched_query_text": "model composition",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.10702v1",
+      "source": "arxiv",
+      "title": "UniCom: Unified Multimodal Modeling via Compressed Continuous Semantic Representations",
+      "abstract": "Current unified multimodal models typically rely on discrete visual tokenizers to bridge the modality gap. However, discretization inevitably discards fine-grained semantic information, leading to suboptimal performance in visual understanding tasks. Conversely, directly modeling continuous semantic representations (e.g., CLIP, SigLIP) poses significant challenges in high-dimensional generative modeling, resulting in slow convergence and training instability. To resolve this dilemma, we introduce UniCom, a unified framework that harmonizes multimodal understanding and generation via compressed continuous representation. We empirically demonstrate that reducing channel dimension is significantly more effective than spatial downsampling for both reconstruction and generation. Accordingly, we design an attention-based semantic compressor to distill dense features into a compact unified representation. Furthermore, we validate that the transfusion architecture surpasses query-based designs in convergence and consistency. Experiments demonstrate that UniCom achieves state-of-the-art generation performance among unified models. Notably, by preserving rich semantic priors, it delivers exceptional controllability in image editing and maintains image consistency even without relying on VAE.",
+      "authors": [
+        "Yaqi Zhao",
+        "Wang Lin",
+        "Zijian Zhang",
+        "Miles Yang",
+        "Jingyuan Chen",
+        "Wentao Zhang",
+        "Zhao Zhong",
+        "Liefeng Bo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-11T12:14:26+00:00",
+      "link": "https://arxiv.org/pdf/2603.10702v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "unified multimodal modeling and vision-language models",
+      "llm_evidence_cn": "统一多模态建模与视觉语言模型",
+      "llm_evidence": "统一多模态建模与视觉语言模型",
+      "canonical_evidence": "统一多模态建模与视觉语言模型",
+      "llm_tldr_en": "Introduces UniCom, a framework for unified multimodal understanding and generation via compressed representations.",
+      "llm_tldr_cn": "引入 UniCom 框架，通过压缩连续表示协调多模态理解与生成。",
+      "llm_tldr": "引入 UniCom 框架，通过压缩连续表示协调多模态理解与生成。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13930v1",
+      "source": "arxiv",
+      "title": "Spatially Varying Coefficient Mallows Model Averaging",
+      "abstract": "Model averaging, as an appealing ensemble technique, strategically integrates all valuable information from candidate models to construct fast and accurate prediction. Despite of having been widely practiced in many fields such as cross-sectional data, censored data and longitudinal data, its application to spatial data characterized by inherent spatial heterogeneity remains surprisingly limited. To mitigate risk of model misspecification and enhance the flexibility of prediction, we propose a combined estimator constructed by computing the weighted average of estimators derived from a set of spatially varying coefficient candidate models. Herein, the model weights are determined via a Mallows-type criterion, which dynamically calibrates the relative importance of individual candidate models in the ensemble. Theoretically, we establish desirable asymptotic properties under two practical scenarios. First, in the case where all candidate models are misspecified, the proposed model averaging estimator attains asymptotic optimality in the sense that it minimizes the squared error loss function asymptotically. Second, when the candidate model set encompasses at least one quasi-correct model, the weights assigned by the Mallows-type criterion asymptotically concentrate on the quasi-correct models, and the resulting model averaging estimator converges in probability to the true conditional mean. Both simulation studies and a real-world empirical example demonstrate that the proposed method generally outperforms alternative comparative approaches in terms of predictive accuracy and robustness.",
+      "authors": [
+        "Zhuang Yong",
+        "Lv Jing",
+        "Tingting Li"
+      ],
+      "primary_category": "stat.ME",
+      "categories": [
+        "stat.ME",
+        "math.ST"
+      ],
+      "published": "2026-03-14T12:59:18+00:00",
+      "link": "https://arxiv.org/pdf/2603.13930v1",
+      "tags": [
+        "keyword:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "weighted average of candidate models",
+      "llm_evidence_cn": "候选模型的加权平均",
+      "llm_evidence": "候选模型的加权平均",
+      "canonical_evidence": "候选模型的加权平均",
+      "llm_tldr_en": "Proposes a model averaging technique using Mallows-type weights for spatially varying coefficient models.",
+      "llm_tldr_cn": "提出一种使用 Mallows 型权重的模型平均技术，用于空间变系数模型。",
+      "llm_tldr": "提出一种使用 Mallows 型权重的模型平均技术，用于空间变系数模型。",
+      "llm_tags": [
+        "query:modelmerge"
+      ],
+      "matched_query_tag": "query:modelmerge",
+      "matched_query_text": "weight averaging",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14621v1",
+      "source": "arxiv",
+      "title": "A Heterogeneous Ensemble for Multi-Center COVID-19 Classification from Chest CT Scans",
+      "abstract": "The COVID-19 pandemic exposed critical limitations in diagnostic workflows: RT-PCR tests suffer from slow turnaround times and high false-negative rates, while CT-based screening offers faster complementary diagnosis but requires expert radiological interpretation. Deploying automated CT analysis across multiple hospital centres introduces further challenges, as differences in scanner hardware, acquisition protocols, and patient populations cause substantial domain shift that degrades single-model performance. To address these challenges, we present a heterogeneous ensemble of nine models spanning three inference paradigms: (1) a self-supervised DINOv2 Vision Transformer with slice-level sigmoid aggregation, (2) a RadImageNet-pretrained DenseNet-121 with slice-level sigmoid averaging, and (3) seven Gated Attention Multiple Instance Learning models using EfficientNet-B3, ConvNeXt-Tiny, and EfficientNetV2-S backbones with scan-level softmax classification. Ensemble diversity is further enhanced through random-seed variation and Stochastic Weight Averaging. We address severe overfitting, reducing the validation-to-training loss ratio from 35x to less than 3x, through a combination of Focal Loss, embedding-level Mixup, and domain-aware augmentation. Model outputs are fused via score-weighted probability averaging and calibrated with per-source threshold optimization. The final ensemble achieves an average macro F1 of 0.9280 across four hospital centres, outperforming the best single model (F1=0.8969) by +0.031, demonstrating that heterogeneous architectures combined with source-aware calibration are essential for robust multi-site medical image classification.",
+      "authors": [
+        "Aadit Nilay",
+        "Bhavesh Thapar",
+        "Anant Agrawal",
+        "Mohammad Nayeem Teli"
+      ],
+      "primary_category": "eess.IV",
+      "categories": [
+        "eess.IV",
+        "cs.CV"
+      ],
+      "published": "2026-03-15T21:34:59+00:00",
+      "link": "https://arxiv.org/pdf/2603.14621v1",
+      "tags": [
+        "keyword:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Vision Transformer and image classification ensemble",
+      "llm_evidence_cn": "视觉 Transformer 与图像分类集成",
+      "llm_evidence": "视觉 Transformer 与图像分类集成",
+      "canonical_evidence": "视觉 Transformer 与图像分类集成",
+      "llm_tldr_en": "Presents a heterogeneous ensemble including DINOv2 ViT for multi-center COVID-19 CT scan classification.",
+      "llm_tldr_cn": "提出一种包含 DINOv2 ViT 的异构集成模型，用于多中心新冠肺炎 CT 扫描分类。",
+      "llm_tldr": "提出一种包含 DINOv2 ViT 的异构集成模型，用于多中心新冠肺炎 CT 扫描分类。",
+      "llm_tags": [
+        "query:cv:composite"
+      ],
+      "matched_query_tag": "query:cv:composite",
+      "matched_query_text": "Papers central to 计算机视觉基础与前沿，关注视觉表征学习、识别、检测、分割、生成模型与视觉 Transformer。, especially work that connects or combines: object detection; image recognition; representation learning; vision transformer; computer vision; Prioritize survey papers and highly cited method papers in modern computer vision.; Recommend papers on image recognition, detection, and segmentation with strong experimental results.; Find recent and influential papers in computer vision, especially representation learning and vision transformers..",
+      "matched_requirement_id": "req-composite-cv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.15154v1",
+      "source": "arxiv",
+      "title": "Vision-Language Model Based Multi-Expert Fusion for CT Image Classification",
+      "abstract": "Robust detection of COVID-19 from chest CT remains challenging in multi-institutional settings due to substantial source shift, source imbalance, and hidden test-source identities. In this work, we propose a three-stage source-aware multi-expert framework for multi-source COVID-19 CT classification. First, we build a lung-aware 3D expert by combining original CT volumes and lung-extracted CT volumes for volumetric classification. Second, we develop two MedSigLIP-based experts: a slice-wise representation and probability learning module, and a Transformer-based inter-slice context modeling module for capturing cross-slice dependency. Third, we train a source classifier to predict the latent source identity of each test scan. By leveraging the predicted source information, we perform model fusion and voting based on different experts. On the validation set covering all four sources, the Stage 1 model achieves the best macro-F1 of 0.9711, ACC of 0.9712, and AUC of 0.9791. Stage~2a and Stage~2b achieve the best AUC scores of 0.9864 and 0.9854, respectively. Stage~3 source classifier reaches 0.9107 ACC and 0.9114 F1. These results demonstrate that source-aware expert modeling and hierarchical voting provide an effective solution for robust COVID-19 CT classification under heterogeneous multi-source conditions.",
+      "authors": [
+        "Jianfa Bai",
+        "Kejin Lu",
+        "Runtian Yuan",
+        "Qingqiu Li",
+        "Jilan Xu",
+        "Junlin Hou",
+        "Yuejie Zhang",
+        "Rui Feng"
+      ],
+      "primary_category": "eess.IV",
+      "categories": [
+        "eess.IV",
+        "cs.CV"
+      ],
+      "published": "2026-03-16T11:48:49+00:00",
+      "link": "https://arxiv.org/pdf/2603.15154v1",
+      "tags": [
+        "keyword:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multi-expert fusion in vision-language models",
+      "llm_evidence_cn": "视觉语言模型中的多专家融合",
+      "llm_evidence": "视觉语言模型中的多专家融合",
+      "canonical_evidence": "视觉语言模型中的多专家融合",
+      "llm_tldr_en": "Proposes a multi-expert fusion framework using vision-language models for medical image classification.",
+      "llm_tldr_cn": "提出一种利用视觉语言模型进行医学图像分类的多专家融合框架。",
+      "llm_tldr": "提出一种利用视觉语言模型进行医学图像分类的多专家融合框架。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.15708v1",
+      "source": "arxiv",
+      "title": "Mastering the Minority: An Uncertainty-guided Multi-Expert Framework for Challenging-tailed Sequence Learning",
+      "abstract": "Imbalanced data distribution remains a critical challenge in sequential learning, leading models to easily recognize frequent categories while failing to detect minority classes adequately. The Mixture-of-Experts model offers a scalable solution, yet its application is often hindered by parameter inefficiency, poor expert specialization, and difficulty in resolving prediction conflicts. To Master the Minority classes effectively, we propose the Uncertainty-based Multi-Expert fusion network (UME) framework. UME is designed with three core innovations: First, we employ Ensemble LoRA for parameter-efficient modeling, significantly reducing the trainable parameter count. Second, we introduce Sequential Specialization guided by Dempster-Shafer Theory (DST), which ensures effective specialization on the challenging-tailed classes. Finally, an Uncertainty-Guided Fusion mechanism uses DST's certainty measures to dynamically weigh expert opinions, resolving conflicts by prioritizing the most confident expert for reliable final predictions. Extensive experiments across four public hierarchical text classification datasets demonstrate that UME achieves state-of-the-art performance. We achieve a performance gain of up to 17.97\\% over the best baseline on individual categories, while reducing trainable parameters by up to 10.32\\%. The findings highlight that uncertainty-guided expert coordination is a principled strategy for addressing challenging-tailed sequence learning. Our code is available at https://github.com/CQUPTWZX/Multi-experts.",
+      "authors": [
+        "Ye Wang",
+        "Zixuan Wu",
+        "Lifeng Shen",
+        "Jiang Xie",
+        "Xiaoling Wang",
+        "Hong Yu",
+        "Guoyin Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-16T13:34:56+00:00",
+      "link": "https://arxiv.org/pdf/2603.15708v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Multi-Expert fusion network and Ensemble LoRA for sequence learning",
+      "llm_evidence_cn": "多专家融合网络与集成LoRA用于序列学习",
+      "llm_evidence": "多专家融合网络与集成LoRA用于序列学习",
+      "canonical_evidence": "多专家融合网络与集成LoRA用于序列学习",
+      "llm_tldr_en": "Proposes an uncertainty-guided multi-expert framework using Ensemble LoRA to improve long-tail sequence learning.",
+      "llm_tldr_cn": "提出一种基于不确定性引导的多专家框架，利用集成LoRA改进长尾序列学习。",
+      "llm_tldr": "提出一种基于不确定性引导的多专家框架，利用集成LoRA改进长尾序列学习。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.16210v1",
+      "source": "arxiv",
+      "title": "MOSAIC: Composable Safety Alignment with Modular Control Tokens",
+      "abstract": "Safety alignment in large language models (LLMs) is commonly implemented as a single static policy embedded in model parameters. However, real-world deployments often require context-dependent safety rules that vary across users, regions, and applications. Existing approaches struggle to provide such conditional control: parameter-level alignment entangles safety behaviors with general capabilities, while prompt-based methods rely on natural language instructions that provide weak enforcement. We propose MOSAIC, a modular framework that enables compositional safety alignment through learnable control tokens optimized over a frozen backbone model. Each token represents a safety constraint and can be flexibly activated and composed at inference time. To train compositional tokens efficiently, we introduce order-based task sampling and a distribution-level alignment objective that mitigates over-refusal. Experiments show that MOSAIC achieves strong defense performance with substantially lower over-refusal while preserving model utility.",
+      "authors": [
+        "Jingyu Peng",
+        "Hongyu Chen",
+        "Jiancheng Dong",
+        "Maolin Wang",
+        "Wenxi Li",
+        "Yuchen Li",
+        "Kai Zhang",
+        "Xiangyu Zhao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-17T07:40:43+00:00",
+      "link": "https://arxiv.org/pdf/2603.16210v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "composable safety alignment and modular control",
+      "llm_evidence_cn": "可组合的安全对齐与模块化控制",
+      "llm_evidence": "可组合的安全对齐与模块化控制",
+      "canonical_evidence": "可组合的安全对齐与模块化控制",
+      "llm_tldr_en": "MOSAIC enables modular and compositional safety alignment in LLMs using learnable control tokens.",
+      "llm_tldr_cn": "MOSAIC 通过可学习的控制 Token 实现大语言模型的模块化和可组合安全对齐。",
+      "llm_tldr": "MOSAIC 通过可学习的控制 Token 实现大语言模型的模块化和可组合安全对齐。",
+      "llm_tags": [
+        "query:modelmerge"
+      ],
+      "matched_query_tag": "query:modelmerge",
+      "matched_query_text": "model composition",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.18492v1",
+      "source": "arxiv",
+      "title": "AIMER: Calibration-Free Task-Agnostic MoE Pruning",
+      "abstract": "Mixture-of-Experts (MoE) language models increase parameter capacity without proportional per-token compute, but the deployment still requires storing all experts, making expert pruning important for reducing memory and serving overhead. Existing task-agnostic expert pruning methods are typically calibration-dependent: they estimate expert importance from routing or activation statistics on a calibration set, which makes pruning outcomes sensitive to the choice of calibration set and adds substantial preprocessing cost. We introduce AIMER (\\textbf{A}bsolute mean over root mean square \\textbf{IM}portance for \\textbf{E}xpert \\textbf{R}anking), a simple calibration-free criterion that yields clear within-layer score separation and distinct expert stratification. Across 7B to 30B MoE language models at 25\\% and 50\\% pruning ratios over 16 benchmarks, AIMER consistently delivers competitive or stronger overall performance against state-of-the-art calibration-based expert pruning baselines with only 0.22--1.27 seconds for scoring the experts.",
+      "authors": [
+        "Zongfang Liu",
+        "Shengkun Tang",
+        "Yifan Shen",
+        "Huan Wang",
+        "Xin Yuan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-19T04:54:37+00:00",
+      "link": "https://arxiv.org/pdf/2603.18492v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "calibration-free task-agnostic MoE pruning",
+      "llm_evidence_cn": "无需校准的任务无关 MoE 剪枝",
+      "llm_evidence": "无需校准的任务无关 MoE 剪枝",
+      "canonical_evidence": "无需校准的任务无关 MoE 剪枝",
+      "llm_tldr_en": "Introduces AIMER, a calibration-free criterion for efficient expert pruning in Mixture-of-Experts models.",
+      "llm_tldr_cn": "引入 AIMER，一种无需校准的准则，用于混合专家模型（MoE）中高效的专家剪枝。",
+      "llm_tldr": "引入 AIMER，一种无需校准的准则，用于混合专家模型（MoE）中高效的专家剪枝。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.18908v1",
+      "source": "arxiv",
+      "title": "Secure Linear Alignment of Large Language Models",
+      "abstract": "Language models increasingly appear to learn similar representations, despite differences in training objectives, architectures, and data modalities. This emerging compatibility between independently trained models introduces new opportunities for cross-model alignment to downstream objectives. Moreover, it unlocks new potential application domains, such as settings where security, privacy, or competitive constraints prohibit direct data or model sharing. In this work, we propose a privacy-preserving framework that exploits representational convergence to enable cross-silo inference between independent language models. The framework learns an affine transformation over a shared public dataset and applies homomorphic encryption to protect client queries during inference. By encrypting only the linear alignment and classification operations, the method achieves sub-second inference latency while maintaining strong security guarantees. We support this framework with an empirical investigation into representational convergence, in which we learn linear transformations between the final hidden states of independent models. We evaluate these cross-model mappings on embedding classification and out-of-distribution detection, observing minimal performance degradation across model pairs. Additionally, we show for the first time that linear alignment sometimes enables text generation across independently trained models.",
+      "authors": [
+        "Matt Gorbett",
+        "Suman Jana"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-19T13:43:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.18908v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "cross-model alignment and representational convergence",
+      "llm_evidence_cn": "跨模型对齐与表示收敛",
+      "llm_evidence": "跨模型对齐与表示收敛",
+      "canonical_evidence": "跨模型对齐与表示收敛",
+      "llm_tldr_en": "Proposes a privacy-preserving framework for linear alignment between independent large language models.",
+      "llm_tldr_cn": "提出一种隐私保护框架，用于独立大语言模型之间的线性对齐。",
+      "llm_tldr": "提出一种隐私保护框架，用于独立大语言模型之间的线性对齐。",
+      "llm_tags": [
+        "query:modelmerge"
+      ],
+      "matched_query_tag": "query:modelmerge",
+      "matched_query_text": "parameter alignment",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.23436v1",
+      "source": "arxiv",
+      "title": "Similarity-Aware Mixture-of-Experts for Data-Efficient Continual Learning",
+      "abstract": "Machine learning models often need to adapt to new data after deployment due to structured or unstructured real-world dynamics. The Continual Learning (CL) framework enables continuous model adaptation, but most existing approaches either assume each task contains sufficiently many data samples or that the learning tasks are non-overlapping. In this paper, we address the more general setting where each task may have a limited dataset, and tasks may overlap in an arbitrary manner without a priori knowledge. This general setting is substantially more challenging for two reasons. On the one hand, data scarcity necessitates effective contextualization of general knowledge and efficient knowledge transfer across tasks. On the other hand, unstructured task overlapping can easily result in negative knowledge transfer. To address the above challenges, we propose an adaptive mixture-of-experts (MoE) framework over pre-trained models that progressively establishes similarity awareness among tasks. Our design contains two innovative algorithmic components: incremental global pooling and instance-wise prompt masking. The former mitigates prompt association noise through gradual prompt introduction over time. The latter decomposes incoming task samples into those aligning with current prompts (in-distribution) and those requiring new prompts (out-of-distribution). Together, our design strategically leverages potential task overlaps while actively preventing negative mutual interference in the presence of per-task data scarcity. Experiments across varying data volumes and inter-task similarity show that our method enhances sample efficiency and is broadly applicable.",
+      "authors": [
+        "Connor Mclaughlin",
+        "Nigel Lee",
+        "Lili Su"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-24T17:10:47+00:00",
+      "link": "https://arxiv.org/pdf/2603.23436v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Mixture-of-Experts for continual learning and knowledge transfer",
+      "llm_evidence_cn": "用于持续学习和知识迁移的混合专家模型",
+      "llm_evidence": "用于持续学习和知识迁移的混合专家模型",
+      "canonical_evidence": "用于持续学习和知识迁移的混合专家模型",
+      "llm_tldr_en": "Proposes a Similarity-Aware MoE for efficient knowledge transfer in overlapping continual learning tasks.",
+      "llm_tldr_cn": "提出一种相似性感知 MoE，用于在重叠的持续学习任务中实现高效知识迁移。",
+      "llm_tldr": "提出一种相似性感知 MoE，用于在重叠的持续学习任务中实现高效知识迁移。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.23554v1",
+      "source": "arxiv",
+      "title": "Mixture of Demonstrations for Textual Graph Understanding and Question Answering",
+      "abstract": "Textual graph-based retrieval-augmented generation (GraphRAG) has emerged as a powerful paradigm for enhancing large language models (LLMs) in domain-specific question answering. While existing approaches primarily focus on zero-shot GraphRAG, selecting high-quality demonstrations is crucial for improving reasoning and answer accuracy. Furthermore, recent studies have shown that retrieved subgraphs often contain irrelevant information, which can degrade reasoning performance. In this paper, we propose MixDemo, a novel GraphRAG framework enhanced with a Mixture-of-Experts (MoE) mechanism for selecting the most informative demonstrations under diverse question contexts. To further reduce noise in the retrieved subgraphs, we introduce a query-specific graph encoder that selectively attends to information most relevant to the query. Extensive experiments across multiple textual graph benchmarks show that MixDemo significantly outperforms existing methods.",
+      "authors": [
+        "Yukun Wu",
+        "Lihui Liu"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.AI"
+      ],
+      "published": "2026-03-23T16:23:16+00:00",
+      "link": "https://arxiv.org/pdf/2603.23554v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Mixture-of-Experts mechanism for demonstration selection",
+      "llm_evidence_cn": "用于示例选择的混合专家机制",
+      "llm_evidence": "用于示例选择的混合专家机制",
+      "canonical_evidence": "用于示例选择的混合专家机制",
+      "llm_tldr_en": "Uses a Mixture-of-Experts mechanism to select demonstrations for textual graph understanding in LLMs.",
+      "llm_tldr_cn": "使用混合专家机制为LLM中的文本图理解选择最佳示例。",
+      "llm_tldr": "使用混合专家机制为LLM中的文本图理解选择最佳示例。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.23985v1",
+      "source": "arxiv",
+      "title": "Diet Your LLM: Dimension-wise Global Pruning of LLMs via Merging Task-specific Importance Score",
+      "abstract": "Large language models (LLMs) have demonstrated remarkable capabilities, but their massive scale poses significant challenges for practical deployment. Structured pruning offers a promising solution by removing entire dimensions or layers, yet existing methods face critical trade-offs: task-agnostic approaches cannot adapt to task-specific requirements, while task-aware methods require costly training to learn task adaptability. We propose DIET (Dimension-wise global pruning of LLMs via merging Task-wise importance scores), a training-free structured pruning method that combines dimension-level granularity with task-aware selection. DIET profiles activation magnitudes across tasks using only 100 samples per task, then applies majority voting to construct a single global mask. DIET does not require large costs from pre-computation or training. Experiments on seven zero-shot benchmarks using Gemma-2 2B and 9B models demonstrate the effectiveness of DIET; for example, at 20% sparsity on Gemma-2 2B, DIET achieves near 10% average accuracy improvement, compared to previous state-of-the-art structured pruning methods. This advantage persists across various sparsity levels and model scales, positioning DIET as a practical and robust choice for structured LLM pruning.",
+      "authors": [
+        "Jimyung Hong",
+        "Jaehyung Kim"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-25T06:28:58+00:00",
+      "link": "https://arxiv.org/pdf/2603.23985v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "merging task-specific importance scores for pruning",
+      "llm_evidence_cn": "合并任务特定重要性得分进行剪枝",
+      "llm_evidence": "合并任务特定重要性得分进行剪枝",
+      "canonical_evidence": "合并任务特定重要性得分进行剪枝",
+      "llm_tldr_en": "Proposes DIET, a training-free pruning method that merges task-wise importance scores for LLMs.",
+      "llm_tldr_cn": "提出DIET，一种通过合并任务重要性得分实现LLM无训练结构化剪枝的方法。",
+      "llm_tldr": "提出DIET，一种通过合并任务重要性得分实现LLM无训练结构化剪枝的方法。",
+      "llm_tags": [
+        "query:modelmerge:composite"
+      ],
+      "matched_query_tag": "query:modelmerge:composite",
+      "matched_query_text": "Papers central to 关注模型合并、模型融合、权重平均、任务向量、参数空间对齐，以及大模型和多模态模型中的 merging 方法。, especially work that connects or combines: model composition; parameter alignment; task arithmetic; weight averaging; model fusion; model merging; Focus on practical and theoretical papers about model merging in LLMs and multimodal models.; Prioritize survey papers and method papers on merging fine tuned models without retraining.; Recommend papers on weight averaging, task vectors, parameter alignment, and model composition.; Find recent papers on model merging and model fusion for neural networks and large language models..",
+      "matched_requirement_id": "req-composite-modelmerge",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.26786v1",
+      "source": "arxiv",
+      "title": "A Step Toward Federated Pretraining of Multimodal Large Language Models",
+      "abstract": "The rapid evolution of Multimodal Large Language Models (MLLMs) is bottlenecked by the saturation of high-quality public data, while vast amounts of diverse multimodal data remain inaccessible in privacy-sensitive silos. Federated Learning (FL) offers a promising solution to unlock these distributed resources, but existing research focuses predominantly on fine-tuning, leaving the foundational pre-training phase largely unexplored. In this paper, we formally introduce the Federated MLLM Alignment (Fed-MA) task, a lightweight pre-training paradigm that freezes the vision encoder and LLM while collaboratively training the cross-modal projector. We identify two critical challenges in this setting: (i) parameter interference in aggregating local projectors; and (ii) gradient oscillations in one-pass collaborative SGD. To address these challenges, we propose Fed-CMP, a pioneering framework for federated MLLM pre-training. Fed-CMP employs Canonical Reliability-Aware Aggregation, which constructs a canonical space to decompose client projectors into a shared alignment basis and client-specific coefficients, then performs reliability-weighted fusion to suppress parameter interference. Furthermore, Fed-CMP introduces Orthogonality-Preserved Momentum, which applies momentum to the shared alignment basis via orthogonal projection, accumulating historical optimization directions while preserving geometric structure. We construct four federated pre-training scenarios based on public datasets, and extensive experiments validate that Fed-CMP significantly outperforms existing baselines.",
+      "authors": [
+        "Baochen Xiong",
+        "Yifan Xu",
+        "Xiaoshan Yang",
+        "Yaguang Song",
+        "Yaowei Wang",
+        "Changsheng Xu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-25T08:16:23+00:00",
+      "link": "https://arxiv.org/pdf/2603.26786v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Federated pretraining and alignment for Multimodal LLMs",
+      "llm_evidence_cn": "多模态大语言模型的联邦预训练与对齐",
+      "llm_evidence": "多模态大语言模型的联邦预训练与对齐",
+      "canonical_evidence": "多模态大语言模型的联邦预训练与对齐",
+      "llm_tldr_en": "Explores federated pre-training for MLLMs, focusing on collaborative training of cross-modal projectors.",
+      "llm_tldr_cn": "探索多模态大模型的联邦预训练，重点研究跨模态投影器的协作训练与参数聚合。",
+      "llm_tldr": "探索多模态大模型的联邦预训练，重点研究跨模态投影器的协作训练与参数聚合。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.27665v1",
+      "source": "arxiv",
+      "title": "Test-Time Instance-Specific Parameter Composition: A New Paradigm for Adaptive Generative Modeling",
+      "abstract": "Existing generative models, such as diffusion and auto-regressive networks, are inherently static, relying on a fixed set of pretrained parameters to handle all inputs. In contrast, humans flexibly adapt their internal generative representations to each perceptual or imaginative context. Inspired by this capability, we introduce Composer, a new paradigm for adaptive generative modeling based on test-time instance-specific parameter composition. Composer generates input-conditioned parameter adaptations at inference time, which are injected into the pretrained model's weights, enabling per-input specialization without fine-tuning or retraining. Adaptation occurs once prior to multi-step generation, yielding higher-quality, context-aware outputs with minimal computational and memory overhead. Experiments show that Composer substantially improves performance across diverse generative models and use cases, including lightweight/quantized models and test-time scaling. By leveraging input-aware parameter composition, Composer establishes a new paradigm for designing generative models that dynamically adapt to each input, moving beyond static parameterization.",
+      "authors": [
+        "Minh-Tuan Tran",
+        "Xuan-May Le",
+        "Quan Hung Tran",
+        "Mehrtash Harandi",
+        "Dinh Phung",
+        "Trung Le"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-03-29T12:31:33+00:00",
+      "link": "https://arxiv.org/pdf/2603.27665v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Test-time instance-specific parameter composition for adaptive modeling",
+      "llm_evidence_cn": "用于自适应建模的测试时实例特定参数组合",
+      "llm_evidence": "用于自适应建模的测试时实例特定参数组合",
+      "canonical_evidence": "用于自适应建模的测试时实例特定参数组合",
+      "llm_tldr_en": "Proposes Composer for dynamic parameter composition at inference time to enable per-input model specialization.",
+      "llm_tldr_cn": "提出Composer范式，在推理时通过动态参数组合实现针对输入数据的模型特化。",
+      "llm_tldr": "提出Composer范式，在推理时通过动态参数组合实现针对输入数据的模型特化。",
+      "llm_tags": [
+        "query:modelmerge"
+      ],
+      "matched_query_tag": "query:modelmerge",
+      "matched_query_text": "model composition",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.28651v1",
+      "source": "arxiv",
+      "title": "Not Search, But Scan: Benchmarking MLLMs on Scan-Oriented Academic Paper Reasoning",
+      "abstract": "With the rapid progress of multimodal large language models (MLLMs), AI already performs well at literature retrieval and certain reasoning tasks, serving as a capable assistant to human researchers, yet it remains far from autonomous research. The fundamental reason is that current work on academic paper reasoning is largely confined to a search-oriented paradigm centered on pre-specified targets, with reasoning grounded in relevance retrieval, which struggles to support researcher-style full-document understanding, reasoning, and verification. To bridge this gap, we propose \\textbf{ScholScan}, a new benchmark for academic paper reasoning. ScholScan introduces a scan-oriented task setting that asks models to read and cross-check entire papers like human researchers, scanning the document to identify consistency issues. The benchmark comprises 1,800 carefully annotated questions drawn from nine error categories across 13 natural-science domains and 715 papers, and provides detailed annotations for evidence localization and reasoning traces, together with a unified evaluation protocol. We assessed 15 models across 24 input configurations and conducted a fine-grained analysis of MLLM capabilities for all error categories. Across the board, retrieval-augmented generation (RAG) methods yield no significant improvements, revealing systematic deficiencies of current MLLMs on scan-oriented tasks and underscoring the challenge posed by ScholScan. We expect ScholScan to be the leading and representative work of the scan-oriented task paradigm.",
+      "authors": [
+        "Rongjin Li",
+        "Zichen Tang",
+        "Xianghe Wang",
+        "Xinyi Hu",
+        "Zhengyu Wang",
+        "Zhengyu Lu",
+        "Yiling Huang",
+        "Jiayuan Chen",
+        "Weisheng Tan",
+        "Jiacheng Liu",
+        "Zhongjun Yang",
+        "Haihong E"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-27T15:58:23+00:00",
+      "link": "https://arxiv.org/pdf/2603.28651v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multimodal large language models reasoning",
+      "llm_evidence_cn": "多模态大语言模型推理",
+      "llm_evidence": "多模态大语言模型推理",
+      "canonical_evidence": "多模态大语言模型推理",
+      "llm_tldr_en": "Proposes ScholScan, a benchmark for evaluating MLLMs on full-document academic paper reasoning.",
+      "llm_tldr_cn": "提出 ScholScan 基准，用于评估多模态大模型在学术论文全篇推理上的能力。",
+      "llm_tldr": "提出 ScholScan 基准，用于评估多模态大模型在学术论文全篇推理上的能力。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.29259v1",
+      "source": "arxiv",
+      "title": "Aligning Multimodal Sequential Recommendations via Robust Direct Preference Optimization with Sparse MoE",
+      "abstract": "Preference-based alignment objectives have been widely adopted, from RLHF-style pairwise learning in large language models to emerging applications in recommender systems. Yet, existing work rarely examines how Direct Preference Optimization (DPO) behaves under implicit feedback, where unobserved items are not reliable negatives. We conduct systematic experiments on multimodal sequential recommendation to compare common negative-selection strategies and their interaction with DPO training. Our central finding is that a simple modification, replacing deterministic hard negatives with stochastic sampling from a dynamic top-K candidate pool, consistently improves ranking performance. We attribute its effectiveness to two factors: (1) reducing erroneous suppressive gradients caused by false negatives, and (2) retaining informative hard signals while smoothing optimization via controlled stochasticity. With an optional sparse Mixture-of-Experts encoder for efficient capacity scaling, RoDPO achieves up to 5.25% NDCG@5 on three Amazon benchmarks, with nearly unchanged inference cost.",
+      "authors": [
+        "Hejin Huang",
+        "Jusheng Zhang",
+        "Kaitong Cai",
+        "Jian Wang",
+        "Rong Pan"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.CL"
+      ],
+      "published": "2026-03-31T04:49:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.29259v1",
+      "tags": [
+        "keyword:ModelMerge",
+        "query:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Multimodal sequential recommendations with Sparse MoE",
+      "llm_evidence_cn": "使用稀疏混合专家模型的多模态序列推荐",
+      "llm_evidence": "使用稀疏混合专家模型的多模态序列推荐",
+      "canonical_evidence": "使用稀疏混合专家模型的多模态序列推荐",
+      "llm_tldr_en": "Optimizes multimodal recommendation using Direct Preference Optimization and Sparse Mixture of Experts.",
+      "llm_tldr_cn": "利用直接偏好优化和稀疏混合专家模型优化多模态推荐系统。",
+      "llm_tldr": "利用直接偏好优化和稀疏混合专家模型优化多模态推荐系统。",
+      "llm_tags": [
+        "query:llm-mllm-moe:composite"
+      ],
+      "matched_query_tag": "query:llm-mllm-moe:composite",
+      "matched_query_text": "Papers central to 大语言模型、多模态大语言模型与 Mixture of Experts，重点关注稀疏激活、路由机制、视觉语言模型、多模态推理与高效扩展。  关键词（英 / 中）, especially work that connects or combines: mixture of experts; instruction tuning; multimodal reasoning; vision-language model; multimodal large language model; large language model; Focus on vision language and multimodal reasoning papers that use mixture of experts.; Prioritize survey papers and representative model papers on MoE in language and multimodal models; Recommend papers on sparse MoE architectures, routing, load balancing, and efficient scaling in LLMs and MLLMs.; Find recent papers on large language models, multimodal large language models, and mixture of experts..",
+      "matched_requirement_id": "req-composite-llm-mllm-moe",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.29824v1",
+      "source": "arxiv",
+      "title": "Curvature-Guided LoRA: Steering in the pretrained NTK subspace",
+      "abstract": "Parameter-efficient fine-tuning methods such as LoRA enable efficient adaptation of large pretrained models but often fall short of full fine-tuning performance. Existing approaches focus on aligning parameter updates, which only indirectly control model predictions. In this work, we introduce the prediction alignment problem, aiming to match the predictor obtained via PEFT to that of full fine-tuning at the level of outputs. We show that this objective naturally leads to a curvature-aware, second-order formulation, where optimal low-rank updates correspond to a Newton-like, curvature-whitened gradient. Based on this insight, we propose Curvature-Guided LoRA (CG-LoRA), which selects and scales adaptation directions using local curvature information. Our method is computationally efficient and avoids explicit second-order matrix construction. Preliminary experiments on standard natural language understanding benchmarks demonstrate improved performance and faster convergence compared to existing LoRA variants.",
+      "authors": [
+        "Frédéric Zheng",
+        "Alexandre Proutière"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-31T14:46:39+00:00",
+      "link": "https://arxiv.org/pdf/2603.29824v1",
+      "tags": [
+        "keyword:ModelMerge"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "prediction alignment problem to match PEFT to full fine-tuning",
+      "llm_evidence_cn": "预测对齐问题，使 PEFT 与全量微调匹配",
+      "llm_evidence": "预测对齐问题，使 PEFT 与全量微调匹配",
+      "canonical_evidence": "预测对齐问题，使 PEFT 与全量微调匹配",
+      "llm_tldr_en": "Proposes Curvature-Guided LoRA to align PEFT predictions with full fine-tuning using curvature information.",
+      "llm_tldr_cn": "提出曲率引导的 LoRA，利用曲率信息使参数高效微调的预测与全量微调对齐。",
+      "llm_tldr": "提出曲率引导的 LoRA，利用曲率信息使参数高效微调的预测与全量微调对齐。",
+      "llm_tags": [
+        "query:modelmerge"
+      ],
+      "matched_query_tag": "query:modelmerge",
+      "matched_query_text": "parameter alignment",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ]
+}

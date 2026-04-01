@@ -1,0 +1,158 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-001.webp",
+      "caption": "Table 11. Using our checkpoints. Generalization results on two unseen tasks when merging ViT-B/32 models trained on six tasks.",
+      "page": 25,
+      "index": 1,
+      "width": 925,
+      "height": 398
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-002.webp",
+      "caption": "Table 10. Comparison between merging methods between our checkpoints and KnOTS checkpoints.",
+      "page": 25,
+      "index": 2,
+      "width": 820,
+      "height": 257
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-003.webp",
+      "caption": "Table 12. Using our checkpoints with LoRA (Rank-4). Per-task accuracy on eight image-classification benchmarks. We merge eight ViT-B/32 checkpoints, each finetuned with LoRA. The upper panel shows the per-task absolute accuracy of the finetuned baselines; the lower panel reports accuracy of merged models, normalized by their corresponding finetuned baseline (%).",
+      "page": 25,
+      "index": 3,
+      "width": 870,
+      "height": 392
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-004.webp",
+      "caption": "Figure 10. Ablation study of the hyperparameter α. Normalized accuracy is reported for two model variants across α ∈ {0.1, 0.5, 1.0, 2.0, 5.0}. Both Variant A and Variant B exhibit stable performance over a wide range of α values, indicating that the method is not sensitive to this hyperparameter. Unless otherwise stated, we use α = 1 for all main experiments.",
+      "page": 21,
+      "index": 4,
+      "width": 446,
+      "height": 293
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-005.webp",
+      "caption": "Table 2. Per-task accuracy on six NLI benchmarks. We merge six LLaMA-3 8B checkpoints, each fine-tuned with LoRA. The upper panel shows the absolute per-task accuracy of the fine-tuned baselines. The lower panel shows the merged models’ accuracy, normalized by each task’s corresponding fine-tuned baseline (%).",
+      "page": 7,
+      "index": 5,
+      "width": 914,
+      "height": 506
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-006.webp",
+      "caption": "Figure 11. Two-Task Trade-Offs on CLIP ViT-B/32. Pairs shown from top-left to bottom-right: Cars-MNIST, DTD-RESISC45, EuroSAT-SUN397, GTSRB-SVHN.",
+      "page": 22,
+      "index": 6,
+      "width": 1036,
+      "height": 844
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-007.webp",
+      "caption": "Figure 1. Effective rank across layers for an attention projection layer (e.g., query). The gap between ∆X stack and Rank-1 stack reflects merge-induced collapse.",
+      "page": 3,
+      "index": 7,
+      "width": 423,
+      "height": 350
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-008.webp",
+      "caption": "Figure 8. Layer-wise Directional-Sensitivity Spectra (RAW vs. SVD). For each module and layer, we form the task-direction sensitivity matrix with entries Ji,k = ⟨∇fi(W ), Sk⟩ and plot the scree curve of its singular values as energy fractions σ2 k/ ∑ j σ 2 j versus component index k. “RAW” stacks rank-1 LoRA factors directly, while “SVD” uses a shared orthonormal basis. The two spectra are overlaid in each panel. A larger leading mass indicates stronger concentration of sensitivity into a few modes, whereas flatter spectra indicate a more distributed use of LoRA directions.",
+      "page": 18,
+      "index": 8,
+      "width": 1036,
+      "height": 774
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-009.webp",
+      "caption": "Figure 12. Preference Sensitivity under Random Global Preferences. Pairs shown from top-left to bottom-right: Cars-MNIST, DTDRESISC45, EuroSAT-SUN397, GTSRB-SVHN.",
+      "page": 23,
+      "index": 9,
+      "width": 1036,
+      "height": 842
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-010.webp",
+      "caption": "Table 4. Generalization results on two unseen tasks when merging ViT-B/32 models on six tasks.",
+      "page": 8,
+      "index": 10,
+      "width": 1026,
+      "height": 432
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-011.webp",
+      "caption": "Figure 2. Directional-sensitivity misalignment ξ(ρ1, ρ2). Larger ξ indicates stronger change in loss-sensitive directions when switching preferences.",
+      "page": 4,
+      "index": 11,
+      "width": 423,
+      "height": 354
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-012.webp",
+      "caption": "Figure 9. Directional-sensitivity misalignment ξ(ρ1, ρ2) in the SVD basis.",
+      "page": 19,
+      "index": 12,
+      "width": 448,
+      "height": 373
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-013.webp",
+      "caption": "Figure 6. Condition Number Anisotropy κ (RAW Basis). Layer-wise condition number κ(ρ) per module under the non-orthogonal LoRA basis (RAW). Larger κ indicates stronger within-preference directional concentration of loss sensitivity. (Here, ρ1 uniformly weights all tasks, whereas ρ2 assigns all weight to a single task (one-hot).)",
+      "page": 17,
+      "index": 13,
+      "width": 1036,
+      "height": 225
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-014.webp",
+      "caption": "Figure 7. Condition Number Anisotropy κ (SVD Basis). Layer-wise condition number κ(ρ) per module under the orthogonal LoRA basis (SVD). Larger κ indicates stronger within-preference directional concentration of loss sensitivity. (Here, ρ1 uniformly weights all tasks, whereas ρ2 assigns all weight to a single task (one-hot).)",
+      "page": 17,
+      "index": 14,
+      "width": 1036,
+      "height": 224
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-015.webp",
+      "caption": "Table 8. Eight CLIP/ViT-B-32 Models Joint-Task Results.",
+      "page": 24,
+      "index": 15,
+      "width": 1025,
+      "height": 689
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-016.webp",
+      "caption": "Table 9. Using our checkpoints. Per-task accuracy on eight image-classification benchmarks. We merge eight ViT-B/32 checkpoints, each finetuned with LoRA. The upper panel shows the per-task absolute accuracy of the finetuned baselines; the lower panel reports accuracy of merged models, normalized by their corresponding finetuned baseline (%).",
+      "page": 24,
+      "index": 16,
+      "width": 871,
+      "height": 396
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-017.webp",
+      "caption": "Table 5. To further address concerns regarding latency coming from gradient-based optimization, we experimented our method with LLaVA [50, 51] on merging six VQA experts.",
+      "page": 20,
+      "index": 17,
+      "width": 872,
+      "height": 255
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-018.webp",
+      "caption": "Table 1. Per-task accuracy on eight image-classification benchmarks. We merge eight ViT-B/32 checkpoints, each fine-tuned with LoRA. The upper panel shows the per-task absolute accuracy of the fine-tuned baselines. The lower panel shows the accuracy of the merged models, normalized by their corresponding fine-tuned baseline (%).",
+      "page": 5,
+      "index": 18,
+      "width": 820,
+      "height": 449
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26299v1/fig-019.webp",
+      "caption": "Figure 5. Effective Rank across layers for each module. Higher curves indicate broader subspace coverage. The gap between ∆W stack and Rank-1 stack reflects merge-induced collapse.",
+      "page": 16,
+      "index": 19,
+      "width": 832,
+      "height": 721
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-001.webp",
+      "caption": "Table 1. Main results on visual benchmarks. We report the average absolute accuracy (%) across three ViT backbones (ViT-B/32, ViT-B/16, ViT-L/14) on task sets of increasing cardinality (8, 14, and 20). ”Zero-shot” and ”Fine-tuned” results serve as reference lower and upper bounds, respectively. The best performance among merging methods in each setting is highlighted in bold.",
+      "page": 6,
+      "index": 1,
+      "width": 968,
+      "height": 283
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-002.webp",
+      "caption": "Table 2. Performance on the GLUE benchmark for various merging methods applied to GPT-2. All scores are reported as accuracy, except for CoLA (Matthews Correlation). ”Individual” represents the upper bound from single-task fine-tuned models.",
+      "page": 6,
+      "index": 2,
+      "width": 727,
+      "height": 252
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-003.webp",
+      "caption": "Figure 3. Empirical distributions of ∆Wt across architectures, layer types, and tasks. Each subplot shows the histogram of the entries of ∆Wt for one representative layer from RoBERTa-Base, GPT-2, and ViT-B/16. All distributions exhibit near-zero means and closely resemble Gaussian profiles, providing strong empirical support for our theoretical assumptions (A3) and (A4).",
+      "page": 15,
+      "index": 3,
+      "width": 1025,
+      "height": 764
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-004.webp",
+      "caption": "Table 3. Normalized performance on the GLUE benchmark for RoBERTa-Base and RoBERTa-Large. The average score is reported, with the red triangle indicating the improvement over the best baseline (Ties-Merging w/ DARE). Best results in each column are in bold.",
+      "page": 7,
+      "index": 4,
+      "width": 1032,
+      "height": 510
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-005.webp",
+      "caption": "Figure 4. RoBERTa-Large (8 tasks). Trace statistics {τt} and heterogeneity coefficient γ.",
+      "page": 18,
+      "index": 5,
+      "width": 491,
+      "height": 267
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-006.webp",
+      "caption": "Figure 5. GPT-2 (7 tasks). Larger heterogeneity γ compared to RoBERTa, indicating stronger mismatch among task covariances.",
+      "page": 18,
+      "index": 6,
+      "width": 490,
+      "height": 267
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-007.webp",
+      "caption": "Figure 6. ViT-L/14 (8 tasks). Moderate heterogeneity γ, indicating manageable variation across task covariances at smaller task scales.",
+      "page": 18,
+      "index": 7,
+      "width": 491,
+      "height": 268
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-008.webp",
+      "caption": "Figure 7. ViT-L/14 (20 tasks). Substantially larger heterogeneity γ, showing increasing mismatch among task covariances as the number of merged tasks grows.",
+      "page": 18,
+      "index": 8,
+      "width": 490,
+      "height": 268
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-009.webp",
+      "caption": "Table 6. Effect of the spectral rank fraction kfrac under fixed heterogeneity threshold γ = 0.3. Average accuracy (%) on RoBERTa-Large (GLUE) and GPT-2 (FusionBench).",
+      "page": 8,
+      "index": 9,
+      "width": 495,
+      "height": 748
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-010.webp",
+      "caption": "Figure 1. Comparison of inter-task heterogeneity (γ) across architectures. ViT-B/16 shows relatively uniform scaling (γ < 0.25), while RoBERTa-Base exhibits much stronger variance (γ > 0.3) across layers. This cross-architecture contrast motivates our adaptive scaling mechanism.",
+      "page": 4,
+      "index": 10,
+      "width": 1011,
+      "height": 305
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-011.webp",
+      "caption": "Table 7. ACE-Merging accuracy (%) on ViT-B/32, ViT-B/16, and ViT-L/14 across increasing numbers of tasks.",
+      "page": 20,
+      "index": 11,
+      "width": 706,
+      "height": 508
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02945v1/fig-012.webp",
+      "caption": "Figure 2. Comparison between the preliminary closed-form solution W̄pre and the final merged model W̄ . Left: The singular value spectrum of W̄pre is extremely concentrated: the top 5% singular values capture more than 99% of the total energy, indicating severe spectral ill-conditioning. In contrast, W̄ exhibits a substantially flatter spectrum. Right: Despite this spectral imbalance, their leading eigenvectors are nearly identical (cosine similarity ≈ 1), showing that W̄pre already identifies the correct structural subspace. Spectral Refinement preserves this subspace while restoring a stable and expressive energy distribution.",
+      "page": 5,
+      "index": 12,
+      "width": 1004,
+      "height": 444
+    }
+  ]
+}

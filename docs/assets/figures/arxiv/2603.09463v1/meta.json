@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.09463v1/fig-001.webp",
+      "caption": "Table 2. Effectiveness of different merging methods on NLP Tasks with Qwen2.5 Models.",
+      "page": 5,
+      "index": 1,
+      "width": 975,
+      "height": 329
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09463v1/fig-002.webp",
+      "caption": "Figure 1. Heatmap of similarity score of hidden states in GLUE tasks.",
+      "page": 7,
+      "index": 2,
+      "width": 403,
+      "height": 417
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09463v1/fig-003.webp",
+      "caption": "Table 4. P-values of Pearson correlation coefficient (Benesty et al., 2009) on how conflict metrics are correlated to merging loss with different merging techniques when merging two model checkpoints. p < 0.05 indicates statistical significance.",
+      "page": 7,
+      "index": 3,
+      "width": 767,
+      "height": 223
+    },
+    {
+      "url": "assets/figures/arxiv/2603.09463v1/fig-004.webp",
+      "caption": "Table 10. Detail data when merging group (C) tasks from Lots-of-LoRAs.",
+      "page": 8,
+      "index": 4,
+      "width": 502,
+      "height": 363
+    }
+  ]
+}

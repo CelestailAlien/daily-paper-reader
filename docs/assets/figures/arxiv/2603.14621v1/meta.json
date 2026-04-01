@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.14621v1/fig-001.webp",
+      "caption": "Figure 3. Phase-by-phase F1 progression of different models",
+      "page": 7,
+      "index": 1,
+      "width": 485,
+      "height": 407
+    }
+  ]
+}

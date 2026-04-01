@@ -1,0 +1,70 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.02633v1/fig-001.webp",
+      "caption": "Table 1. Accuracy (%) of MoE models with DAC–ADC noise added to the inputs and outputs of different modules.",
+      "page": 6,
+      "index": 1,
+      "width": 1017,
+      "height": 264
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02633v1/fig-002.webp",
+      "caption": "Figure 3. Effect of computing dense modules in analog. Accuracy degradation is significant when densely activated modules are executed on AIMC, despite their small parameter footprint.",
+      "page": 6,
+      "index": 2,
+      "width": 832,
+      "height": 308
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02633v1/fig-003.webp",
+      "caption": "Figure 1. a. In heterogeneous computing of MoE, the dense modules and noise-sensitive expert modules are computed in a digital accelerator while rest of the experts are computed in an analog accelerator. b. A schematic of digital and analog accelerator. c. The analog accelerator is comprised of non-volatile memory (NVM) tiles. Weights are programmed to the crossbar array of the tile.",
+      "page": 2,
+      "index": 3,
+      "width": 1017,
+      "height": 412
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02633v1/fig-004.webp",
+      "caption": "Figure 4. Performance of different digital expert selection methods in OLMoE",
+      "page": 7,
+      "index": 4,
+      "width": 832,
+      "height": 308
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02633v1/fig-005.webp",
+      "caption": "Figure 5. Performance of different digital expert selection methods in DeepSeekMoE",
+      "page": 7,
+      "index": 5,
+      "width": 832,
+      "height": 309
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02633v1/fig-006.webp",
+      "caption": "Figure 6. Token visualization of the first MoE block of OLMoE. Expert 30, 50, and 14 correspond to lowest three MaxNNorm neurons over the up-projection matrices. Similarly, Expert 38, 57, and 6 correspond to the highest MaxNNorm neurons over the up-projection matrices.",
+      "page": 14,
+      "index": 6,
+      "width": 1017,
+      "height": 771
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02633v1/fig-007.webp",
+      "caption": "Table 2. The throughput, energy efficiency, and accuracy of OLMoE evaluated for batch size 32.",
+      "page": 8,
+      "index": 7,
+      "width": 1017,
+      "height": 291
+    },
+    {
+      "url": "assets/figures/arxiv/2603.02633v1/fig-008.webp",
+      "caption": "Figure 2. The heterogeneous computation strategy for MoE models.",
+      "page": 4,
+      "index": 8,
+      "width": 488,
+      "height": 267
+    }
+  ]
+}

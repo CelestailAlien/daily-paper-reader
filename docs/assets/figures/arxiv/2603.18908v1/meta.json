@@ -1,0 +1,182 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-001.webp",
+      "caption": "Figure 1. Text Generation via Cross-Model Linear Alignment: We learn an affine map from Qwen’s hidden states into Llama’s feature space, enabling Qwen representations to be decoded by Llama’s token head. The resulting hybrid model combines Qwen’s encoder/transformer blocks with Llama’s output head, producing coherent responses without adopting either model’s identity.",
+      "page": 1,
+      "index": 1,
+      "width": 494,
+      "height": 642
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-002.webp",
+      "caption": "Table 9. OOD detection results reported side-by-side across two target datasets (SST-2 and TREC). Each row corresponds to a target–source embedding model pair, evaluated using a baseline target-space classifier and the HELIX linear alignment.",
+      "page": 25,
+      "index": 2,
+      "width": 537,
+      "height": 300
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-003.webp",
+      "caption": "Figure 13. OOD Detection: Dataowner classifier applied to dataowner embeddings (baseline, blue) versus mapped client embeddings (HELIX, orange). Linear mapping trained on IMDB; results averaged over five model pairs.",
+      "page": 25,
+      "index": 3,
+      "width": 552,
+      "height": 270
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-004.webp",
+      "caption": "Figure 8. SVCCA of four datasets on five embedding model combinations.",
+      "page": 15,
+      "index": 4,
+      "width": 957,
+      "height": 230
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-005.webp",
+      "caption": "Figure 7. SVCCA of eight instruction tuned LLM combinations at 64 components. Mean and median are bolded.",
+      "page": 15,
+      "index": 5,
+      "width": 891,
+      "height": 437
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-006.webp",
+      "caption": "Figure 9. SVCCA of five embedding model combinations at 128 components (test set)",
+      "page": 15,
+      "index": 6,
+      "width": 957,
+      "height": 230
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-007.webp",
+      "caption": "Table 6. Tokenizer Compatibility Metrics and Generation Quality for Model Pairs",
+      "page": 21,
+      "index": 7,
+      "width": 841,
+      "height": 1033
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-008.webp",
+      "caption": "Figure 5. Two-party privacy-preserving alignment and inference. Training: PARTY B (client) encrypts embeddings ZB = gB(Dpub) and sends Enc(ZB) to PARTY A (provider), who computes the encrypted cross-covariance Enc(Z⊤ AZB) using plaintext ZA = gA(Dpub) and returns Enc(Z⊤ AZB) to PARTY B. PARTY B decrypts Z⊤ AZB and computes W ∗ locally using Eq. (1). Inference: PARTY B computes aligned embedding ẑA = zB ·W ∗ + b∗ locally, encrypts EncI(ẑA), and sends to PARTY A, who applies the classifier homomorphically and returns the encrypted prediction for PARTY B to decrypt.",
+      "page": 7,
+      "index": 8,
+      "width": 1017,
+      "height": 277
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-009.webp",
+      "caption": "Figure 6. Test-set CKA between embeddings across Alpaca and Trivia QA datasets. Model embeddings were mean pooled at their final hidden state prior to calculating CKA with other models.",
+      "page": 14,
+      "index": 9,
+      "width": 993,
+      "height": 503
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-010.webp",
+      "caption": "Table 11. Accuracy and inference-time comparison on GLUE tasks. Inference time is reported per example. For HELIX, we average five runs over different random model pairs. Inference times are reported per batch. Public data mapper indicates that the model provider’s data is protected as well. HELIX results are without fine-tuning. HELIX was assessed using Gemini, OpenAI, and Cohere (indicated as Model Pairs*).",
+      "page": 33,
+      "index": 10,
+      "width": 1013,
+      "height": 317
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-011.webp",
+      "caption": "Figure 10. Embedding similarities between greedy-mapped text generation representations and cross-model text generation representations.",
+      "page": 18,
+      "index": 11,
+      "width": 549,
+      "height": 546
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-012.webp",
+      "caption": "Table 7. Example prompts and corresponding responses generated using cross-model linear alignment for three model pairs.",
+      "page": 23,
+      "index": 12,
+      "width": 1044,
+      "height": 1298
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-013.webp",
+      "caption": "Table 4. Cross-model alignment classification. A classifier f(·) is trained on private data (column Baseline Full Data (%)). We evaluate HELIXs by mapping representations from a public dataset, and from the public dataset augmented with few-shot in-distribution samples (64, 128), prior to classification by f(·). Additional baselines correspond to independently trained classifiers using only the few-shot samples. Best results are shown in bold, second-best underlined. Each experiment is repeated three times with different random seeds. The standard deviation across runs is ±1.5 percentage points, indicating high reproducibility. Full results are in the Appendix.",
+      "page": 8,
+      "index": 13,
+      "width": 1017,
+      "height": 278
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-014.webp",
+      "caption": "Table 1. Downstream performance is preserved under task supervised linear alignment: We train a linear classifier fA(·) on target embeddings gA(·) (Baseline), then fit a linear map from source embeddings gB(·) into the target space and evaluate using the same frozen head (Lin.Map).",
+      "page": 4,
+      "index": 14,
+      "width": 492,
+      "height": 360
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-015.webp",
+      "caption": "Figure 3. Cross-Model Embedding Similarity to Native Models: We compare Cross-Model text generation to the text produced by each base model using cosine similarity (using OpenAI’s embedding-001). Each point represents an Alpaca test prompt. High-similarity pairs (upper right) produce coherent text, while low-similarity pairs (lower left) generate incoherent outputs.",
+      "page": 4,
+      "index": 15,
+      "width": 482,
+      "height": 399
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-016.webp",
+      "caption": "Table 12. All models used in the text generation experiments.",
+      "page": 36,
+      "index": 16,
+      "width": 897,
+      "height": 400
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-017.webp",
+      "caption": "Figure 11. Training and test loss for cross-model alignment as a function of training dataset size. Test loss plateaus around 4,000 samples, while training loss continues to increase, suggesting diminishing returns beyond this point.",
+      "page": 19,
+      "index": 17,
+      "width": 597,
+      "height": 350
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-018.webp",
+      "caption": "Table 10. Comparison of privacy-preserving ML systems. ✓ denotes cryptographic protection; △ partial protection; ✗ not protected or out of scope. Provider Model (Party A) indicates cryptographic protection of the provider’s model parameters against disclosure to the client (black-box access permitted). Interact.: Offline methods rely on non-interactive HE evaluation; Online methods require MPC/2PC-style interaction. HELIX protects client inputs via HE but uses public/black-box access to the provider’s model head, learning only a linear mapping.",
+      "page": 32,
+      "index": 18,
+      "width": 995,
+      "height": 318
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-019.webp",
+      "caption": "Table 8. Embedding classification: Full results",
+      "page": 24,
+      "index": 19,
+      "width": 659,
+      "height": 1067
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-020.webp",
+      "caption": "Table 5. Efficiency–utility comparison across distinct secure inference settings on GLUE tasks. Security Scope denotes which model components are evaluated under cryptographic protection. Prior methods secure full transformer inference, whereas HELIX encrypts only linear alignment and classification.",
+      "page": 9,
+      "index": 20,
+      "width": 494,
+      "height": 337
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-021.webp",
+      "caption": "Figure 12. Vocabulary overlap (Jaccard index) predicts generation quality (r = 0.822, p < 0.001, n = 23). High-quality pairs (green, ≥3.5) show Jaccard ≥0.64, while failures (red, <2.0) show ≤0.32. Dashed line marks 0.7 success threshold.",
+      "page": 20,
+      "index": 21,
+      "width": 649,
+      "height": 428
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18908v1/fig-022.webp",
+      "caption": "Table 3. Chat prompts and their corresponding completions for a given model pair using cross-model linear alignment.",
+      "page": 5,
+      "index": 22,
+      "width": 1044,
+      "height": 342
+    }
+  ]
+}

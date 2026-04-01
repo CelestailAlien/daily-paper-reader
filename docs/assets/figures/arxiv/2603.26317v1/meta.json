@@ -1,0 +1,62 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.26317v1/fig-001.webp",
+      "caption": "Table 1. Merging results on NYUD-v2, PASCAL-Context, and Taskonomy using ViT-B. The fine-tuned rows report per-task absolute performance. For each merging baseline, we report the normalized performance (%) relative to the corresponding fine-tuned score. The rightmost Avg column is the mean of the normalized scores across tasks.",
+      "page": 6,
+      "index": 1,
+      "width": 1020,
+      "height": 356
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26317v1/fig-002.webp",
+      "caption": "Table 2. Per-task results on six NLI benchmarks. We merge six LLAMA-3 8B checkpoints, each fine-tuned with LoRA (rank 16). The top panel reports absolute accuracies of the fine-tuned models. The bottom panel reports accuracies of the merged models, normalized to their corresponding fine-tuned baselines (%).",
+      "page": 6,
+      "index": 2,
+      "width": 487,
+      "height": 354
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26317v1/fig-003.webp",
+      "caption": "Table 3. Per-task performance of merged LLAVA-1.5-7B models across six multi-modal benchmarks. Each model fine-tunes the Vicuna7B language backbone with LoRA [28] (rank = 16), while fully fine-tuning the multi-modal projector. The upper block reports absolute accuracies of fine-tuned baselines; the lower block presents merged models’ results normalized to their corresponding baselines (%).",
+      "page": 7,
+      "index": 3,
+      "width": 926,
+      "height": 396
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26317v1/fig-004.webp",
+      "caption": "Figure 1. Visualization of validation loss, task performance, and the null-space ratio for an output projection layer during LoRA fine-tuning on (a) image classification and (b) depth estimation.",
+      "page": 3,
+      "index": 4,
+      "width": 496,
+      "height": 425
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26317v1/fig-005.webp",
+      "caption": "Table 4. Experiments on generalization to unseen tasks, including additional baselines. Merging results on NYUD-v2, PASCAL-Context, and Taskonomy with a ViT-B backbone. Fine-tuned rows report per-task absolute performance. For each baseline, we report performance normalized (%) to the corresponding fine-tuned score, and we also report averages over seen tasks, unseen tasks, and all tasks.",
+      "page": 8,
+      "index": 5,
+      "width": 1018,
+      "height": 385
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26317v1/fig-006.webp",
+      "caption": "Figure 4. Null-space ratio of each transformer block during LoRA fine-tuning for (a) image classification and (b) depth estimation. Values are averaged across transformer blocks, showing that nullspace compression consistently occurs throughout the model.",
+      "page": 17,
+      "index": 6,
+      "width": 496,
+      "height": 645
+    },
+    {
+      "url": "assets/figures/arxiv/2603.26317v1/fig-007.webp",
+      "caption": "Figure 3. Extended visualization of validation loss, task performance, and the null-space ratio during LoRA fine-tuning on (a) image classification and (b) depth estimation. We additionally show the null-space ratio trajectories of LoRA at query, key, value projection of self-attention module within a single transformer block, further illustrating the null-space compression phenomenon.",
+      "page": 17,
+      "index": 7,
+      "width": 1036,
+      "height": 384
+    }
+  ]
+}

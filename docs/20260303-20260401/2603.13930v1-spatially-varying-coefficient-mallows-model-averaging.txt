@@ -1,0 +1,4320 @@
+Title: Spatially Varying Coefficient Mallows Model Averaging
+
+URL Source: https://arxiv.org/pdf/2603.13930v1
+
+Published Time: Tue, 17 Mar 2026 02:31:02 GMT
+
+Number of Pages: 48
+
+Markdown Content:
+# Spatially Varying Coefficient Mallows Model Averaging 
+
+## Yong Zhuang ∗1, Jing Lv ∗1, and Tingting Li †11School of Mathematics and Statistics, Southwest University, Chongqing, China 
+
+## March 17, 2026 
+
+Abstract 
+
+Model averaging, as an appealing ensemble technique, strategically integrates all valuable information from candidate models to construct fast and accurate predic-tion. Despite of having been widely practiced in many fields such as cross-sectional data, censored data and longitudinal data, its application to spatial data charac-terized by inherent spatial heterogeneity remains surprisingly limited. To mitigate risk of model misspecification and enhance the flexibility of prediction, we propose a combined estimator constructed by computing the weighted average of estima-tors derived from a set of spatially varying coefficient candidate models. Herein, the model weights are determined via a Mallows-type criterion, which dynamically calibrates the relative importance of individual candidate models in the ensemble. Theoretically, we establish desirable asymptotic properties under two practical sce-narios. First, in the case where all candidate models are misspecified, the proposed model averaging estimator attains asymptotic optimality in the sense that it min-imizes the squared error loss function asymptotically. Second, when the candidate model set encompasses at least one quasi-correct model, the weights assigned by the Mallows-type criterion asymptotically concentrate on the quasi-correct mod-els, and the resulting model averaging estimator converges in probability to the true conditional mean. Both simulation studies and a real-world empirical example demonstrate that the proposed method generally outperforms alternative compar-ative approaches in terms of predictive accuracy and robustness. 
+
+Keywords: Mallows criterion; Model averaging; Spatial heterogeneity; Spatially vary-ing coefficient model. 
+
+# 1 Introduction 
+
+Spatial data are ubiquitous in fields such as environmental, earth, and biological sci-ences. When building statistical models from observed data, the primary tasks are to 
+
+> ∗
+
+Zhuang and Lv are cofirst authors and contribute equally. 
+
+> †
+
+Corresponding author, email: tinalee@swu.edu.cn. 
+
+1
+
+> arXiv:2603.13930v1 [stat.ME] 14 Mar 2026
+
+explore the relationship between the response and covariates within the region of interest and to make predictions based on this relationship. According to Tobler’s well-known “First Law of Geography”, everything is related to everything else, but near things are more related than distant things(Tobler, 1970). This implies that relationships among variables in geographical data often exhibit stronger similarity at nearby locations, thereby demonstrating apparent spatial dependence. There are two primary approaches to mod-eling spatial dependence. The first category consists of global spatial autocorrelation models, with the spatial autoregressive (SAR) model(Anselin, 1988) as the typical rep-resentative. These models assume that the spatial correlation structure is homogeneous across the entire space, meaning that the spatial interaction effect is consistent regard-less of geographical location. The second category corresponds to local spatial models, among which the geographically weighted regression model(Brunsdon et al., 1998)—also referred to as the spatial varying-coefficient model (SVCM)—serves as the hallmark ex-ample. Distinct from global models, SVCM relaxes the assumption of spatial stationarity by allowing regression coefficients to vary spatially, thus capturing the non-stationary spa-tial relationships between variables across different locations. Due to the flexibility and interpretability of the SVCM, it has received much attention in recent years. For example, Mu et al. (2018) studied the estimation and inference in the SVCM for data distributed over complex domains. Kim and Wang (2021) extended the results of Mu et al. (2018) to exponential dispersion families of distributions (i.e., binomial, Poisson, and negative binomial). To address the challenge arising from large-scale spatial datasets, Yu et al. (2025) proposed a novel distributed heterogeneity learning algorithm, which has a simple, scalable, and communication-efficient implementation, nearly achieving linear speedup. Under the framework of quantile regression, Kim et al. (2025) considered the problem of estimation and inference for the SVCM. These existing methodologies significantly enhance the model’s ability to explain spatial heterogeneity. An important objective in spatial data analysis is to leverage the rich information embedded in observed samples so as to optimize the accuracy of model-based predictions. Although the aforementioned literature have made significant contributions to statistical inference for the SVCM, they may exhibit poor prediction performance owing to their reliance on a single model. It is widely recognized that using a single model may lead to severe model misspecification and overlook valuable information embedded in other mod-els, resulting in unsatisfactory prediction performance. Model averaging, as a well-known ensemble technique, takes potential candidate models into account and allocates a suitable weight to each for producing a combined estimator. Therefore, it significantly mitigates 2the risk of model misspecification and typically yields more stable predictions than a single model. Over the past few decades, we have witnessed a booming development of model averaging in many fields, see Hansen (2007); Wan et al. (2010); Hansen and Racine (2012); Liao et al. (2019); Zhu et al. (2019); Zhang et al. (2020); Li et al. (2022); Seng and Li (2022); Liu and Li (2024); Guo and Zhang (2024); Jiang et al. (2025). However, all the aforementioned works on model averaging focus on the independent and identically distributed data, single time series data, multi-categorical data or longitudinal data, and hence cannot be directly applied to make prediction for spatial data. So far, recent model averaging approaches to cope with spatial data include Zhang and Yu (2018); Liao et al. (2019); Yang et al. (2022); Miao et al. (2025); Ji et al. (2025), but these works are mostly built on SAR-type models, rather than the SVCM. The SVCM has been developed to address spatial heterogeneity, a crucial consideration across numerous disciplines, includ-ing environmental research, epidemiology, agriculture, urban planning, climate science, and spatial econometrics (Wang et al., 2014; Comber et al., 2018). Consequently, it is theoretically and practically significant to explore a new model averaging scheme by using the SVCM. So far, discussion on model averaging for the SVCM is rather limited. In this work, we exploit a spatially varying coefficient model averaging procedure to achieve the goal of flexible prediction for the conditional mean of the response given covariates. Compared with existing literature on model averaging and spatial modeling, this ar-ticle offers three major contributions: 
+
+• In contrast to existing single-SVCM-based frameworks (Mu et al., 2018; Kim and Wang, 2021; Kim et al., 2025), the proposed model averaging method significantly alleviates the risk of model misspecification while achieving more flexible and accu-rate predictive outcomes. Empirical application for analysis of the soil total nitrogen from the Liudaogou watershed in Loess Plateau, Shaanxi Province, China in Sec-tion 5 show clearly that our model averaging proposal has lower prediction risk than competing methods. 
+
+• Compared to the established model averaging approaches for spatial data such as Zhang and Yu (2018); Liao et al. (2019); Yang et al. (2022); Miao et al. (2025); Ji et al. (2025), which were typically centered on diverse adjacency matrices and thus were essentially oriented toward addressing model structural uncertainty in global spatial regression frameworks, the proposed spatial varying coefficient model averaging method focuses on local spatial regression paradigms and is dedicated to resolving the uncertainties inherent in spatial heterogeneity analysis. Although 3optimal model averaging for varying coefficient models has been explored in several studies (Zhang et al., 2020; Li et al., 2022; Guo and Zhang, 2024), these works have focused on other types of data (e.g., cross-sectional data and multi-categorical data) rather than spatial data. To the best of our knowledge, there are no literature to investigate the issue of model averaging for the SVCM. Our work serves as a promising estimation framework for spatial data and fills this gap timely. 
+
+• We provide systematic theoretical guarantees for our proposal. When all candidate models are misspecified, we prove that the proposed model averaging estimator pos-sesses asymptotic optimality, in the sense that its squared error loss asymptotically coincides with that of the theoretically best but infeasible model averaging esti-mator. The theoretical property guarantees that the proposed procedure exhibits strong predictive performance. When there is at least one quasi-correct model in the candidate model set, the sum of the weights determined by the Mallows-type criterion on the quasi-correct models converges to one in probability, which is named as the over-consistency property of model weights. Despite this property has been investigated by existing findings such as (Zhang and Yu, 2018; Zhang et al., 2020), we further extend this property to spatial data. Further, the consistency of the proposed model averaging estimator is also established, that is, it converges to the true conditional mean with probability tending to one as the sample size increases to infinity. The remainder of this paper is organized as follows. In Section 2, we build a series of sub-SVCMs and introduce the Mallows-type criterion to determine the optimal model weights. In Section 3, we give the asymptotic results. In Section 4, we carry out simulation studies to evaluate the practical performance of the proposed method and compare its performance with that of existing alternative methods. In Section 5, a soil data set is analyzed to further illustrate the utility of our proposal. Discussions and concluding remarks are given in Section 6. The poofs of the theorems and corollaries are provided in the Appendix. 
+
+# 2 Methodology 
+
+## 2.1 Model Framework 
+
+Consider spatial data observed at locations s1, . . . , sn ∈ D, denoted as {(X(si), y (si)) ,i ∈ { 1, . . . , n }} , where D ⊂ R2 is a fixed region of interest, the covariate vector X(si) = 4(x1(si), . . . , x p(si)) T, and x1(si) = 1. The underlying spatial process is assumed to follow the model: 
+
+y(si) = 
+
+> p
+
+X
+
+> k=1
+
+xk(si)βk(si) + ϵ(si), i = 1 , . . . , n, (1) where the regression coefficient βk(si) is the value of a smooth function βk(s) at location si,
+
+β(s) = ( β1(s), . . . , β p(s)) T is the vector of unknown coefficient functions, and {ϵ(si)}ni=1 are independent random errors satisfying E(ϵ(si) | X(si), si) = 0 and E(ϵ2(si) | X(si), si) = 
+
+σ2. The spatial dependence in model (1) is typically captured by the spatially varying coefficients. The dimension p of the covariates can be divergent. For simplicity, the dependence on s is omitted in the subsequent notation, letting y(si) = yi, X(si) = Xi =(xi1, . . . , x ip )T, and ϵ(si) = ϵi.Model (1) can be equivalently expressed in matrix form as 
+
+Y = μ + ϵ, (2) where Y = ( y1, . . . , y n)T is the response vector, X = ( X1, . . . , Xn)T is the covariate matrix, and μ = ( μ1, . . . , μ n)T =  XT1 β(s1), . . . , XT 
+
+> n
+
+β(sn)T depends on the covariates X
+
+and the spatial locations si. Denote Ψ = ( s1, . . . , sn)T. The error vector ϵ = ( ϵ1, . . . , ϵ n)T
+
+satisfies E(ϵ | X, Ψ) = 0 and E(ϵϵ T | X, Ψ) = Ω = σ2In, with In being the n-dimensional identity matrix. Due to the uncertainty in covariates, suppose there are M candidate models, where 
+
+M is allowed to diverge to infinity as n tends to infinity. Each model includes a distinct set of covariates, with the dimension of covariates denoted by pm. The mth candidate model is given by 
+
+Y = μ(m) + ϵ(m), m = 1 , . . . , M, (3) where μ(m) =
+
+
+
+XT(m)1 β(m)(s1), . . . , XT(m)nβ(m)(sn)
+
+T
+
+, X(m) = ( X(m)1 , . . . , X(m)n)T is an 
+
+n × pm matrix whose columns are among those of X, β(m)(s) = ( β(m)1 (s), . . . , β (m)pm (s)) T
+
+is a pm × 1 vector of unknown coefficient functions, and ϵ(m) = ( ϵ(m)1 , . . . , ϵ (m)n)T is the random error vector for the mth candidate model. To estimate β(m)(s), where s = ( s1, s 2)T ∈ D, we follow the idea of Brunsdon et al. (1998) that samples with closer spatial locations have more similar regression coefficients. Using the local constant estimation method, β(m)(s) is the solution to the following weighted least squares criterion: min 
+
+> β(m)
+> n
+
+X
+
+> i=1
+
+ yi − XT(m)iβ(m)
+
+2 Khm (∥si − s∥q), (4) 5where β(m) = ( β(m)1 , . . . , β (m)pm )T is a constant vector, Khm (·) = K(·/h m)/h 2
+
+> m
+
+, K(·) is a kernel function, hm is the corresponding bandwidth, and ∥ · ∥ q with q ≥ 1 denotes the Lq
+
+norm used for measuring spatial distance. Denote ∥ · ∥ 2 as ∥ · ∥ . The estimator of β(m)(s)is 
+
+bβ(m)(s) =  XT(m)W(m)sX(m)
+
+−1 XT(m)W(m)sY, (5) where W(m)s = diag {Khm (∥s1 − s∥q), . . . , K hm (∥sn − s∥q)}, and X(m) = XΠ T
+
+> m
+
+. Here, Πm
+
+is a pm × p selection matrix that maps the explanatory vector Xi = ( xi1, x i2, . . . , x ip )T to the subvector X(m)i = ΠmXi. For nested models, Πm is defined as ( Ipm , 0pm×(p−pm)). Based on the above estimation method, we obtain the estimator of β(m)(si) under the 
+
+mth model. The estimator of the conditional mean for the ith sample is 
+
+bμ(m)i = XT(m)i
+
+ XT(m)W(m)si X(m)
+
+−1 XT(m)W(m)si Y.
+
+Let bμ(m) = ( bμ(m)1 , . . . , bμ(m)n)T, then we have bμ(m) = P(m)Y, where 
+
+P(m) =
+
+
+
+XT(m)1 
+
+
+
+XT(m)W(m)s1 X(m)
+
+−1
+
+XT(m)W(m)s1
+
+XT(m)2 
+
+
+
+XT(m)W(m)s2 X(m)
+
+−1
+
+XT(m)W(m)s2
+
+· · · 
+
+XT(m)n
+
+
+
+XT(m)W(m)sn X(m)
+
+−1
+
+XT(m)W(m)sn
+
+
+
+. (6) How to select the optimal bandwidth hm for each candidate model is a critical issue that requires careful consideration. When strong theoretical prior information regarding the value of hm is unavailable, some form of automated data-driven selection of hm may be more appropriate. In both numerical simulations and empirical analysis, we select hm
+
+by minimizing a cross-validation (CV) criterion. The CV criterion used for selecting hm
+
+is defined as CV( hm) = 
+
+> n
+
+X
+
+> i=1
+
+(yi − eμi(hm)) 2,
+
+where eμi(hm) denotes the predicted value at si obtained from the remaining n − 1 samples after excluding the ith sample. The optimal bandwidth selected for the mth candidate model is bhm = arg min hm CV( hm). 62.2 Model Averaging and Weight Choice Criterion 
+
+Let w = ( w1, w 2, . . . , w M )T be a weight vector satisfying w ∈ H n = {w ∈ [0 , 1] M :
+
+PMm=1 wm = 1 }. The model averaging estimator of μ is defined as 
+
+bμ(w) = 
+
+> M
+
+X
+
+> m=1
+
+wm bμ(m) =
+
+> M
+
+X
+
+> m=1
+
+wmP(m)Y = P(w)Y, (7) where P(w) = PMm=1 wmP(m). Define the squared error loss function as Ln(w) = ∥ bμ(w)−
+
+μ∥2, and the corresponding risk function as 
+
+Rn(w) = E(Ln(w) | X, Ψ)= E(∥(P(w) − In)μ + P(w)ϵ∥2 | X, Ψ)= ∥(P(w) − In)μ∥2 + tr( PT(w)P(w)Ω). (8) Following Hansen (2007), we use the following Mallows-type model averaging criterion to select w:
+
+Cn(w) = ∥Y − bμ(w)∥2 + 2 tr( P(w)Ω). (9) It can be shown that 
+
+Rn(w) = E ∥ bμ(w) − μ∥2 | X, Ψ
+
+= E ∥Y − bμ(w)∥2 + 2 ϵT( bμ(w) − μ) − ϵTϵ | X, Ψ
+
+= E ∥Y − bμ(w)∥2 | X, Ψ + 2 E {tr( P(w)Ω) | X, Ψ} − nσ 2
+
+= E(Cn(w) | X, Ψ) − nσ 2, (10) which implies that Cn(w) is an unbiased estimator of the squared error loss risk function 
+
+Rn(w) plus a constant. The optimal weight vector is obtained by minimizing Cn(w) over the weight set Hn:
+
+bw = arg min 
+
+> w∈H n
+
+Cn(w). (11) (11) represents a quadratic programming problem, which can be solved using the ”Rsolnp” package in R. The resulting estimator bμ( bw) is referred to as the spatially varying coeffi-cient Mallows model averaging (SVMMA) estimator. Since the unknown parameter σ2 remains in Cn(w), following Hansen (2007), we substitute the estimator from the largest candidate model M ∗ = arg min 1≤m≤M pm (i.e., 7the candidate model contains the largest number of covariates) bΩ = bσ2  
+
+> M∗
+
+In into (9), where 
+
+bσ2  
+
+> M∗
+
+= ( n − tr( P(M ∗))) −1(Y − P(M ∗)Y)T(Y − P(M ∗)Y), and n − tr( P(M ∗)) denotes the adjusted degrees of freedom. Then, (9) can be transformed into the feasible criterion: 
+
+bCn(w) = ∥Y − bμ(w)∥2 + 2 tr( P(w) bΩ). (12) Minimizing (12) gives: 
+
+ew = arg min 
+
+> w∈H n
+
+bCn(w). (13) When Ω is unknown, substituting ew into bμ(w) yields the feasible SVMMA estimator 
+
+bμ( ew). 
+
+# 3 Asymptotic Properties 
+
+## 3.1 Asymptotic Optimality of the SVMMA Estimator 
+
+In this section, we establish the asymptotic optimality of the proposed SVMMA esti-mator when all candidate models are misspecified, which implies that its squared loss is asymptotically equivalent to that of the infeasible optimal averaging estimator. We first give some notations. Let ξn = inf w∈H n Rn(w), h = min 1≤m≤M hm, ¯h = max 1≤m≤M hm,
+
+ep = max 1≤m≤M pm. Let ¯λ(·) and λ(·) denote the largest and smallest singular values of a given matrix, respectively. Let w0 
+
+> m
+
+be an M × 1 weight vector where the mth element is 1 and all other elements are 0. Unless stated otherwise, all limits are taken as n → ∞ .We impose the following technical conditions: 
+
+Condition 1. For some fixed integer G (with 1 ≤ G < ∞) and a positive constant c, for any i = 1 , 2, . . . , n , E(ϵ4Gi | Xi, si) < c , a.s.. 
+
+Condition 2. M ξ −2Gn epG PMm=1 {Rn(w0
+
+> m
+
+)}G = op(1). 
+
+Condition 3. The spatial locations s have a bounded support set D. The density function f (·) of si is bounded away from zero and infinity on its support, and is at least twice continuously differentiable. For all k = 1 , 2, . . . , p , the function βk(·) is twice differentiable on the support. 
+
+Condition 4. max 1≤m≤M max 1≤i≤n XT(m)iX(m)i = Op(ep). For any 1 ≤ i ≤ n, CX =
+
+E(XiXT 
+
+> i
+
+) is non-singular. For any i = 1 , 2, . . . , n and l, k = 1 , 2, . . . , p , there exist positive constants κ, cX, and ¯ cX such that E{(xil xik )2} ≤ κ and 0 < c X ≤ min 1≤m≤M λ(ΠmCXΠT
+
+> m
+
+) ≤
+
+max 1≤m≤M ¯λ(ΠmCXΠT
+
+> m
+
+) ≤ ¯cX < ∞.
+
+Condition 5. The kernel function K(·) is a bounded symmetric function with a sym-8metric compact support set supp( K). For a fixed q, define K′
+
+> q
+
+(s1, s 2) = K(∥s∥q), which satisfies RR   
+
+> (v1,v 2)∈supp( K′
+> q)
+
+K′ 
+
+> q
+
+(v1, v 2) dv 1dv 2 = 1. 
+
+Condition 6. ¯h → 0 and n−1¯h−2 → 0. The bandwidth h satisfies the same conditions as ¯h.
+
+Condition 7. μTμ/n = O(1),a.s.. 
+
+Condition 8. ξ−1 
+
+> n
+
+h−2 ep = op(1) and ¯h4 ep = o(1). Condition 1 imposes restrictions on the conditional moments of the error terms, which is similar to Condition (C.1) in Zhu et al. (2019). Condition 2 is analogous to Condition (8) in Wan et al. (2010) and Condition (C.2) in Zhu et al. (2019). This condition, common in model averaging research, requires that all candidate models be misspecified to hold. Condition 3 consists of common assumptions regarding the spatial locations and the regression coefficient functions, which are similar to Conditions (C.3) in Zhu et al. (2019). Condition 4 relates to the moment conditions of the covariates X, paralleling Conditions (C.4) in the same reference. Condition 5 represents standard assumptions on the kernel function, which is common in the literature; see, for example, Brunsdon et al. (1998) and Zhu et al. (2019). The compact support condition is primarily imposed for proof simplicity and could potentially be relaxed with more complex arguments. Specifically, the Gaussian kernel is permissible. Condition 6 is a common assumption of bandwidth. Condition 7 concerns the sum of the elements of μ, an assumption analogous to those in Wan et al. (2010) and Zhu et al. (2019). Condition 8 requires ξn to grow faster than h−2 ep
+
+and allows ep to diverge as n → ∞ , subject to a constraint on its divergence rate. 
+
+Theorem 1. Suppose that Conditions 1-8 hold. Then as n → ∞ , we have 
+
+Ln( bw)inf w∈H n Ln(w)
+
+> p
+
+→ 1. (14) 
+
+Theorem 2. Suppose that Conditions 1-8 hold. Then as n → ∞ , we have 
+
+Ln( ew)inf w∈H n Ln(w)
+
+> p
+
+→ 1. (15) 
+
+Remark 1. It’s worth noting that prediction is mainly focused when all candidate models are misspecified. Theorem 1 shows that when all candidate models are misspecified, the SVMMA estimator is asymptotically optimal in the sense of making the squared error loss as small as possible among all feasible weight vectors w lying in the set Hn. This property offers a theoretical advantage of our method over single model-based methods (e.g., a single optimal model chosen by AIC, AICc or BIC), as well as other model weight selection 
+
+9methods (e.g., the model weights are selected via the smoothed AIC or BIC). Simulation results in Section 4 have verified this property. Theorem 2 shows that Theorem 1 still holds when Ω is replaced by bΩ.
+
+## 3.2 Consistency of the Model Weights and SVMMA Estimator 
+
+In this section, we consider the scenario where the candidate set includes at least one quasi-correct model. It is well known that not all covariates in model (1) have contributions in estimating the conditional mean. Let Atrue ≜ {k : βk(si)̸ = 0 , 1 ≤ k ≤ p}
+
+be the true active index set in model (1). Suppose that Am is the index set of covariates to be included in the mth candidate model for m = 1 , · · · , M . The mth candidate model is called as the quasi-correct model if Atrue ⊆ A m. Particularly, when Atrue = Am, the 
+
+mth candidate model is called as the correct model. Thus, it is not hard to understand that the set of quasi-correct models consists of the correct and over-fitted models, also implying that the quasi-correct model may not be unique. To ensure the consistency of the averaging weights, we assume that the jth ( j =1, 2, . . . , p m) component of bβ(m)(s)( m = 1 , 2, . . . , M ) has a limiting value β∗ 
+
+> (m)j
+
+(s) for any 
+
+s = ( s1, s 2)T ∈ D. Moreover, β∗
+
+> (m)
+
+(s) = ( β∗
+
+> (m)1
+
+(s), β ∗
+
+> (m)2
+
+(s), . . . , β ∗ 
+
+> (m)pm
+
+(s)) T satisfies 
+
+E{Khm (∥u − s∥q)X(m)(s)( y(s) − XT(m)(s)β∗
+
+> (m)
+
+(s)) } = 0,
+
+where u = ( u1, u 2)T is a random vector with probability density function f (u). If the 
+
+mth model is quasi-correct model, then for j ∈ A m ∩ A true , we have β∗ 
+
+> (m)j
+
+(s) = βj (s), while for j ∈ A m \ A true we have β∗ 
+
+> (m)j
+
+(s) = 0. For any m = 1 , . . . , M , define μ∗ 
+
+> (m)
+
+=(μ∗
+
+> (m)1
+
+, μ ∗
+
+> (m)2
+
+, . . . , μ ∗
+
+> (m)n
+
+)T, where μ∗ 
+
+> (m)i
+
+= XT(m)iβ∗
+
+> (m)
+
+(si). Without loss of generality, we assume that the first M0 candidate models are quasi-correct. Let τM0 = PM0 
+
+> m=1
+
+wm be the sum of weights assigned to quasi-correct models. Recall that bw = ( ˆ w1, . . . , ˆwM )T and 
+
+ew = ( ˜ w1, . . . , ˜wM )T are defined in (11) and (13), respectively. Denote bτM0 = PM0 
+
+> m=1
+
+bwm and 
+
+eτM0 = PM0 
+
+> m=1
+
+ewm. Define HF = {w ∈ H n : wm = 0 , m = 1 , . . . , M 0} as the set of weight vectors that assign zero weight to all quasi-correct models. Let ξF = inf w∈H F L∗
+
+> n
+
+(w), where 
+
+L∗
+
+> n
+
+(w) = ∥μ∗(w) − μ∥2, μ∗(w) = PMm=1 wmμ∗
+
+> (m)
+
+. To establish the limiting properties of the weights, the following condition is required. 
+
+Condition 9. For every k = 1 , 2, . . . , p m and m = 1 , 2, . . . , M , the function β∗
+
+> (m)k
+
+(·) is twice differentiable on its support. Moreover, the first- and second-order partial deriva-tives of the function family {β∗
+
+> (m)k
+
+(·) : k = 1 , . . . , p m; m = 1 , . . . , M } are uniformly bounded, and this uniform bound is independent of pm and M .10 Condition 10. For any m = 1 , . . . , M , there exists a positive constant δ1 such that 
+
+E(μ∗4(m)1 |s1 = s) ≤ δ1.
+
+Condition 11. ξ−1 
+
+> F
+
+n1/2 = op(1), ξ−1 
+
+> F
+
+M ep4 = op(1), ξ−1 
+
+> F
+
+h−2M ep2 = op(1), and ξ−1 
+
+> F
+
+nM ep2¯h4 =
+
+op(1). Condition 9 stipulates that every coefficient function β∗
+
+> (m)k
+
+(·) is twice differentiable and that its first and second partial derivatives are uniformly bounded across all k and 
+
+m, with bounds independent of pm and M . This smoothness and derivative boundedness ensure stable asymptotic behavior as the model dimensions grow. Condition 10 requires that the conditional fourth moment of μ∗ 
+
+> (m)1
+
+be uniformly bounded. This avoids the moment explosion problem caused by spatial heterogeneity or model misspecification when the number of models M diverges. When ep is finite, Condition 10 clearly holds under Conditions 4 and 9. Condition 11 implies that the order of ξF is higher than n1/2, M ep4,
+
+h−2M ep2, and nM ep2¯h4. This is similar to Condition 3.8 in Shi et al. (2024), but it should be noted that the latter assumes finite-dimensional covariates and is based on a linear regression framework. 
+
+Theorem 3. Suppose that Conditions 3-6 and 9-11 hold. Then as n → ∞ , we have 
+
+bτM0
+
+> p
+
+→ 1. (16) 
+
+Corollary 1. Under Conditions 3-6 and 9-11, we have 
+
+(bμi( bw) − μi)2 = op (1) , (17) 
+
+where bμi( bw) = PMm=1 bwm bμ(m)i.
+
+Remark 2. Theorem 3 shows that if at least one quasi-correct model exists in the can-didate set, SVMMA tends to assign all weights to the quasi-correct models, which also demonstrates the effectiveness of the proposed method. Corollary 1 demonstrates that the proposed model averaging estimator converges to the true conditional mean. This result provides theoretical consistency for the SVMMA estimator when the candidate set contains at least one quasi-correct model. 
+
+Theorem 4. Suppose that Conditions 3-6 and 9-11 hold. Then as n → ∞ , we have 
+
+eτM0
+
+> p
+
+→ 1. (18) 11 Corollary 2. Under Conditions 3-6 and 9-11, we have 
+
+(bμi( ew) − μi)2 = op (1) , (19) 
+
+where bμi( ew) = PMm=1 ewm bμ(m)i.
+
+Theorem 4 and Corollary 2 show that Theorem 3 and Corollary 1 still hold when Ω
+
+is replaced by bΩ.
+
+# 4 Simulation Study 
+
+In this section, we consider three simulation designs to validate the theories presented in Section 3. Designs 1 and 2 examine scenarios where no quasi-correct model is included in the candidate set, aiming to compare the finite-sample prediction performance of the SVMMA estimator with those of existing approaches. Design 3 investigates situations where at least one quasi-correct model is present in the candidate set, in order to verify whether the sum of weights on the quasi-correct models gradually approaches to one as the sample size increases. 
+
+## 4.1 Data Generation Process 
+
+Design 1. The samples {yi, Xi, si}, i = 1 , 2, . . . , n , are generated from the model 
+
+yi = μi + cε i = 
+
+> M+200
+
+X
+
+> j=1
+
+θj xij + cε i, i = 1 , 2, . . . , n, 
+
+where the covariate xi1 = 1, and xij for j = 2 , . . . , M + 200 are independently and identically distributed as N (0 , 1). The coefficients are set as θ1 = 10 −α−0.5, θj = j−α−0.5
+
+for j ≥ 2, with α being the decay parameter controlling the rate of coefficient decay, taken as 0.5 or 1. The constant c is used to control the proportion of covariate information in the total variance, and is chosen such that the coefficient of determination R2 =var( μi)/var( yi) varies between 0.1 and 0.9. The random error term εi is considered under both homoscedastic and heteroscedastic settings: (Case i) εi
+
+> i.i.d
+
+∼ N (0 , 1), (Case ii) εi
+
+> i.i.d
+
+∼
+
+t(5), (Case iii) εi = √aiui, where ai = 0 .2+0 .5x2
+
+> i2
+
+, ui
+
+> i.i.d
+
+∼ N (0 , 1). In Design 1, the samples are from the traditional linear regression model. 12 Design 2. The sample data {yi, Xi, si}, i = 1 , 2, . . . , n , are generated from the model 
+
+yi = μi + cε i = 
+
+> M+200
+
+X
+
+> j=1
+
+θj F (si)xij + cε i, i = 1 , 2, . . . , n, 
+
+where si = ( si1, s i2)T are taken from grid points ( j√n , k√n )T, j, k = 1 , 2, . . . , √n, over the square region [0 , 1] × [0 , 1]. We set F (si) = 1 − (1 − 2si1)2 − (1 − 2si2)2. The configurations of the remaining variables and parameters are consistent with Design 1. Clearly, the samples are from the SVCM in this experiment. We set the sample sizes to n = 100, 225, and 400, with the number of simulation replications N = 200. The number of candidate models M is determined following the criterion in Hansen (2007), taken as the largest integer not exceeding 3 n13 . For simplicity, we consider only nested candidate models, where the mth candidate model includes the first 1 to m covariates from xi1, x i2, . . . , x i,M +200 .
+
+Design 3. The sample data {yi, Xi, si}, i = 1 , 2, . . . , n , are generated from the model 
+
+yi = μi + cε i =
+
+> 6
+
+X
+
+> j=1
+
+θj F (si)xij + cε i, i = 1 , 2, . . . , n, 
+
+were Xi = ( xi1, . . . , x i6)T follows a multivariate normal distribution with mean zero and covariance matrix Σx. The diagonal elements of Σx are 1 and all off-diagonal elements are 0.5. We set θ = (1 , 1.2, −1, 0.9, 0, 0) T, while keeping the settings of other variables and parameters consistent with Design 2. In this design, all explanatory variables are used to construct candidate models, with each candidate model containing at least one explanatory variable. This results in 2 6 −1 = 63 candidate models in total. Among them, there are 2 2 = 4 quasi-correct models, each consisting of all four explanatory variables with non-zero coefficient functions, together with any subset of the explanatory variables whose coefficient functions are zero. We set the sample sizes to n = 100, 169, 225, 324, and 400, the number of simulation replications to N = 200, and vary the R2 between 0.5 and 0.9. 
+
+## 4.2 Evaluation and Comparison 
+
+In the simulation study, we employ the Gaussian kernel function to estimate each candidate model. The spatial distance metric is chosen with q = 2 , and the bandwidth in the candidate models is selected via the CV criterion, see Section 2.1. We compare the finite sample performance of the SVMMA estimator with the AIC-13 and BIC-based model selection methods and existing model averaging estimators. The AIC, BIC, and AICc (Hoeting et al., 2006) criteria for the mth candidate model are defined respectively as AIC m = log( bσ2
+
+> m
+
+) + 2 n−1 tr( P(m)), BIC m = log( bσ2
+
+> m
+
+) + n−1 tr( P(m)) log( n)and AICc m = log( bσ2
+
+> m
+
+) + n+tr( P(m)) 
+
+> n−tr( P(m))−2
+
+, where bσ2 
+
+> m
+
+= n−1∥Y − bμ(m)∥2 and P(m) is given in (6) of Section 2.1. Each of the three criteria selects the optimal SVCM among all candidate models that minimizes the corresponding criterion score. Then, one can use the optimal SVCM (chosen by AIC or BIC or AICc) to estimate the conditional mean. We refer them as AIC, BIC and AICc. Meanwhile, the performance of the proposed SVMMA estimator heavily depends on the weight selection criterion, and hence we consider the popular smoothed AIC (SAIC) and smoothed BIC (SBIC) (Buckland et al., 1997; Guo and Zhang, 2024) to determine the model weights. Specifically, the SAIC (SBIC) assigns the model weight to the mth candidate model by bwSAIC  
+
+> m
+
+= exp( −AIC m/2)   
+
+> PMl=1 exp( −AIC l/2)
+
+( bwSBIC  
+
+> m
+
+= exp( −BIC m/2)   
+
+> PMl=1 exp( −BIC l/2)
+
+)for m = 1 , · · · , M . We refer them as SAIC and SBIC. Since the data-generating process in Design 1 adheres to a linear specification, we further benchmark our SVMMA estimator against two linear framework counterparts, namely the MMA (Hansen, 2007) and JMA (Hansen and Racine, 2012) estimators to assess the prediction robustness under candidate model misspecifications. For the linear model scenario, we adopt the identical AIC and BIC configurations following Hansen (2007). For the MMA and JMA, the candidate models consist of linear models, while for all other methods, the candidate models are the SVCMs. Following Hansen (2007), the performance of the estimators is evaluated by the relative risk (Risk), Risk = 
+
+> 1
+> N
+
+PNj=1 ∥ bμ(j) − μ(j)∥21
+
+> N
+
+PNj=1 ∥ bμ(j)( ¯ w(j)) − μ(j)∥2 ,
+
+where bμ(j) and μ(j) denote the respective generic estimator and true conditional mean at the jth repetition, ¯ w(j) = arg min w∈H n ∥ bμ(j)(w) − μ(j)∥2 represents the infeasible optimal weight vector and bμ(j)( ¯ w(j)) = PMm=1 ¯w(j) 
+
+> m
+
+bμ(j)(m) are the infeasible optimal model averaging estimator with bμ(j)(m) being the estimator of μ(j) under the mth candidate model at the 
+
+jth repetition. In simulation studies, we consider two type of infeasible optimal model averaging estimators, including the infeasible optimal linear model averaging (OLMA) and infeasible optimal spatially varying coefficient model averaging (OSVCMA). Specifically, when the candidate model is a linear model (or a SVCM), we refer to bμ(j)( ¯ w(j)) as the infeasible OLMA (or OSVCMA). Thus, the relative risk is measured against either the infeasible OLMA risk or infeasible OSVCMA risk. 14 4.3 Results 
+
+Figures 1–3 display the simulation results for Design 1. As the true data generation process is from the linear model, the relative risk in Design 1 is measured against the infeasible OLMA risk. Given that the true data generation process is derived from a linear model, it comes as no surprise that the MMA and JMA methods exhibit the lowest relative risk across the set of comparative approaches, but SVMMA achieve competitive performance when compared with the MMA and JMA. This indicates that SVMMA has exhibits broader adaptability and greater flexibility. In addition, it is easy to see that SVMMA obviously performs better than the single model-based methods (e.g., a single optimal model chosen by AIC or BIC), showing the benefits of model averaging. Meanwhile, SVMMA outperforms SAIC and SBIC under all situations, which effectively verifies the asymptotic optimality of SVMMA given in Theorem 2. 
+
+Figure 1: Risk Comparisons under Design 1 for Case i. The relative risk is measured against the infeasible OLMA risk. 15 Figure 2: Risk Comparisons under Design 1 for Case ii. The relative risk is measured against the infeasible OLMA risk. 
+
+Figure 3: Risk Comparisons under Design 1 for Case iii. The relative risk is measured against the infeasible OLMA risk. 16 Figure 4: Risk Comparisons under Design 2 for Case i. The relative risk is measured against the infeasible OSVCMA risk. 
+
+Figure 5: Risk Comparisons under Design 2 for Case ii. The relative risk is measured against the infeasible OSVCMA risk. 17 Figure 6: Risk Comparisons under Design 2 for Case iii. The relative risk is measured against the infeasible OSVCMA risk. 
+
+Figure 7: Risk Comparisons under Design 2 for Case i.The relative risk is measured against the infeasible OLMA risk. 18 Figure 8: Risk Comparisons under Design 2 for Case ii. The relative risk is measured against the infeasible OLMA risk. 
+
+Figure 9: Risk Comparisons under Design 2 for Case iii. The relative risk is measured against the infeasible OLMA risk. 19 To conduct a comprehensive analysis, the relative risk in Design 2 is measured against the infeasible OSVCMA risk or OLMA risk. The corresponding results are listed in Figures 4–9. It is clear from Figures 4–6 that SVMMA generally leads to the lowest risk, especially for α = 1, highlighting the importance of accounting for spatial heterogeneity. Further, Figures 7–9 illustrate that SVMMA has distinct advantages over MMA and JMA, with its superiority becoming increasingly evident as R2 increases. Moreover, the relative risk of SVMMA is less than one in most areas of R2, indicating that SVMMA is superior to the infeasible OLMA approach. Actually, such a phenomenon is not surprising because OLMA does not take spatial heterogeneity into account. Figure 10 depicts the trends of bτ4 and eτ4 against sample size under Design 3. Note that bτ4 and eτ4 are the sum of weights assigned to the quasi-correct models using (9) and (12) respectively. The results show that the weights assigned to the quasi-correct models gradually approach to one when the sample size increases, which verifies the weight consistency established in Theorems 3–4. Figure 11 illustrates the trend of the sample mean squared error (MSE) of the response variable with increasing sample size, where MSE = 1
+
+> nN
+
+PNj=1 ∥ bμ(j) − μ(j)∥2, with bμ(j) and μ(j) representing the estimated conditional mean obtained via (9) or (12) and the true conditional mean, respectively, at the jth repetition. The results indicate that as the sample size increases, our proposed conditional mean estimator converges to the true conditional mean, thereby validating the consistency of the estimator established in Corollaries 1–2. 
+
+# 5 Empirical Application 
+
+To validate the proposed SVMMA methodology, we employ a real data set from the Li-udaogou watershed (Loess Plateau, Shaanxi Province, China), comprising measurements at 689 locations. The data set is publicly available from Comber et al. (2023) at the associated repository: https://github.com/lexcomber/GWRroutemap , with the authors explicitly stating that it is provided for reproducibility studies. This data set was initially collected and used in the research by Wang et al. (2009) and has since been adopted in subsequent studies including those by Comber et al. (2018) and Comber et al. (2023). The data were collected at approximate 100m × 100m grid locations, as shown in Figure 12. The dependent variable of interest is soil total nitrogen (STN). The covariates include soil organic carbon (SOCgkg), nitrate-nitrogen (NO3Ngkg), ammonium (NH4Ngkg), and percentage clay (ClayPC), silt (SiltPC), sand (SandPC) content. As in the studies of Wang et al. (2009), Comber et al. (2018), and Comber et al. (2023), we transform a sub-20 Figure 10: Under Design 3, the sum of quasi-correct model weights is obtained by two methods: (9) for the left column, and (12) for the right column. 
+
+Figure 11: Under Design 3, the MSE results in the left column were obtained via (9), while those in the right column were obtained via (12). 21 Figure 12: Location map of the 689 sampling sites in the Liudaogou watershed, west of Shenmu City, Shaanxi Province, China. set of variables: STN, SOCgkg, NO3Ngkg, and NH4Ngkg using natural logarithms, while applying a square root transformation to ClayPC. Further, we standardize SiltPC and SandPC. Since it is typically uncertain which covariates should be included in the model, we consider a set of candidate models with different covariate specifications to improve pre-diction accuracy. In this study, we require all candidate models to include at least one covariate, resulting in a total of 2 6 − 1 = 63 candidate models. In each candidate model, we set the spatial distance metric to q = 2 and adopt the Bisquare kernel function 
+
+K(v) = (1 − v2)2I{| v|≤ 1} (the integral normalization constant required in condition 5 is omitted, which does not affect the estimation results), while bandwidth selection is performed based on the cross-validation criterion. We randomly split the data into a training set and a test set. Let n0 denote the number of observations in the training set, which is set to 400, 500, and 600 in our experiments. Based on the model estimated from the training set, we predict the soil total nitrogen (STN) for the remaining n1 = n − n0
+
+observations in the corresponding test set. The prediction performance is measured by the mean squared prediction error (MSPE). In addition to the methods considered in the sim-ulation study, we also include the SPMMA method proposed by Liao et al. (2019). This method captures spatial dependence by incorporating a spatial autocorrelation structure into the error term, but it assumes that the effects of covariates are spatially stationary 22 Table 1: The MSPE results when the candidate model is the linear model. 
+
+n0 Method MMA JMA SAIC SBIC AIC BIC SPMMA 400 Mean 0.3101 0.3083 0.3091 0.3098 0.3095 0.3104 0.3096 Median 0.2765 0.2804 0.2834 0.2818 0.2845 0.2825 0.2789 500 Mean 0.2972 0.2960 0.2966 0.2972 0.2972 0.2975 0.2966 Median 0.2450 0.2460 0.2444 0.2453 0.2465 0.2453 0.2452 600 Mean 0.2895 0.2885 0.2887 0.2892 0.2896 0.2890 0.2895 Median 0.2216 0.2198 0.2189 0.2200 0.2193 0.2202 0.2219 Table 2: The MSPE results when the candidate model is the SVCM. 
+
+n0 Method SVMMA SAIC SBIC AIC BIC AICc 400 Mean 0.3001 0.3110 0.3103 0.3117 0.3073 0.3082 Median 0.2763 0.2822 0.2817 0.2959 0.2816 0.2896 500 Mean 0.2853 0.2957 0.2952 0.2916 0.2946 0.2900 Median 0.2411 0.2509 0.2497 0.2474 0.2445 0.2452 600 Mean 0.2739 0.2852 0.2847 0.2776 0.2820 0.2763 Median 0.2065 0.2238 0.2234 0.2091 0.2134 0.2091 and thus cannot account for spatial heterogeneity. This procedure is repeated N = 200 times, and the mean and median MSPE of each method over all repetitions are reported. Specifically, we define MSPE mean = 1
+
+N
+
+> N
+
+X
+
+> j=1
+
+MSPE (j),
+
+and MSPE median = median 
+
+> j=1 ,2,...,N
+
+ MSPE (j),
+
+where MSPE (j) = 1
+
+> n1
+
+Pn1
+
+> i=1
+
+ Y (j) 
+
+> i
+
+− bμ(j)
+
+> i
+
+2, and bμ(j) 
+
+> i
+
+denotes the predicted value of Y (j)
+
+> i
+
+obtained by a given method in the jth trial. Tables 1 and 2 present the MSPE results of different methods under the candidate models of linear model and spatially varying coefficient model, respectively. The results in-dicate that the effect of covariates on STN exhibits spatial heterogeneity, and the SVMMA method consistently demonstrates the best predictive performance across different sample size settings. The relatively poorer predictive performance of SAIC and SBIC compared to model selection methods may be attributed to the fact that candidate models with lower predictive ability are still assigned certain weights, thereby compromising overall predictive performance. Moreover, we also calculated the mean squared errors for different methods under the full sample, and the corresponding results are: 0.2269 (SVMMA), 0.2467 (SAIC), 0.2464 23 Table 3: Candidate models with weights exceeding 10 −6 obtained via the SVMMA method SOCgkg ClayPC SiltPC SandPC NO3Ngkg NH4Ngkg Weight Model1 Yes – Yes – Yes – 0.3490 Model2 Yes – – – Yes – 0.2802 Model3 Yes – Yes – Yes Yes 0.2059 Model4 – – Yes – – – 0.0835 Model5 Yes – – – – – 0.0465 Model6 – – Yes – Yes Yes 0.0207 Model7 – – – – Yes – 0.0141 (SBIC), 0.2325 (AIC), 0.2479 (BIC), and 0.2325 (AICc), indicating that the SVMMA estimator has satisfactory in-sample performance. Meanwhile, we present the weight allo-cation results for candidate models obtained using the SVMMA method. For conciseness, only candidate models with weights greater than 10 −6 are listed in Table 3. The results show that the covariates ClayPC and SandPC are not included in any candidate mod-els presented in Table 3. Among the selected covariates, the weights are allocated in descending order as follows: SOCgkg, NO3Ngkg, SiltPC, and NH4Ngkg. Compared to single-model selection methods, the SVMMA method integrates information from differ-ent models, allowing for more robust handling of model uncertainty. To further elucidate the relationship between each covariate and STN, we present the spatially varying coeffi-cient patterns. These patterns are derived from the estimated coefficient function vector 
+
+bβ(s) = P63  
+
+> m=1
+
+ewm bβ(m)(s), obtained using the SVMMA method. Considering that the ab-solute values of the coefficient functions for covariates ClayPC and SandPC in bβ(s) are all less than 10 −5, their effects on the response variable STN are negligible. Therefore, Figure 13 only presents the spatially varying coefficient distributions of the intercept term and the remaining covariates, intuitively revealing the spatial differentiation patterns of the local regression coefficients for each variable across geographical space. As shown in the figure, the estimated coefficients of the covariates exhibit distinct spatial hetero-geneity in their relationship with STN. Specifically, SOCgkg and SiltPC generally exert a stable positive influence across the study area. In contrast, the effects of NO3Ngkg and NH4Ngkg are spatially variable, shifting between positive and negative values in dif-ferent subregions. Meanwhile, the intercept term shows a consistently negative influence throughout the entire region. 24 Figure 13: Spatial plots of the coefficient function estimates obtained using the SVMMA method. 
+
+# 6 Concluding Remarks 
+
+Over the past few decades, model averaging has gained extensive research attention as an effective prediction tool across numerous fields. However, most existing methods have primarily focused on frameworks such as independent and identically distributed samples, single time series, and cross-sectional spatial autoregressive models. To address this gap, this paper introduces a spatially varying coefficient Mallows model averaging method tailored for datasets exhibiting spatial heterogeneity, thereby extending the applicability of model averaging to a broader class of spatial processes. Several methodological extensions can be further developed based on our work. First, the proposed framework can be extended by replacing the varying-coefficient model with semi-parametric alternatives, such as partially linear models(Brunsdon et al., 1999; Mei et al., 2016), to enhance its flexibility and applicability. Second, the current approach assumes a common spatial smoothing scale (i.e., a single bandwidth parameter) for all covariates. In practice, however, different drivers may operate over distinct spatial scales. Imposing a uniform bandwidth could obscure genuine spatial heterogeneity and introduce 25 estimation bias. Allowing covariate-specific bandwidths(Fotheringham et al., 2017) would thus improve estimation accuracy and interpretability. Finally, extending the methodol-ogy from a purely spatial to a spatiotemporal setting represents a natural and important frontier. Future work could involve constructing candidate models that incorporate both spatial variation and temporal dynamics(Fotheringham et al., 2015; Yu et al., 2022), thereby enabling the application of the proposed averaging approach to more challenging spatiotemporal datasets. 
+
+# Acknowledgments 
+
+This paper is supported by National Natural Science Foundation of China (Grant No. 12571290), Fundamental Research Funds for the Central Universities (Grants No. SWU-KT25018 and No. SWU-KU24002). 
+
+# Appendix: Proofs of Theorems and Corollaries 
+
+The proofs of Theorems and Corollaries require the following lemmas. 
+
+Lemma 1. Suppose that Conditions 3-6 hold. Define, for each m = 1 , 2, . . . , M and 
+
+s = ( s1, s 2)T ∈ D, Jmn = 1 
+
+> n
+
+XT(m)W(m)sX(m). Then the following holds: 
+
+λ(Jmn ) ≥ cXf (s) − Oup 
+
+r pm
+
+nh 2
+
+> m
+
++ h2
+
+> m
+
+√pm
+
+
+
+, (A.1) 
+
+where the notation g(s) = Oup (h2
+
+> m
+
+) means that g(s)/h 2 
+
+> m
+
+is bounded in probability uniformly for any s within the interior of D.Proof. Let u = ( u1, u 2)T be a random vector with probability density function f (u). Under Conditions 3-6, we have 
+
+E {Khm (∥u − s∥q)}
+
+=
+
+Z
+
+> (u1,u 1)∈D
+
+1
+
+h2
+
+> m
+
+K′
+
+> q
+
+u1 − s1
+
+hm
+
+, u2 − s2
+
+hm
+
+
+
+f (u1, u 2) du 1du 2
+
+=
+
+Z 
+
+> (v1,v 2)∈supp( K′
+> q)
+
+1
+
+h2
+
+> m
+
+K′ 
+
+> q
+
+(v1, v 2) f (s1 + hmv1, s 2 + hmv2) h2
+
+> m
+
+dv 1dv 2
+
+=
+
+Z 
+
+> (v1,v 2)∈supp( K′
+> q)
+
+K′ 
+
+> q
+
+(v1, v 2) {f (s1, s 2) + fx(s1, s 2)hmv1 + fy(s1, s 2)hmv2
+
++fxx (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v21 + 2 fxy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v1v2 + fyy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v22 dv 1dv 2
+
+26 =f (s1, s 2) + h2
+
+> m
+
+Z 
+
+> (v1,v 2)∈supp( K′
+> q)
+
+K′ 
+
+> q
+
+(v1, v 2)  fxx (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)v21
+
++2 fxy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)v1v2 + fyy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)v22
+
+ dv 1dv 2
+
+=f (s) + Oup (h2
+
+> m
+
+), (A.2) where ( s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+) lies between ( s1, s 2) and ( s1 + hmv1, s 2 + hmv2). This notation persists in what follows, although its precise bounds may differ in different contexts. Similarly, 
+
+E K2 
+
+> hm
+
+(∥u − s∥q)
+
+=
+
+Z
+
+> (u1,u 2)∈D
+
+1
+
+h4
+
+> m
+
+K′2
+
+> q
+
+u1 − s1
+
+hm
+
+, u2 − s2
+
+hm
+
+
+
+f (u1, u 2) du 1du 2
+
+=
+
+Z 
+
+> (v1,v 2)∈supp( K′
+> q)
+
+1
+
+h2
+
+> m
+
+K′2 
+
+> q
+
+(v1, v 2) f (s1 + hmv1, s 2 + hmv2) dv 1dv 2
+
+= 1
+
+h2
+
+> m
+
+Z 
+
+> (v1,v 2)∈supp( K′
+> q)
+
+K′2 
+
+> q
+
+(v1, v 2) {f (s1, s 2) + fx(s1, s 2)hmv1 + fy(s1, s 2)hmv2
+
++fxx (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v21 + 2 fxy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v1v2 + fyy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v22 dv 1dv 2
+
+= 1
+
+h2
+
+> m
+
+(
+
+f (s1, s 2)R(K′
+
+> q
+
+) + h2
+
+> m
+
+Z 
+
+> (v1,v 2)∈supp( K′
+> q)
+
+K′2 
+
+> q
+
+(v1, v 2)  fxx (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)v21
+
++2 fxy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)v1v2 + fyy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)v22
+
+ dv 1dv 2
+
+
+
+= 1
+
+h2
+
+> m
+
+f (s)R(K′
+
+> q
+
+) + Oup (1) , (A.3) where R(K′
+
+> q
+
+) = R  
+
+> (v1,v 2)∈supp( K′
+> q)
+
+K′2 
+
+> q
+
+(v1, v 2) dv 1dv 2. Now, consider xmil xmik and Jmn,lk , which are the ( l, k )th elements of X(m)iXT(m)i and Jmn , respectively. From Conditions 3-6, (A.3), and Chebyshev’s inequality, it follows that 
+
+Jmn,lk − E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)
+
+)
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+{xmil xmik − E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)}Khm (∥si − s∥q)
+
+=Oup 
+
+1
+
+pnh 2
+
+> m
+
+!
+
+. (A.4) Combining (A.2), (A.3), (A.4), and Condition 4, we have 
+
+|Jmn,lk − E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)f (s)|≤ Jmn,lk − E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)
+
+)
+
+27 + E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)
+
+)
+
+− E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)E {Khm (∥u − s∥q)}
+
++ |E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)E {Khm (∥u − s∥q)} − E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)f (s)|
+
+=Oup 
+
+1
+
+pnh 2
+
+> m
+
++ h2
+
+> m
+
+!
+
+. (A.5) Let ∥A∥F denote the F -norm of matrix A. According to (A.5), we have 
+
+∥Jmn − f (s)ΠmCXΠT
+
+> m
+
+∥F
+
+=
+
+> pm
+
+X
+
+> l=1
+> pm
+
+X
+
+> k=1
+
+|Jmn,lk − E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)f (s)|2
+
+!1/2
+
+≤Oup 
+
+pm
+
+pnh 2
+
+> m
+
++ h2
+
+> m
+
+pm
+
+!
+
+. (A.6) Then, based on the relationship between the spectral norm and the F -norm, we obtain 
+
+λ(Jmn )
+
+≥λ(f (s)ΠmCXΠT
+
+> m
+
+) − 1
+
+√pm
+
+∥Jmn − f (s)ΠmCXΠT
+
+> m
+
+∥F
+
+=cXf (s) − Oup 
+
+r pm
+
+nh 2
+
+> m
+
++ h2
+
+> m
+
+√pm
+
+
+
+, (A.7) which implies that (A.1) holds. 
+
+Lemma 2. Suppose that Conditions 3-8 hold. Then the following hold: 
+
+max  
+
+> 1≤m≤M
+
+tr  P(m)
+
+ = Op
+
+ h−2 ep , (A.8) 
+
+and 
+
+max 
+
+> 1≤m≤M
+
+¯λ  P(m)
+
+ = Op
+
+ ep1/2 . (A.9) 
+
+Proof. Define ei = (0 , . . . , 1, . . . , 0) T as an n × 1 vector with 1 at the ith position and 0 elsewhere; and Ei as an n × n matrix with 1 at the ( i, i )th entry and 0 elsewhere. By Lemma 1, (6), and Conditions 3-8, we have max  
+
+> 1≤m≤M
+
+tr  P(m)
+
+
+
+= max  
+
+> 1≤m≤M
+
+tr 
+
+
+
+XT(m)1 
+
+n
+
+XT(m)W(m)s1 X(m)
+
+o−1
+
+XT(m)W(m)s1
+
+...
+
+XT(m)n
+
+n
+
+XT(m)W(m)sn X(m)
+
+o−1
+
+XT(m)W(m)sn
+
+
+
+28 = max 
+
+1≤m≤M
+
+nX
+
+i=1 
+
+XT(m)i
+
+XT(m)W(m)si X(m)
+
+−1XT(m)W(m)si ei
+
+= max 
+
+1≤m≤M
+
+nX
+
+i=1 
+
+tr 
+
+( 1
+
+nXT(m)W(m)si X(m)
+
+−1 1
+
+nXT(m)W(m)si EiX(m)
+
+)
+
+= max 
+
+1≤m≤M
+
+nX
+
+i=1 
+
+tr 
+
+( 1
+
+nXT(m)W(m)si X(m)
+
+−1 1
+
+nKhm (0) X(m)iXT(m)i
+
+)
+
+≤ max 
+
+1≤m≤M
+
+1
+
+nKhm (0) 
+
+nX
+
+i=1 
+
+XT(m)i
+
+ 1
+
+nXT(m)W(m)si X(m)
+
+−1
+
+X(m)i
+
+≤ max 
+
+1≤m≤M
+
+1
+
+nKhm (0) 
+
+nX
+
+i=1 
+
+¯λ
+
+( 1
+
+nXT(m)W(m)si X(m)
+
+−1)
+
+XT(m)iX(m)i
+
+≤ max 
+
+1≤m≤M
+
+1
+
+nh 2
+
+m
+
+K (0) 
+
+nX
+
+i=1 
+
+
+
+cXf (si) − Oup 
+
+r pm
+
+nh 2
+
+m
+
++ h2
+
+m
+
+√pm
+
+ −1
+
+XT(m)iX(m)i
+
+≤ 1
+
+nh 2 K (0) nO P (1) Op (ep)=OP
+
+ h−2 ep , (A.10) which implies that (A.8) holds. Denote 
+
+B = diag  eT1 , eT2 , . . . , eT
+
+n
+
+
+
+n×n2 , (A.11) 
+
+C(m) = diag  X(m), X(m), . . . , X(m)
+
+
+
+n2×pmn, (A.12) 
+
+E(m) = diag 
+
+( 1
+
+nXT(m)W(m)s1 X(m)
+
+−1
+
+, . . . , 
+
+ 1
+
+nXT(m)W(m)sn X(m)
+
+−1)
+
+pmn×pmn
+
+(A.13) 
+
+F(m) = diag 
+
+ 1
+
+√nXT(m)W1/2(m)s1 , 1
+
+√nXT(m)W1/2(m)s2 , . . . , 1
+
+√nXT(m)W1/2(m)sn
+
+
+
+pmn×n2
+
+, (A.14) and 
+
+H(m) =
+
+
+
+1√n W1/2(m)s1
+
+...
+
+1√n W1/2(m)sn
+
+
+
+n2×n
+
+. (A.15) It is easily seen that 
+
+P(m)
+
+=
+
+
+
+XT(m)1 
+
+n
+
+XT(m)W(m)s1 X(m)
+
+o−1
+
+XT(m)W(m)s1
+
+...
+
+XT(m)n
+
+n
+
+XT(m)W(m)sn X(m)
+
+o−1
+
+XT(m)W(m)sn
+
+
+
+n×n
+
+29 =BC (m)E(m)F(m)H(m), (A.16) and max 
+
+> 1≤m≤M
+
+¯λ  P(m)PT(m)
+
+
+
+= max 
+
+> 1≤m≤M
+
+¯λ  BC (m)E(m)F(m)H(m)HT(m)FT(m)ET(m)CT(m)BT
+
+≤ max 
+
+> 1≤m≤M
+
+¯λ  H(m)HT(m)
+
+ ¯λ  E(m)F(m)FT(m)ET(m)
+
+ ¯λ  BC (m)CT(m)BT . (A.17) To prove (A.9), we only need to verify that max 
+
+> 1≤m≤M
+
+¯λ  H(m)HT(m)
+
+ = Op (1) , (A.18) max 
+
+> 1≤m≤M
+
+¯λ  E(m)F(m)FT(m)ET(m)
+
+ = Op (1) , (A.19) and max 
+
+> 1≤m≤M
+
+¯λ  BC (m)CT(m)BT = Op (ep) . (A.20) Let us first consider (A.18). By (A.15) and Conditions 3, 5-6, we have max 
+
+> 1≤m≤M
+
+¯λ  H(m)HT(m)
+
+
+
+= max 
+
+> 1≤m≤M
+
+¯λ  HT(m)H(m)
+
+
+
+= max 
+
+> 1≤m≤M
+
+¯λ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+W(m)si
+
+!
+
+= max 
+
+> 1≤m≤M
+
+¯λ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+diag {Khm (∥s1 − si∥), K hm (∥s2 − si∥), . . . , K hm (∥sn − si∥)}
+
+!
+
+= max  
+
+> 1≤m≤M
+
+max 
+
+> 1≤j≤n
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥sj − si∥)= max  
+
+> 1≤m≤M
+
+max  
+
+> 1≤j≤n
+
+f (sj ) + Oup 
+
+1
+
+pnh 2
+
+> m
+
++ h2
+
+> m
+
+!! 
+
+=Op (1) . (A.21) Next, consider (A.18). By (A.13), (A.14), Lemma 1 and Conditions 7-8, we can show that max 
+
+> 1≤m≤M
+
+¯λ  E(m)F(m)FT(m)ET(m)
+
+
+
+30 = max 
+
+> 1≤m≤M
+
+¯λ  E(m)
+
+
+
+= max 
+
+> 1≤m≤M
+
+¯λ diag 
+
+( 1
+
+nXT(m)W(m)s1 X(m)
+
+−1
+
+, . . . , 
+
+ 1
+
+nXT(m)W(m)sn X(m)
+
+−1)! 
+
+= max  
+
+> 1≤m≤M
+
+max 
+
+> 1≤i≤n
+
+¯λ
+
+( 1
+
+nXT(m)W(m)si X(m)
+
+−1)
+
+= max  
+
+> 1≤m≤M
+
+max 
+
+> 1≤i≤n
+
+
+
+cXf (si) − Oup 
+
+r pm
+
+nh 2
+
+> m
+
++ h2
+
+> m
+
+√pm
+
+ −1
+
+=Op (1) . (A.22) Hence (A.19) is correct. We now consider (A.20). By Condition 4, (A.11) and (A.12), we have max 
+
+> 1≤m≤M
+
+¯λ  BC (m)CT(m)BT
+
+= max 
+
+> 1≤m≤M
+
+¯λ diag  eT1 , eT2 , . . . , eT
+
+> n
+
+ diag  X(m), X(m), . . . , X(m)
+
+
+
+diag  XT(m), XT(m), . . . , XT(m)
+
+ diag ( e1, e2, . . . , en)
+
+= max 
+
+> 1≤m≤M
+
+¯λ diag  eT1 X(m)XT(m)e1, eT2 X(m)XT(m)2 e2, . . . , eT 
+
+> n
+
+X(m)XT(m)en
+
+
+
+= max 
+
+> 1≤m≤M
+
+¯λ diag  XT(m)1 X(m)1 , XT(m)2 X(m)2 , . . . , XT(m)nX(m)n
+
+
+
+= max  
+
+> 1≤m≤M
+
+max  
+
+> 1≤i≤n
+
+XT(m)iX(m)i
+
+=Op (ep) . (A.23) By (A.17)-(A.20), we obtain max 
+
+> 1≤m≤M
+
+¯λ  P(m)
+
+
+
+= max 
+
+> 1≤m≤M
+
+¯λ1/2  P(m)PT(m)
+
+
+
+= max 
+
+> 1≤m≤M
+
+¯λ1/2  BC (m)E(m)F(m)H(m)HT(m)FT(m)ET(m)CT(m)BT
+
+≤ max 
+
+> 1≤m≤M
+
+¯λ1/2  H(m)HT(m)
+
+ ¯λ1/2  E(m)F(m)FT(m)ET(m)
+
+ ¯λ1/2  BC (m)CT(m)BT
+
+≤ max 
+
+> 1≤m≤M
+
+¯λ1/2  H(m)HT(m)
+
+ max 
+
+> 1≤m≤M
+
+¯λ1/2  E(m)F(m)FT(m)ET(m)
+
+ max 
+
+> 1≤m≤M
+
+¯λ1/2  BC (m)CT(m)BT
+
+=Op
+
+ ep1/2 , (A.24) which implies that (A.9) is true. 
+
+Lemma 3. Under Conditions 3-6 and 9-11, for the mth (1 ≤ m ≤ M ) candidate model, 
+
+31 we have 
+
+∥ bβ(m)(s) − β∗
+
+> (m)
+
+(s)∥2 = Oup 
+
+p3
+
+> m
+
+n + pm
+
+nh 2
+
+> m
+
++ pmh4
+
+> m
+
+
+
+, (A.25) 
+
+where the notation g(s) = Oup (h2
+
+> m
+
+) means that g(s)/h 2 
+
+> m
+
+is bounded in probability uniformly for any s within the interior of D.Proof. Let u = ( u1, u 2)T be a random vector with probability density function f (u). Then, under Conditions 3-6 and 9, it follows that 
+
+E Khm (∥u − s∥q)( β∗
+
+> (m)k
+
+(u) − β∗
+
+> (m)k
+
+(s)) 
+
+=
+
+Z 
+
+> (v1,v 2)∈supp( K′
+> q)
+
+K′ 
+
+> q
+
+(v1, v 2) {f (s1, s 2) + fx(s1, s 2)hmv1 + fy(s1, s 2)hmv2
+
++fxx (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v21 + 2 fxy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v1v2 + fyy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v22
+
+n
+
+β∗ 
+
+> (m)k, x
+
+(s1, s 2)hmv1 + β∗ 
+
+> (m)k, y
+
+(s1, s 2)hmv2 + β∗ 
+
+> (m)k, xx
+
+(s∗
+
+> 3
+
+, s ∗
+
+> 4
+
+)h2
+
+> m
+
+v21
+
++2 β∗ 
+
+> (m)k, xy
+
+(s∗
+
+> 3
+
+, s ∗
+
+> 4
+
+)h2
+
+> m
+
+v1v2 + β∗ 
+
+> (m)k, yy
+
+(s∗
+
+> 3
+
+, s ∗
+
+> 4
+
+)h2
+
+> m
+
+v22
+
+o
+
+dv 1dv 2
+
+=Oup (h2
+
+> m
+
+), (A.26) where ( s∗
+
+> 3
+
+, s ∗
+
+> 4
+
+) is an intermediate point between ( s1, s 2) and ( s1 + hmv1, s 2 + hmv2). The notation ( s∗
+
+> 3
+
+, s ∗
+
+> 4
+
+) is retained in the subsequent formulae, even though its specific value may not be uniform throughout. Similarly, 
+
+E K2 
+
+> hm
+
+(∥u − s∥q)( β∗
+
+> (m)k
+
+(u) − β∗
+
+> (m)k
+
+(s)) 2
+
+= 1
+
+h2
+
+> m
+
+Z 
+
+> (v1,v 2)∈supp( K′
+> q)
+
+K′2 
+
+> q
+
+(v1, v 2) {f (s1, s 2) + fx(s1, s 2)hmv1 + fy(s1, s 2)hmv2
+
++fxx (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v21 + 2 fxy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v1v2 + fyy (s∗
+
+> 1
+
+, s ∗
+
+> 2
+
+)h2
+
+> m
+
+v22
+
+n
+
+β∗ 
+
+> (m)k, x
+
+(s1, s 2)hmv1 + β∗ 
+
+> (m)k, y
+
+(s1, s 2)hmv2 + β∗ 
+
+> (m)k, xx
+
+(s∗
+
+> 3
+
+, s ∗
+
+> 4
+
+)h2
+
+> m
+
+v21
+
++2 β∗ 
+
+> (m)k, xy
+
+(s∗
+
+> 3
+
+, s ∗
+
+> 4
+
+)h2
+
+> m
+
+v1v2 + β∗ 
+
+> (m)k, yy
+
+(s∗
+
+> 3
+
+, s ∗
+
+> 4
+
+)h2
+
+> m
+
+v22
+
+o2
+
+dv 1dv 2
+
+=Oup (1) . (A.27) Let b∗ 
+
+> (m)
+
+= ( b∗
+
+> (m)1
+
+, b ∗
+
+> (m)2
+
+, . . . , b ∗
+
+> (m)n
+
+)T = μ − μ∗
+
+> (m)
+
+. Note that 
+
+bβ(m)(s) = ( XT(m)W(m)sX(m))−1XT(m)W(m)sY
+
+= β∗
+
+> (m)
+
+(s) + ( XT(m)W(m)sX(m))−1XT(m)W(m)s(μ∗ 
+
+> (m)
+
++ b∗ 
+
+> (m)
+
+− X(m)β∗
+
+> (m)
+
+(s)) + ( XT(m)W(m)sX(m))−1XT(m)W(m)sϵ
+
+= β∗
+
+> (m)
+
+(s) + Bm1(s) + Bm2(s) + Bm3(s), (A.28) 32 where 
+
+Bm1(s) = ( XT(m)W(m)sX(m))−1XT(m)W(m)s(μ∗ 
+
+> (m)
+
+− X(m)β∗
+
+> (m)
+
+(s)) , (A.29) 
+
+Bm2(s) = ( XT(m)W(m)sX(m))−1XT(m)W(m)sb∗
+
+> (m)
+
+, (A.30) and 
+
+Bm3(s) = ( XT(m)W(m)sX(m))−1XT(m)W(m)sϵ. (A.31) For Bm1(s), note that 1
+
+nXT(m)W(m)s(μ∗ 
+
+> (m)
+
+− X(m)β∗
+
+> (m)
+
+(s)) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)X(m)iXT(m)i(β∗
+
+> (m)
+
+(si) − β∗
+
+> (m)
+
+(s)) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+X(m)iXT(m)i − E(X(m)1 XT(m)1 ) Z(m)i
+
++ 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E(X(m)1 XT(m)1 ){Z(m)i − E(Z(m)1 )} + E(X(m)1 XT(m)1 )E(Z(m)1 )=Bm4(s) + Bm5(s) + Bm6(s). (A.32) where 
+
+Z(m)i = Khm (∥si − s∥q)( β∗
+
+> (m)
+
+(si) − β∗
+
+> (m)
+
+(s)) , (A.33) 
+
+Bm4(s) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+X(m)iXT(m)i − E(X(m)1 XT(m)1 ) Z(m)i, (A.34) 
+
+Bm5(s) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+E(X(m)1 XT(m)1 ){Z(m)i − E(Z(m)1 )}, (A.35) and 
+
+Bm6(s) = E(X(m)1 XT(m)1 )E(Z(m)1 ). (A.36) Let ∥A∥F denote the F -norm of matrix A. For Bm4(s), according to Condition 4, we have 
+
+E∥X(m)1 XT(m)1 − E(X(m)1 XT(m)1 )∥2 
+
+> F
+
+=E
+
+> pm
+
+X
+
+> l=1
+> pm
+
+X
+
+> k=1
+
+(xm 
+
+> 1l
+
+xm 
+
+> 1k
+
+− E(xm 
+
+> 1l
+
+xm
+
+> 1k
+
+)) 2
+
+!
+
+=O(p2
+
+> m
+
+). (A.37) Furthermore, we can obtain 
+
+E∥Bm4(s)∥2
+
+33 = 1
+
+nE{ZT(m)1 
+
+X(m)1 XT(m)1 − E(X(m)1 XT(m)1 ) T X(m)1 XT(m)1 − E(X(m)1 XT(m)1 ) Z(m)1 }≤ 1
+
+nE∥X(m)1 XT(m)1 − E(X(m)1 XT(m)1 )∥2 
+
+> F
+
+E{ZT(m)1 Z(m)1 }
+
+=O
+
+p3
+
+> m
+
+n
+
+
+
+. (A.38) For Bm5(s), combining Condition 4 and (A.27), we have 
+
+E∥Bm5(s)∥2
+
+= 1
+
+nE{(Z(m)1 − E(Z(m)1 )) TE(X(m)1 XT(m)1 )E(X(m)1 XT(m)1 )( Z(m)1 − E(Z(m)1 )) }≤ ¯c2
+
+> X
+
+n E{(Z(m)1 − E(Z(m)1 )) T(Z(m)1 − E(Z(m)1 )) }
+
+=O
+
+pm
+
+n
+
+
+
+. (A.39) Meanwhile, for Bm6(s), according to Condition 4 and (A.26), we obtain 
+
+∥Bm6(s)∥2 ≤ ¯c2
+
+> X
+
+∥E(Z(m)1 )∥2 = O(pmh4
+
+> m
+
+). (A.40) Combining Lemma 1 with (A.38)-(A.40), we have 
+
+∥Bm1(s)∥2 = Oup 
+
+p3
+
+> m
+
+n + pmh4
+
+> m
+
+
+
+. (A.41) For Bm2(s), we note that Bm2(s) = 0 when 1 ≤ m ≤ M0, whereas for M0+1 ≤ m ≤ M ,1
+
+nXT(m)W(m)sb∗
+
+> (m)
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)X(m)ib∗
+
+> (m)i
+
+. (A.42) Taking the jth row element in (A.42) and applying the definition of b∗
+
+> (m)
+
+, we have 
+
+E
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)xmij b∗
+
+> (m)i
+
+)
+
+= 0 , (A.43) Meanwhile, from (A.3), Condition 4, Condition 10, and the Cauchy–Schwarz inequality, it follows that var 
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)xmij b∗
+
+> (m)i
+
+)
+
+= 1
+
+nE K2 
+
+> hm
+
+(∥s1 − s∥q)xm21j b∗2(m)1 
+
+34 ≤ 1
+
+n[E{K2 
+
+> hm
+
+(∥s1 − s∥q)xm41j }]1/2[E{K2 
+
+> hm
+
+(∥s1 − s∥q)E(b∗4(m)1 |s1)}]1/2
+
+=Oup 
+
+ 1
+
+nh 2
+
+> m
+
+
+
+. (A.44) Based on (A.44) and Lemma 1, we have ∥Bm2(s)∥2 = Oup 
+
+ pm
+
+> nh 2
+> m
+
+
+
+.For Bm3(s), note that 1
+
+nXT(m)W(m)sϵ
+
+= 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)X(m)iϵi. (A.45) Taking the jth row element in (A.45), we have 
+
+E
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)xmij ϵi
+
+)
+
+= 0 , (A.46) Meanwhile, from (A.3) and Condition 4, it follows that var 
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)xmij ϵi
+
+)
+
+=E
+
+"
+
+var 
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)xmij ϵi X, Ψ
+
+)# 
+
++ var 
+
+"
+
+E
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)xmij ϵi X, Ψ
+
+)# 
+
+=σ2
+
+n E
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+K2 
+
+> hm
+
+(∥si − s∥q)xm2
+
+> ij
+
+)
+
+=σ2
+
+n E xm21j E K2 
+
+> hm
+
+(∥u − s∥q)
+
+=Oup ( 1
+
+nh 2
+
+> m
+
+). (A.47) From Condition 4, (A.46), (A.47), and Chebyshev’s inequality, it follows that 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+Khm (∥si − s∥q)xmij ϵi = Oup ( 1
+
+pnh 2
+
+> m
+
+), (A.48) Based on (A.48) and Lemma 1, we have ∥Bm3(s)∥2 = Oup 
+
+ pm
+
+> nh 2
+> m
+
+
+
+. By the triangle in-equality, for the mth (1 ≤ m ≤ M ) candidate model, we have 
+
+∥ bβ(m)(s) − β∗
+
+> (m)
+
+(s)∥2 = Oup 
+
+p3
+
+> m
+
+n + pm
+
+nh 2
+
+> m
+
++ pmh4
+
+> m
+
+
+
+. (A.49) 35 Lemma 3 has been proved. 
+
+Proof of Theorem 1 
+
+Note that the Cn (w) is 
+
+Cn (w) = ∥ Y − bμ (w) ∥2 + 2 tr ( P (w) Ω)= Ln (w) + ∥ ϵ∥2 − 2ϵT (P (w) − In) μ − 2 ϵTP (w) ϵ − tr ( P (w) Ω) , (A.50) where ∥ ϵ∥2 is independent of w. Hence to prove Theorem 1, we need only to verify that sup 
+
+> w∈H n
+
+ϵT (P (w) − In) μ
+
+Rn (w)
+
+> p
+
+→ 0, (A.51) sup 
+
+> w∈H n
+
+ϵTP (w) ϵ − tr ( P (w) Ω)
+
+Rn (w)
+
+> p
+
+→ 0, (A.52) and sup 
+
+> w∈H n
+
+Ln (w)
+
+Rn (w) − 1 p
+
+→ 0. (A.53) We observe that for any δ > 0, 
+
+P
+
+
+
+sup 
+
+> w∈H n
+
+ϵT (P (w) − In) μ
+
+Rn (w) > δ |X, Ψ
+
+
+
+≤P sup 
+
+> w∈H n
+> M
+
+X
+
+> m=1
+
+wm ϵT  P(m) − In
+
+ μ > δξ n|X, Ψ
+
+!
+
+=P
+
+
+
+max  
+
+> 1≤m≤M
+
+ϵT  P(m) − In
+
+ μ > δξ n|X, Ψ
+
+
+
+=P   ϵT  P  w01
+
+ − In
+
+ μ > δξ n ∪  ϵT  P  w02
+
+ − In
+
+ μ > δξ n
+
+∪ . . . ∪  ϵT  P  w0
+
+> M
+
+ − In
+
+ μ > δξ n |X, Ψ)
+
+≤
+
+> M
+
+X
+
+> m=1
+
+P   ϵT  P  w0
+
+> m
+
+ − In
+
+ μ > δξ n |X, Ψ
+
+≤
+
+> M
+
+X
+
+> m=1
+
+E
+
+
+
+ϵT (P (w0
+
+> m
+
+) − In) μ 2G|X, Ψ
+
+
+
+δ2Gξ2Gn
+
+≤
+
+> M
+
+X
+
+> m=1
+
+c1 (P (w0
+
+> m
+
+) − In) μ 2G
+
+δ2Gξ2Gn
+
+≤
+
+> M
+
+X
+
+> m=1
+
+c1{Rn (w0
+
+> m
+
+)}G
+
+δ2Gξ2Gn
+
+= c1
+
+δ2G ·
+
+> M
+
+P
+
+> m=1
+
+{Rn (w0
+
+> m
+
+)}G
+
+ξ2Gn
+
+36 =op (1) , (A.54) where c1 is a positive constant. The second inequality follows from the Bonferroni in-equality, the third is obtained by an extension of Chebyshev’s inequality, the fourth is guaranteed by Theorem 2 of Whittle (1960) and Condition 1, the fifth follows from (8), and the final equality is derived from Condition 2. Define An1 (X, Ψ) = P
+
+
+
+sup   
+
+> w∈H n
+> ϵT(P(w)−In)μ
+> Rn(w)
+
+> δ |X, Ψ
+
+
+
+. Let F (X, Ψ) be the joint cumulative distribution function of X and Ψ, and let c2, · · · , c 6 be a sequence of positive constants. Note that An1 (X, Ψ) is a conditional probability density given X and Ψ, hence 
+
+|An1 (X, Ψ)| ≤ 1. From (A.54), for any ς ¿ 0, we obtain P (|An1 (X, Ψ)| ≥ ς) → 0. Then we have 
+
+P
+
+
+
+sup 
+
+> w∈H n
+
+ϵT (P (w) − In) μ
+
+Rn (w) > δ 
+
+
+
+=E
+
+
+
+P
+
+
+
+sup 
+
+> w∈H n
+
+ϵT (P (w) − In) μ
+
+Rn (w) > δ |X, Ψ
+
+ 
+
+=E {An1 (X, Ψ)}
+
+=
+
+Z
+
+> |An1(X,Ψ)|≥ ς
+
+An1 (X, Ψ) dF (X, Ψ) + 
+
+Z
+
+> |An1(X,Ψ)|<ς
+
+An1 (X, Ψ) dF (X, Ψ)
+
+≤P (|An1 (X, Ψ)| ≥ ς) + ς → 0, (A.55) which implies that (A.51) is true. Similar to the proof of (A.51), we have 
+
+P
+
+
+
+sup 
+
+> w∈H n
+
+ϵTP (w) ϵ − tr ( P (w) Ω)
+
+Rn (w) > δ |X, Ψ
+
+
+
+≤P sup 
+
+> w∈H n
+> M
+
+X
+
+> m=1
+
+wm ϵTP(m)ϵ − tr  P(m)Ω > δξ n|X, Ψ
+
+!
+
+=P
+
+
+
+max  
+
+> 1≤m≤M
+
+ϵTP(m)ϵ − tr  P(m)Ω > δξ n|X, Ψ
+
+
+
+≤
+
+> M
+
+X
+
+> m=1
+
+P   ϵTP  w0
+
+> m
+
+ ϵ − tr  P  w0
+
+> m
+
+ Ω > δξ n|X, Ψ
+
+≤
+
+> M
+
+X
+
+> m=1
+
+E
+
+
+
+ϵTP (w0
+
+> m
+
+) ϵ − tr ( P (w0
+
+> m
+
+) Ω) 2G|X, Ψ
+
+
+
+(δξ n)2G
+
+≤
+
+> M
+
+X
+
+> m=1
+
+c2tr G PT (w0
+
+> m
+
+) P (w0
+
+> m
+
+) Ω
+
+(δξ n)2G
+
+≤
+
+> M
+
+X
+
+> m=1
+
+c2{Rn (w0
+
+> m
+
+)}G
+
+(δξ n)2G
+
+37 = c2
+
+δ2G ·
+
+> M
+
+P
+
+> m=1
+
+{Rn (w0
+
+> m
+
+)}G
+
+ξ2Gn
+
+=op (1) . (A.56) Applying the steps in (A.55) to the above equation, we can obtain (A.52). Now, note that sup 
+
+> w∈H n
+
+Ln (w)
+
+Rn (w) − 1
+
+= sup 
+
+> w∈H n
+
+2ϵTPT (w) ( P (w) − In) μ+ ∥ P (w) ϵ∥2 − tr  PT (w) P (w) Ω
+
+Rn (w) .
+
+To prove (A.53), it is sufficient to show that sup 
+
+> w∈H n
+
+ϵTPT (w) ( P (w) − In) μ
+
+Rn (w)
+
+> p
+
+→ 0, (A.57) and sup 
+
+> w∈H n
+
+∥ P (w) ϵ∥2 − tr  PT (w) P (w) Ω
+
+Rn (w)
+
+> p
+
+→ 0. (A.58) By Lemma 2 and Conditions 1 and 2, we have 
+
+P
+
+
+
+sup 
+
+> w∈H n
+
+ϵTPT (w) ( P (w) − In) μ
+
+Rn (w) > δ |X, Ψ
+
+
+
+≤P sup 
+
+> w∈H n
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+wtwm ϵTPT(t)
+
+ P(m) − In
+
+ μ > δξ n|X, Ψ
+
+!
+
+≤P
+
+
+
+max  
+
+> 1≤t≤M
+
+max  
+
+> 1≤m≤M
+
+ϵTPT(t)
+
+ P(m) − In
+
+ μ > δξ n|X, Ψ
+
+
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+P   ϵTPT  w0
+
+> t
+
+   P  w0
+
+> m
+
+ − In
+
+ μ > δξ n|X, Ψ
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+E
+
+
+
+ϵTPT (w0 
+
+> t
+
+) ( P (w0
+
+> m
+
+) − In) μ 2G|X, Ψ
+
+
+
+(δξ n)2G
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+c3 PT (w0 
+
+> t
+
+) ( P (w0
+
+> m
+
+) − In) μ 2G
+
+(δξ n)2G
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+c3 ¯λ2G (P (w0 
+
+> t
+
+)) (P (w0
+
+> m
+
+) − In) μ 2G
+
+(δξ n)2G
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+c3 ¯λ2G (P (w0 
+
+> t
+
+)) {Rn (w0
+
+> m
+
+)}G
+
+(δξ n)2G
+
+38 = c4
+
+δ2G ·
+
+M O p
+
+ epG MP
+
+> m=1
+
+{Rn (w0
+
+> m
+
+)}G
+
+ξ2Gn
+
+=op (1) . (A.59) Equation (A.57) can be obtained by applying the steps in (A.55) to (A.59). Furthermore, 
+
+P sup 
+
+> w∈H n
+
+∥ P (w) ϵ∥2 − tr  PT (w) P (w) Ω
+
+Rn (w) > δ |X, Ψ
+
+!
+
+≤P sup 
+
+> w∈H n
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+wtwm ϵTPT(t)P(m)ϵ − tr  PT(t)P(m)Ω > δξ n|X, Ψ
+
+!
+
+≤P
+
+
+
+max  
+
+> 1≤t≤M
+
+max  
+
+> 1≤m≤M
+
+ϵTPT(t)P(m)ϵ − tr  PT(t)P(m)Ω > δξ n|X, Ψ
+
+
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+P   ϵTPT  w0
+
+> t
+
+ P  w0
+
+> m
+
+ ϵ − tr  PT  w0
+
+> t
+
+ P  w0
+
+> m
+
+ Ω > δξ n|X, Ψ
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+E
+
+
+
+ϵTPT (w0 
+
+> t
+
+) P (w0
+
+> m
+
+) ϵ − tr  PT (w0 
+
+> t
+
+) P (w0
+
+> m
+
+) Ω 2G|X, Ψ
+
+
+
+(δξ n)2G
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+c5tr G Ω1/2PT (w0 
+
+> t
+
+) P (w0
+
+> m
+
+) ΩP T (w0
+
+> m
+
+) P (w0 
+
+> t
+
+) Ω1/2
+
+(δξ n)2G
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+c5 ¯λ2G (P (w0
+
+> m
+
+)) ¯λG (Ω) tr G PT (w0 
+
+> t
+
+) P (w0 
+
+> t
+
+) Ω
+
+(δξ n)2G
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+c5 ¯λ2G (P (w0
+
+> m
+
+)) ¯λG (Ω) RGn (w0 
+
+> t
+
+)(δξ n)2G
+
+= c6
+
+δ2G ·
+
+M O p
+
+ epG MP
+
+> t=1
+
+{Rn (w0 
+
+> t
+
+)}G
+
+ξ2Gn
+
+=op (1) . (A.60) Equation (A.58) is obtained by applying the derivation steps in (A.55) to (A.60). 
+
+Proof of Theorem 2 
+
+When Ω is replaced by bΩ, Cn(w) under the known Ω case is correspondingly changed to 
+
+bCn (w) = Cn (w) + 2 {tr 
+
+
+
+P (w) bΩ
+
+
+
+− tr ( P (w) Ω)}
+
+= Cn (w) + 2( bσ2  
+
+> M∗
+
+− σ2) tr ( P (w)) .
+
+39 From the result of Theorem 1, it suffices to prove that, sup 
+
+> w∈H n
+
+(bσ2  
+
+> M∗
+
+− σ2) tr ( P (w)) /R n (w) = op (1) . (A.61) Under the scenario where all candidate models are incorrect, Condition 7 implies that 
+
+bσ2  
+
+> M∗
+
+= Op(1). According to Lemma 2 and Condition 8, (A.61) holds. 
+
+Proof of Theorem 3 
+
+Define HT = {w ∈ H n : wm = 0 , m = M0 + 1 , . . . , M } as the set of weight vectors that assign zero weight to in-quasi-correct models. Note that, we rewrite our criterion Cn(w)as 
+
+Cn(w) = ∥ bμ(w) − Y∥2 + 2 tr( P(w)Ω)=∥μ∗(w) − μ + bμ(w) − μ∗(w) − ϵ∥2 + 2 tr( P(w)Ω)=∥μ∗(w) − μ∥2 + ∥ bμ(w) − μ∗(w)∥2 + ∥ϵ∥2
+
++ 2( μ∗(w) − μ)T( bμ(w) − μ∗(w)) − 2( μ∗(w) − μ)Tϵ
+
+− 2( bμ(w) − μ∗(w)) Tϵ + 2 tr( P(w)Ω).
+
+Hence, we can calculate the value of Cn(w) at w0 = ( w01 , w 02 , · · · , w 0 
+
+> M0
+
+, 0, · · · , 0) ∈ H T . It is show that 
+
+Cn(w0) = ∥ bμ(w0) − Y∥2 + 2 tr( P(w0)Ω)= ∥ bμ(w0) − μ∗(w0)∥2 − 2( bμ(w0) − μ∗(w0)) Tϵ + ∥ϵ∥2 + 2 tr( P(w0)Ω)= Cn1(w0) − 2Cn2(w0) + 2 Cn3(w0) + ∥ϵ∥2, (A.62) where 
+
+Cn1(w0) = ∥ bμ(w0) − μ∗(w0)∥2, (A.63) 
+
+Cn2(w0) = ( bμ(w0) − μ∗(w0)) Tϵ, (A.64) and 
+
+Cn3(w0) = tr( P(w0)Ω). (A.65) Next, we examine each term in (A.62). For (A.63), by Condition 4 and Lemma 3, we observe that 
+
+Cn1(w0) = ∥ bμ(w0) − μ∗(w0)∥2
+
+40 ≤
+
+> n
+
+X
+
+> i=1
+> M0
+
+X
+
+> m=1
+
+|XT(m)i( bβ(m)(si) − β∗
+
+> (m)
+
+(si)) |2
+
+≤
+
+> n
+
+X
+
+> i=1
+> M0
+
+X
+
+> m=1
+
+∥X(m)i∥2∥ bβ(m)(si) − β∗
+
+> (m)
+
+(si)∥2
+
+= Op(M0 ep4 + h−2M0 ep2 + nM 0 ep2¯h4). (A.66) For (A.64), we have 
+
+E{( bμ(w0) − μ∗(w0)) Tϵ} = 0 . (A.67) By Condition 11 and (A.66), we obtain 
+
+∥ bμ(w0) − μ∗(w0)∥2/n 
+
+=Op(ξF /n )Op(ξ−1 
+
+> F
+
+M0 ep4 + ξ−1 
+
+> F
+
+h−2M0 ep2 + ξ−1 
+
+> F
+
+nM 0 ep2¯h4)=op(1) . (A.68) Consequently, by the law of large numbers, var {( bμ(w0) − μ∗(w0)) Tϵ} = O(n), (A.69) which implies 
+
+|Cn2(w0)| = |( bμ(w0) − μ∗(w0)) Tϵ|
+
+= Op(n1/2). (A.70) For (A.65), applying Lemma 2 yields 
+
+Cn3(w0) = tr( P(w0)Ω)
+
+≤ max 
+
+> 1≤m≤M0
+
+tr( P(m)Ω)= Op(h−2 ep). (A.71) Combining (A.63)-(A.65), we obtain 
+
+Cn(w0) − ∥ ϵ∥2 = Op(M0 ep4 + h−2M0 ep2 + nM 0 ep2¯h4 + n1/2). (A.72) 41 Next, we calculate the value of Cn(w) at bw. It is obvious seen that 
+
+Cn( bw) = ∥ bμ( bw) − Y∥2 + 2 tr( P( bw)Ω)=L∗
+
+> n
+
+( bw) + ∥ bμ( bw) − μ∗( bw)∥2 + ∥ϵ∥2 + 2( μ∗( bw) − μ)T( bμ( bw) − μ∗( bw)) 
+
+− 2( μ∗( bw) − μ)Tϵ − 2( bμ( bw) − μ∗( bw)) Tϵ + 2 tr( P( bw)Ω). (A.73) Similar to (A.66), by Condition 4 and Lemma 3, 
+
+∥ bμ( bw) − μ∗( bw)∥2
+
+≤
+
+> n
+
+X
+
+> i=1
+> M
+
+X
+
+> m=1
+
+|XT(m)i( bβ(m)(si) − β∗
+
+> (m)
+
+(si)) |2
+
+≤
+
+> n
+
+X
+
+> i=1
+> M
+
+X
+
+> m=1
+
+∥X(m)i∥2∥ bβ(m)(si) − β∗
+
+> (m)
+
+(si)∥2
+
+=Op(M ep4 + h−2M ep2 + nM ep2¯h4). (A.74) Combining Condition 11 and(A.74), and following a derivation similar to (A.66)-(A.70), we obtain 
+
+|( bμ( bw) − μ∗( bw)) Tϵ| = Op(n1/2). (A.75) By Condition 10, we have 
+
+∥μ∗( bw) − μ∥2
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+bwt bwm(μ∗ 
+
+> (t)
+
+− μ)T(μ∗ 
+
+> (m)
+
+− μ)
+
+≤
+
+> M
+
+X
+
+> t=1
+> M
+
+X
+
+> m=1
+
+bwt bwm∥μ∗ 
+
+> (t)
+
+− μ∥∥ μ∗ 
+
+> (m)
+
+− μ∥
+
+=Op(n). (A.76) Furthermore, from Condition 11 and (A.76), and using an argument analogous to (A.66)-(A.70), we have 
+
+|(μ∗( bw) − μ)Tϵ| = Op(n1/2). (A.77) By the Cauchy–Schwarz inequality, we obtain 
+
+|(μ∗( bw) − μ)T( bμ( bw) − μ∗( bw)) | = Op(L∗1/2 
+
+> n
+
+( bw)) Op(∥ bμ( bw) − μ∗( bw)∥). (A.78) 42 Similarly to (A.65), it follows from Lemma 2 that tr( P( bw)Ω) ≤ max  
+
+> 1≤m≤M
+
+tr( P(m)Ω)= Op(h−2 ep). (A.79) On the other hand, we observe that 
+
+L∗
+
+> n
+
+( bw) = ∥μ∗( bw) − μ∥2
+
+=
+
+> M
+
+X
+
+> m=1
+
+bwm(μ∗ 
+
+> (m)
+
+− μ)
+
+! 2
+
+=
+
+> M0
+
+X
+
+> m=1
+
+bwm(μ∗ 
+
+> (m)
+
+− μ) + 
+
+> M
+
+X
+
+> m=M0+1
+
+bwm(μ∗ 
+
+> (m)
+
+− μ)
+
+! 2
+
+= (1 − bτM0 )
+
+> M
+
+X
+
+> m=M0+1
+
+bwm
+
+1 − bτM0
+
+(μ∗ 
+
+> (m)
+
+− μ)
+
+! 2
+
+= (1 − bτM0 )2
+
+> M
+
+X
+
+> m=M0+1
+
+bwm
+
+1 − bτM0
+
+(μ∗ 
+
+> (m)
+
+− μ)
+
+! 2
+
+= (1 − bτM0 )2 ∥(μ∗( bwF ) − μ)∥2
+
+= (1 − bτM0 )2L∗
+
+> n
+
+( bwF ), (A.80) where bwF =
+
+
+
+0, . . . , 0, bwM0+1 
+
+> 1−bτM0
+
+, . . . , bwM
+
+> 1−bτM0
+
+T
+
+. Thus by (A.73), (A.75), and (A.77)-(A.79), we have 
+
+Cn( bw) − ∥ ϵ∥2 =L∗
+
+> n
+
+( bw) + ∥ bμ( bw) − μ∗( bw)∥2 + Op(L∗1/2 
+
+> n
+
+( bw)) Op(∥ bμ( bw) − μ∗( bw)) + Op(n1/2 + h−2 ep). (A.81) From the definitions of bw and w0, it follows that 
+
+C( bw) − ∥ ϵ∥2 ≤ C(w0) − ∥ ϵ∥2.
+
+By (A.72), (A.74), (A.80), (A.81) and Condition 11, we have (1 − bτM0 )2 = op(1), hence the Theorem 3 has been proved. 
+
+Proof of Corollary 1 
+
+43 Notice that 
+
+bμi( bw) − μi =
+
+> M0
+
+X
+
+> m=1
+
+bwm(bμ(m)i − μi) + 
+
+> M
+
+X
+
+> m=M0+1
+
+bwm(bμ(m)i − μi). (A.82) By Cauchy-Schwarz inequality, we have that (bμi( bw) − μi)2 ≤ 2 |
+
+> M0
+
+X
+
+> m=1
+
+bwm(bμ(m)i − μi)|2 + |
+
+> M
+
+X
+
+> m=M0+1
+
+bwm(bμ(m)i − μi)|2
+
+!
+
+. (A.83) Next, we need to prove that the two terms of right hand side of (A.83) are both op(1). For the quasi-correct models among the candidates, according to Lemma 3, condition 4, and condition 11, we have 
+
+|
+
+> M0
+
+X
+
+> m=1
+
+bwm(bμ(m)i − μi)|2
+
+≤
+
+> M0
+
+X
+
+> m=1
+
+|XT(m)i( bβ(m)(si) − β(m)(si)) |2
+
+≤
+
+> M0
+
+X
+
+> m=1
+
+∥X(m)i∥2∥ bβ(m)(si) − β(m)(si)∥2
+
+=Op(ξF /n )Op(ξ−1 
+
+> F
+
+M0 ep4 + ξ−1 
+
+> F
+
+h−2M0 ep2 + ξ−1 
+
+> F
+
+nM 0 ep2¯h4)=op(1) . (A.84) By Cauchy-Schwarz inequality, we have that 
+
+|
+
+> M
+
+X
+
+> m=M0+1
+
+bwm(bμ(m)i − μi)|2 ≤ 2|
+
+> M
+
+X
+
+> m=M0+1
+
+bwm(bμ(m)i − μ∗
+
+> (m)i
+
+)|2 + 2 |
+
+> M
+
+X
+
+> m=M0+1
+
+bwm(μ∗ 
+
+> (m)i
+
+− μi)|2.
+
+(A.85) Following an argument similar to that in (A.84), and applying Lemma 3, Condition 4, and Condition 11, we have that 
+
+|
+
+> M
+
+X
+
+> m=M0+1
+
+bwm(bμ(m)i − μ∗
+
+> (m)i
+
+)|2
+
+≤(1 − bτM0 )2
+
+> M
+
+X
+
+> m=M0+1
+
+|XT(m)i( bβ(m)(si) − β∗
+
+> (m)
+
+(si)) |2
+
+≤(1 − bτM0 )2
+
+> M
+
+X
+
+> m=M0+1
+
+∥X(m)i∥2∥ bβ(m)(si) − β∗
+
+> (m)
+
+(si)∥2
+
+=(1 − bτM0 )2Op(ξF /n )Op(ξ−1 
+
+> F
+
+(M − M0)ep4 + ξ−1 
+
+> F
+
+h−2(M − M0)ep2 + ξ−1 
+
+> F
+
+n(M − M0)ep2¯h4)44 =op(1) . (A.86) By Theorem 3 and Condition 10, we can obtain that 
+
+|
+
+> M
+
+X
+
+> m=M0+1
+
+bwm(μ∗ 
+
+> (m)i
+
+− μi)|2
+
+=(1 − bτM0 )2
+
+> M
+
+X
+
+> m=M0+1
+
+bwm
+
+1 − bτM0
+
+(μ∗ 
+
+> (m)i
+
+− μi)
+
+> 2
+
+=op(1) Op(1) =op(1) . (A.87) By (A.86) and (A.87), we have that | PMm=M0+1 bwm(bμ(m)i − μi)|2 = op(1). Along with (A.84), ( bμi( bw) − μi)2 is op(1). Corollary 1 has been proved. 
+
+Proof of Theorem 4 
+
+According to the definition of bσ2  
+
+> M∗
+
+, together with Condition 10, and Condition 11, we have 
+
+bσ2  
+
+> M∗
+
+= Op(1) . (A.88) By replacing Ω with bΩ in the proof of Theorem 3 and following the same steps, Theorem 4 is established. 
+
+Proof of Corollary 2 
+
+Based on Theorem 4 and following the same steps as in the proof of Corollary 1, Corollary 2 is established. 
+
+# References 
+
+Anselin, L. (1988). Spatial Econometrics: Methods and Models. Springer Netherlands .Buckland S T, Burnham K P, Augustin N H. (1997). Model selection: an integral part of inference. Biometrics , 603–618. Brunsdon C, Fotheringham S, Charlton M. (1998). Geographically weighted regression. 
+
+Journal of the Royal Statistical Society: Series D (The Statistician) , 47: 431–443. Brunsdon, C., Fotheringham, A. S., Charlton, M. (1999). Some notes on parametric significance tests for geographically weighted regression. Journal of regional science ,39: 497–524. 45 Comber, A., Brunsdon, C., Charlton, M., Dong, G., Harris, R., Lu, B., ... & Harris, P. (2023). A route map for successful applications of geographically weighted regression. 
+
+Geographical Analysis , 55, 155–178. Comber, A., Wang, Y., L¨ u, Y., Zhang, X., Harris, P. (2018). Hyper-local geographically weighted regression: extending GWR through local model selection and local bandwidth optimization. Journal of Spatial Information Science , 17: 63–84. Fotheringham, A. S., Crespo, R., Yao, J. (2015). Geographical and temporal weighted regression (GTWR). Geographical Analysis , 47: 431–452. Fotheringham, A. S., Yang, W., Kang, W. (2017). Multiscale geographically weighted regression (MGWR). Annals of the American Association of Geographers , 107: 1247– 1265. Guo, C., Zhang, W. (2024). Model-averaging-based semiparametric modeling for condi-tional quantile prediction. Science China Mathematics , 67: 2843–2872. Hansen B E. (2007). Least squares model averaging. Econometrica , 75: 1175–1189. Hansen, B.E., Racine, J.S. (2012). Jackknife model averaging. Journal of Econometrics ,167: 38–46. Hoeting J A, Davis R A, Merton A A, et al. (2006). Model selection for geostatistical models. Ecological Applications , 16: 87–98. Ji A., Li J., Li Q. (2025). Model averaging for spatial autoregressive panel data models. 
+
+Spatial Statistics , 70: 100931. Jiang, B., Lv, J., Li, J., Cheng, M.Y. (2025). Robust model averaging prediction of longi-tudinal response with ultrahigh-dimensional covariates. Journal of the Royal Statistical Society, Series B , 87: 337–361. Kim, M., Wang, L. (2021). Generalized spatially varying coefficient models. Journal of Computational and Graphical Statistics , 30: 1–10. Kim, M., Wang, L., Wang, H.J. (2025). Estimation and inference of quantile spatially varying coefficient models over complicated domains. Journal of the American Statis-tical Association , 120: 1853–1867. Liu, P., Li, J. (2024). Segment regression model average with multiple threshold variables and multiple structural breaks. The Canadian Journal of Statistics , 52: 131–161. 46 Li, J., Lv, J., Wan, A., Liao, J. (2022). Adaboost semiparametric model averaging prediction for multiple categories. Journal of the American Statistical Association ,117: 495–509. Liao, J., Zou, G., Gao, Y. (2019). Spatial Mallows model averaging for geostatistical models. The Canadian Journal of Statistics , 47: 336–351. Liao, J., Zong, X., Zhang, X., Zou, G. (2019). Model averaging based on leave-subject-out cross-validation for vector autoregressions. Journal of Econometrics , 209: 35–60. Miao, X., Fang, F., Zhu, X., Wang, H. (2025). Spatial weights matrix selection and model averaging for multivariate spatial autoregressive models . Econometric Reviews ,in press, https://doi.org/10.1080/07474938.2025.2560637. Mu, J., Wang, J., Wang, L. (2018). Estimation and inference in spatially varying coeffi-cient models. Environmetrics , 29: e2485. Mei, C. L., Xu, M., Wang, N. (2016). A bootstrap test for constant coefficients in ge-ographically weighted regression models. International Journal of Geographical Infor-mation Science , 30: 1622–1643. Seng, L., Li, J. (2022). Structural equation model averaging: methodology and applica-tion. Journal of Business and Economic Statistics , 40: 815-828. Shi, P., Zhang, X., Zhong, W. (2024). Estimating conditional average treatment effects with heteroscedasticity by model averaging and matching. Economics Letters , 238, 111679. Tobler, W.R. (1970). A computer movie simulating urban growth in the detroit region. 
+
+Economic geography , 46: 234–240. Whittle P. (1960). Bounds for the moments of linear and quadratic forms in independent variables. Theory of Probability & Its Applications , 5: 302–305. Wang, S., Fang, C., Ma, H., Wang, Y., Qin, J. (2014). Spatial differences and multi-mechanism of carbon footprint based on GWR model in provincial China. Journal of Geographical Sciences , 24: 612–630. Wang, Y., Zhang, X., Huang, C. (2009). Spatial variability of soil total nitrogen and soil total phosphorus under different land uses in a small watershed on the Loess Plateau, China. Geoderma , 150, 141–149. 47 Wan, A. T., Zhang, X., Zou, G. (2010). Least squares model averaging by Mallows criterion. Journal of Econometrics , 156: 277–283. Yang, Y., Dogan, O., Taspinar, S. (2022). Model selection and model averaging for matrix exponential spatial models. Econometric Reviews , 41: 827–858. Yu, S., Wang, G., Wang, L. (2025). Distributed heterogeneity learning for generalized partially linear models with spatially varying coefficients. Journal of the American Statistical Association , 120: 779–793. Yu, S., Wang, Y., Wang, L., Gao, L. (2022). Spatiotemporal autoregressive partially linear varying coefficient models. Statistica Sinica , 32: 2119–2146. Zhu, R., Wan, A. T. K., Zhang, X., Zou, G. (2019). A Mallows-type model averaging estimator for the varying-coefficient partially linear model. Journal of the American Statistical Association , 114: 882–892. Zhang, X., Yu, J. (2018). Spatial weights matrix selection and model averaging for spatial autoregressive models. Journal of Econometrics , 203: 1–18. Zhang, X., Zou, G., Liang, H., Carroll, R.J. (2020). Parsimonious model averaging with a diverging number of parameters. Journal of the American Statistical Association , 115: 972–984. 48

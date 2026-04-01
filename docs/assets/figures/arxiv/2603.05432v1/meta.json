@@ -1,0 +1,86 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-001.webp",
+      "caption": "Figure 4. Scatter plots comparing expected accuracy of two prompt templates for all datasets and models. Color indicates product ensemble (token-level SMC) expected accuracy. Points with higher alpha indicate cases where the ensemble exceeds the best single template. Marker size scales with the improvement margin.",
+      "page": 25,
+      "index": 1,
+      "width": 803,
+      "height": 531
+    },
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-002.webp",
+      "caption": "Figure 5. Particle study for JSON. We evaluate the approximation quality estimate E[log Ẑ] as a function of the number of particles being used for SMC.",
+      "page": 26,
+      "index": 2,
+      "width": 1007,
+      "height": 432
+    },
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-003.webp",
+      "caption": "Figure 6. Particle study for BBH. We evaluate the approximation quality estimate E[log Ẑ] as a function of the number of particles being used for SMC.",
+      "page": 26,
+      "index": 3,
+      "width": 1007,
+      "height": 432
+    },
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-004.webp",
+      "caption": "Figure 1. Prompt intersection on GPT-2. We generate 200 strings from the normalized token-level product of “My favorite physicist is” and “My favorite author is” prompts, then score each under the local ensemble pens,local (string probabilities emerging from locally normalized token-level product ensembling) and global ensemble pens,global (normalized product of string probabilities). Left: scatter plot of log probabilities with color indicating the generated strings’ global probability relative to their local ones. We also plot completions from the author prompt ( ) and the physicist prompt ( ) that don’t overlap with the ensemble’s completions ( ). Right: Correlation with the explicitly formulated intersection constraint probability p(· | “My favorite physicist and author is”).",
+      "page": 2,
+      "index": 4,
+      "width": 753,
+      "height": 339
+    },
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-005.webp",
+      "caption": "Figure 10. Relationship between expected accuracy and the estimated log marginal likelihood, log Ẑ, on SPIDER for all models. Each datapoint represents (sample, particle) configurations aggregated across seeds. Both metrics are z-scored per example to normalize for variations in problem difficulty and scale. Points are colored by the number of particles used for estimation. Marginal plots display the kernel density estimates for the respective axes. The grey line and shaded band indicate a linear regression fit with a 95% confidence interval. Pearson correlation coefficients ρ are annotated in the top-left (∗∗∗p < 0.001, ∗p < 0.05).",
+      "page": 29,
+      "index": 5,
+      "width": 1001,
+      "height": 629
+    },
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-006.webp",
+      "caption": "Figure 9. Relationship between expected accuracy and the estimated log marginal likelihood, log Ẑ, on BBH for all models. Each datapoint represents (sample, particle) configurations aggregated across seeds. Both metrics are z-scored per example to normalize for variations in problem difficulty and scale. Points are colored by the number of particles used for estimation. Marginal plots display the kernel density estimates for the respective axes. The grey line and shaded band indicate a linear regression fit with a 95% confidence interval. Pearson correlation coefficients ρ are annotated in the top-left (∗∗∗p < 0.001, ∗p < 0.05).",
+      "page": 28,
+      "index": 6,
+      "width": 1001,
+      "height": 629
+    },
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-007.webp",
+      "caption": "Figure 3. Representative relationship between expected accuracy and the estimated log marginal likelihood, log Ẑ, on BBH for Llama. Each datapoint represents (sample, particle) configurations aggregated across seeds. Both metrics are z-scored per example to normalize for variations in problem difficulty and scale. Points are colored by the number of particles used for estimation. Marginal plots display the kernel density estimates for the respective axes. The grey line and shaded band indicate a linear regression fit with a 95% confidence interval. Pearson correlation coefficients ρ are annotated in the top-left (∗∗∗p < 0.001, ∗p < 0.05).",
+      "page": 8,
+      "index": 7,
+      "width": 1001,
+      "height": 247
+    },
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-008.webp",
+      "caption": "Figure 8. Relationship between expected accuracy and the estimated log marginal likelihood, log Ẑ, on JSON for all models. Each datapoint represents (sample, particle) configurations aggregated across seeds. Both metrics are z-scored per example to normalize for variations in problem difficulty and scale. Points are colored by the number of particles used for estimation. Marginal plots display the kernel density estimates for the respective axes. The grey line and shaded band indicate a linear regression fit with a 95% confidence interval. Pearson correlation coefficients ρ are annotated in the top-left (∗∗∗p < 0.001, ∗p < 0.05).",
+      "page": 27,
+      "index": 8,
+      "width": 1001,
+      "height": 629
+    },
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-009.webp",
+      "caption": "Figure 7. Particle study for SPIDER. We evaluate the approximation quality estimate E[log Ẑ] as a function of the number of particles being used for SMC.",
+      "page": 27,
+      "index": 9,
+      "width": 1003,
+      "height": 430
+    },
+    {
+      "url": "assets/figures/arxiv/2603.05432v1/fig-010.webp",
+      "caption": "Table 5. Table reporting expected ensemble and base model accuracy at equal model weights, 10 particles with 95% confidence intervals evaluated across 5 seeds. For cross-model ensembling, we choose the prompt which has the best overall average base performance across models.",
+      "page": 24,
+      "index": 10,
+      "width": 971,
+      "height": 723
+    }
+  ]
+}

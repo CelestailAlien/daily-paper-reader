@@ -1,0 +1,78 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.04772v1/fig-001.webp",
+      "caption": "Fig. 3: Overview of existing work and our proposed TSEmbed.",
+      "page": 6,
+      "index": 1,
+      "width": 725,
+      "height": 222
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04772v1/fig-002.webp",
+      "caption": "Fig. 1: Impact of task conflict on model performance. Red annotations (↓) indicate the performance drop when switching from task-specific models to the unified VLM2VEC.",
+      "page": 2,
+      "index": 2,
+      "width": 695,
+      "height": 212
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04772v1/fig-003.webp",
+      "caption": "Table 1: Performance comparison of various multimodal embedding models on the MMEB [16]. Bold and underlined values denote the best and second-best results within each parameter scale, respectively. † indicates a link to the model’s official homepage.",
+      "page": 10,
+      "index": 3,
+      "width": 716,
+      "height": 858
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04772v1/fig-004.webp",
+      "caption": "Fig. 8: Impact of layer coverage on EANS routing aggregation. We evaluate the effect of aggregating router distributions from 25%, 50%, 75%, and 100% of layers.",
+      "page": 14,
+      "index": 4,
+      "width": 702,
+      "height": 191
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04772v1/fig-005.webp",
+      "caption": "Fig. 2: A Multidimensional Anatomy of Task Conflict in Monolithic Adapters. (a) Divergent optimization trajectories of isolated task-specific adapters. (b) Heterogeneous convergence dynamics of individual tasks during training. (c) Layer-wise cosine similarity between the jointly trained adapter and its isolated counterparts.",
+      "page": 3,
+      "index": 5,
+      "width": 700,
+      "height": 193
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04772v1/fig-006.webp",
+      "caption": "Table 3: Ablation study of TSEmbed. ✓/✗ indicate enabled/disabled modules.",
+      "page": 13,
+      "index": 6,
+      "width": 642,
+      "height": 330
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04772v1/fig-007.webp",
+      "caption": "Fig. 7: Impact of expert number N on model performance. We evaluate N ∈ {2, 4, 6, 8} across four meta-task categories on both 2B and 7B models.",
+      "page": 13,
+      "index": 7,
+      "width": 702,
+      "height": 190
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04772v1/fig-008.webp",
+      "caption": "Fig. 5: Sensitivity analysis of the EANS decay parameter σ. We evaluate the impact of σ on four meta-task categories using both 2B and 7B models.",
+      "page": 12,
+      "index": 8,
+      "width": 706,
+      "height": 184
+    },
+    {
+      "url": "assets/figures/arxiv/2603.04772v1/fig-009.webp",
+      "caption": "Fig. 6: Sensitivity analysis of the warm-up duration Twarmup. We evaluate the impact of Twarmup on four meta-task categories using both 2B and 7B models.",
+      "page": 12,
+      "index": 9,
+      "width": 707,
+      "height": 185
+    }
+  ]
+}

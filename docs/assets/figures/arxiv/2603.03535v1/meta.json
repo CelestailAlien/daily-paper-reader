@@ -1,0 +1,70 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.03535v1/fig-001.webp",
+      "caption": "Figure 6: Sparsity of Learned Ensembling Coefficients. The LP solution leads to a sparse set of coefficients, with only 30% of the λi being nonzero. This figure illustrates the distribution of learned coefficients across experts.",
+      "page": 21,
+      "index": 1,
+      "width": 660,
+      "height": 384
+    },
+    {
+      "url": "assets/figures/arxiv/2603.03535v1/fig-002.webp",
+      "caption": "Figure 1: Model fusion of parameter-efficient experts for task-agnostic multi-task learning. (a): We use a publicly available library of LoRA experts, each fine-tuned independently on Flan v2 tasks from the same Phi-2 pretrained LLM (Ostapenko et al., 2024). These experts provide a diverse foundation for multi-task learning. (b): Comparison of three model fusion approaches and their trade-offs. Ensembling aggregates outputs from the independent experts at inference. Merging fuses expert weights into a single model via parameter averaging. Routing extends merging by making the weight combination input-dependent, adapting to each input dynamically.",
+      "page": 2,
+      "index": 2,
+      "width": 946,
+      "height": 368
+    },
+    {
+      "url": "assets/figures/arxiv/2603.03535v1/fig-003.webp",
+      "caption": "Figure 7: Performance as a function of the number of experts used in routing. The figure will illustrate diminishing returns and the elbow point where reducing experts retains near-optimal performance.",
+      "page": 22,
+      "index": 3,
+      "width": 567,
+      "height": 332
+    },
+    {
+      "url": "assets/figures/arxiv/2603.03535v1/fig-004.webp",
+      "caption": "Figure 4: Performance comparison between private and MBC experts across different model fusion approaches.",
+      "page": 18,
+      "index": 4,
+      "width": 586,
+      "height": 337
+    },
+    {
+      "url": "assets/figures/arxiv/2603.03535v1/fig-005.webp",
+      "caption": "Table 1: Task assignments for clusters 1–5 obtained through Model-Based Clustering (MBC).",
+      "page": 23,
+      "index": 5,
+      "width": 1031,
+      "height": 1059
+    },
+    {
+      "url": "assets/figures/arxiv/2603.03535v1/fig-006.webp",
+      "caption": "Figure 5: Comparison of multi-task test loss across different ensembling and merging strategies. Ensembling probabilities outperforms ensembling logits, confirming that averaging probabilities leads to better calibration. Similarly, full-rank merging slightly outperforms low-rank merging. Error bars indicate standard error over tasks.",
+      "page": 19,
+      "index": 6,
+      "width": 655,
+      "height": 386
+    },
+    {
+      "url": "assets/figures/arxiv/2603.03535v1/fig-007.webp",
+      "caption": "Table 2: Task assignments for clusters 6–10 obtained through Model-Based Clustering (MBC) (continued).",
+      "page": 24,
+      "index": 7,
+      "width": 1047,
+      "height": 1096
+    },
+    {
+      "url": "assets/figures/arxiv/2603.03535v1/fig-008.webp",
+      "caption": "Figure 3: Mode connectivity analysis in the multi-task setting. For each subplot, we interpolate between two experts (A1, B1) and (A2, B2), independently fine-tuned on separate tasks T1 and T2 from the Flan v2 dataset (Longpre et al., 2023). We evaluate the performance of the interpolated model (Aα = (1− α)A1 + αA2, Bα = (1− α)B1 + αB2) on the combined datasets that contains both tasks T1 + T2, with α ∈ [0, 1] shown on the x-axis. Let MO1 and MO2 represent the oracle experts that are best for tasks T1 and T2, respectively. Then the solid pink line represents the average performance of MO1 and MO2 on the combined dataset, where we use the best expert for each input. Our results demonstrate that careful expert selection outperforms linearly merging experts on multiple pairs of tasks.",
+      "page": 9,
+      "index": 8,
+      "width": 682,
+      "height": 441
+    }
+  ]
+}

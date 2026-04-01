@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.18113v1/fig-001.webp",
+      "caption": "Figure 4: Winrates of VC-soup against baselines on Anthropic-HH (a,b) and BeaverTails (c,d).",
+      "page": 6,
+      "index": 1,
+      "width": 506,
+      "height": 462
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18113v1/fig-002.webp",
+      "caption": "Figure 8: Case Study.",
+      "page": 11,
+      "index": 2,
+      "width": 502,
+      "height": 670
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18113v1/fig-003.webp",
+      "caption": "Figure 6: L2 distance and cosine similarity between VS/VC vectors across layers.",
+      "page": 7,
+      "index": 3,
+      "width": 506,
+      "height": 384
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18113v1/fig-004.webp",
+      "caption": "Table 1: Three-value alignment performance.",
+      "page": 7,
+      "index": 4,
+      "width": 448,
+      "height": 275
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18113v1/fig-005.webp",
+      "caption": "Figure 2: The framework of VC-soup.",
+      "page": 3,
+      "index": 5,
+      "width": 506,
+      "height": 336
+    },
+    {
+      "url": "assets/figures/arxiv/2603.18113v1/fig-006.webp",
+      "caption": "Figure 9: Prompt template for GPT-4 response evaluation.",
+      "page": 12,
+      "index": 6,
+      "width": 502,
+      "height": 558
+    }
+  ]
+}

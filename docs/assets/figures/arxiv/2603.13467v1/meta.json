@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.13467v1/fig-001.webp",
+      "caption": "Table 1. Resolving Interference (RI) consistently improves existing merging techniques on the popular 8/14/20 task vision benchmarks. Achieving up to 10% improvement on TA and pushing SOTA merging techniques like TSV-M by up to 3.8%. Each entry reports average accuracy. In line with our focus on the task-data–free setting where tuning merging hyperparameters is not possible, we make use of the recommended defaults for all merging baselines with and without RI.",
+      "page": 6,
+      "index": 1,
+      "width": 791,
+      "height": 533
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13467v1/fig-002.webp",
+      "caption": "Table 2. Resolving Interference (RI) improves generalization performance of merging techniques on unseen domains by upto 2.3%, while improving by up to 3.9% compared to the task-expert models. Each dataset is split into two parts (denoted Split-0 (S-0) and Split-1 (S-1)), and the performance of original split-specific experts is reported in the top grey rows.",
+      "page": 7,
+      "index": 2,
+      "width": 771,
+      "height": 517
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13467v1/fig-003.webp",
+      "caption": "Figure B.1. What makes a good source of auxiliary data for RI?",
+      "page": 14,
+      "index": 3,
+      "width": 813,
+      "height": 300
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13467v1/fig-004.webp",
+      "caption": "Figure 4. What makes a good source of auxiliary data for RI? RI benefits from a wide range of auxiliary sources, including synthetic and real data, as long as they exhibit sufficient visual diversity. While gains are observed across all sources, datasets that are closer to the target task distribution yield the largest improvements, with task data (oracle) providing the strongest performance.",
+      "page": 8,
+      "index": 4,
+      "width": 396,
+      "height": 414
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13467v1/fig-005.webp",
+      "caption": "Figure 3. The Twin-Distillation loss (Eq.4) on auxiliary data reduces sharply (left), followed by a similar decline in the cross-task interference of the merged model measured on task-specific data (middle), which leads to significant improvement when using existing merging techniques(right).",
+      "page": 8,
+      "index": 5,
+      "width": 917,
+      "height": 271
+    },
+    {
+      "url": "assets/figures/arxiv/2603.13467v1/fig-006.webp",
+      "caption": "Figure 2. Resolving Interference (RI) for the dog classifier involves passing unlabeled auxiliary images through (i) the frozen pretrained backbone f(θ0), (ii) the frozen dog classifier f(θ0 + τdog), and (iii) a trainable copy f(θ0 + τ∗ dog). A twin distillation loss preserves output distribution across the dog head hdog while forcing output across all other heads (e.g., hcat) to match the pretrained backbone, producing an adapted task vector τ∗ dog. The same adaptation strategy is repeated for all expert models.",
+      "page": 5,
+      "index": 6,
+      "width": 865,
+      "height": 292
+    }
+  ]
+}

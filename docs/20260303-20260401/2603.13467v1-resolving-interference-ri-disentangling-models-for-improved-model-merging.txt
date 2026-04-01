@@ -1,0 +1,515 @@
+Title: Resolving Interference (RI): Disentangling Models for Improved Model Merging
+
+URL Source: https://arxiv.org/pdf/2603.13467v1
+
+Published Time: Tue, 17 Mar 2026 00:17:18 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# Resolving Interference ( RI ): Disentangling Models for Improved Model Merging 
+
+Pratik Ramesh 1 George Stoica 1 2 Arun Iyer 3 Leshem Choshen 4 5 Judy Hoffman 1 6 
+
+## Abstract 
+
+Model merging has shown that multitask models can be created by directly combining the parameters of different models that are each specialized on tasks of interest. However, models trained independently on distinct tasks often exhibit interference that degrades the merged model’s performance. To solve this problem, we formally define the notion of Cross-Task Interference as the drift in the representation of the merged model relative to its constituent models. Reducing cross-task interference is key to improving merging performance. To address this issue, we propose our method Resolving Interference (RI) , a light-weight adaptation framework which disentangles expert models to be functionally orthogonal to the space of other tasks, thereby reducing cross-task interference. RI does this whilst using only unlabeled auxiliary 
+
+data as input (i.e., no task-data is needed), allowing it to be applied in data-scarce scenarios. RI consistently improves the performance of state-of-the-art merging methods by up to 
+
+3.8% and generalization to unseen domains by up to 2.3% . We also find RI to be robust to the source of auxiliary input while being significantly less sensitive to tuning of merging hyperparameters. Our codebase is available at: https://github.com/pramesh39/resolving interference 
+
+## 1. Introduction 
+
+Model merging has achieved remarkable success in recent years, showing that multitask models can be constructed by directly combining the parameters of independently trained specialist models (Wortsman et al., 2022; Choshen et al., 2022; Matena & Raffel, 2022; Stoica et al., 2024a;b; Yadav et al., 2023; Ilharco et al., 2023). These models can retain the specializations of their con-
+
+> 1
+
+Georgia Tech 2University of Washington 3Microsoft Research 
+
+> 4
+
+MIT 5IBM Research 6University of California, Irvine. Correspon-dence to: Pratik Ramesh <pramesh39@gatech.edu >.
+
+Preprint. March 17, 2026. 
+
+Figure 1. Resolving Interference ( RI ) is a lightweight adaptation strategy that mitigates cross-task interference, enhancing the per-formance of existing model-merging techniques. 
+
+stituent models (Wortsman et al., 2022; Choshen et al., 2022; Matena & Raffel, 2022; Ilharco et al., 2023; Stoica et al., 2024a), integrate their skills to solve new tasks (Stoica et al., 2024a;b), or even improve out-of-distribution robustness beyond the original models (Rame et al., 2022). However, obtaining these strong merged models is still chal-lenging. Merging quality is dependent on the parameters’ compatibility, the distributions used for pretraining and fine-tuning, and—most critically—the degree of conflicting parameters between the models being merged (Hammoud et al., 2024; Stoica et al., 2024b; Wang et al., 2024a; Ya-dav et al., 2023; Matena & Raffel, 2022; Stoica et al., 2024b; Yu et al., 2024). These conflicts lead the merged model’s output representations to drift away from those of its constituent models—a phenomenon known as “cross-task interference”—and degrade its performance. Existing meth-ods that attempt to reduce interference fall within two broad categories: gradient-free and gradient-based. Gradient-free approaches (e.g., Yadav et al., 2023; Yu et al., 2024; Stoica et al., 2024b) are the most common merging methods, and typically try to reduce interference by operating directly on the parameters themselves in the absence of data. However, 1
+
+> arXiv:2603.13467v1 [cs.LG] 13 Mar 2026 Resolving Interference
+
+ignoring the data inherently limits these approaches, pre-venting gradient-free methods from capturing how model parameters interact with input data. In contrast, gradient-based approaches might alleviate this through optimization and assumed access to data, however, their objectives are not explicitly designed to reduce interference (Yang et al., 2024b; Ortiz-Jimenez et al., 2023). Importantly, these methods rely on the availability of the original data distributions used to train each constituent model incorporated in merging, which may not be realistic in practice, especially when the data is scarce/proprietary. Gradient-free merging approaches also tend to be sensitive to merging hyperparameters which are again tuned on task-specific validation data. There’s also a third category of methods, which involves a mix of merging and routing (Dhasade et al., 2025; Lu et al., 2024; Yang et al., 2024a), that can mitigate interference but with extra capacity but incur additional inference cost and task-specific routing. We ask an existential question: is there a lightweight gradient-based approach that can help reduce cross-task interference without increasing inference cost , and— crucially —without requiring access to the data distributions of the constituent models? We address this challenge by (1) formally defining the notion of cross-task interference, and (2) proposing an adaptation framework that minimizes this objective with just arbitrary auxiliary data, —yielding stronger merged models. Whereas prior work has proposed definitions for quantifying interference, they do not explicitly optimize towards reducing it (Ilharco et al., 2023; Yadav et al., 2023; Yu et al., 2024; Ortiz-Jimenez et al., 2023; Tang et al., 2024; Stoica et al., 2024b). In contrast, our formulation reveals how parameters can be adapted to reduce interference even before they are merged. Building on this insight, we introduce Resolving Interference (RI ), a lightweight adaptation framework that enforces expert models into disjoint functional subspaces, thereby reducing cross-task interference. RI does this using non-task-specific auxiliary data, after which existing merging methods can be applied. Notably, RI improves merging performance over state-of-the-art merging methods across a variety of model scales by up to 3.8% . Moreover, we show that RI -merged models enhance out-of-distribution robustness by up to 
+
+2.3% in the difficult DomainNet benchmark. We further dissect each component of our method through extensive ablation and analysis. Our contributions are summarized as follows: (1) Interfer-ence formalization : We introduce a metric that captures 
+
+cross-task interference , and whose reduction meaningfully minimizes parameter conflicts between models while simul-taneously providing a principled diagnostic for merge quality. (2) Framework : We propose Resolving Interference ( RI ),a framework that efficiently reduces this objective using 
+
+auxiliary data. (3) Empirical results : We show that RI 
+
+helps improve SOTA merging method’s performance by up to 3.8% across diverse benchmarks and model scales, and further enhances out-of-distribution robustness by up to 
+
+2.3% . (4) Analysis : We perform extensive ablations over data sources and optimization strategies, offering practical recommendations for applying RI effectively. 
+
+## 2. Related Works on Merging Interference 
+
+Model Merging. Model merging seeks to integrate inde-pendently trained models into a single unified model. Early studies revealed that models trained from the same initial-ization can be linearly interpolated without increasing test error—a phenomenon known as mode connectivity (Draxler et al., 2018; Garipov et al., 2018; Simsek et al., 2021; Fran-kle et al., 2020; Neyshabur et al., 2020). Subsequent work demonstrated that simple weight averaging not only pre-serves accuracy but can also improve generalization and reduces overfitting (Choshen et al., 2022; Wortsman et al., 2022; Wang et al., 2024a; McMahan et al., 2017; Rame et al., 2024; 2022). Building on these findings, Ilharco et al. (2023) introduced the concept of a task vector —the differ-ence between fine-tuned and pretrained weights that captures task-specific knowledge. Task vectors can be merged and then added back to the pretrained weight to produce a unified model, while keeping the pretrained backbone untouched to preserve its original capabilities. This task-vector paradigm has since gained widespread traction and inspired a range of more advanced merging techniques (Yadav et al., 2023; Yu et al., 2024; Stoica et al., 2024b; Tam et al., 2023; Wang et al., 2024c;b). 
+
+Reducing Interference. A key challenge in merging models trained on distinct tasks is cross-task interference (Ortiz-Jimenez et al., 2023), where the output representations of the merged model drift away from those of the constituent experts. To address this problem, a variety of gradient-free ,
+
+gradient-based , and routing-based adaptation strategies have been proposed. Gradient-free methods attribute interference to noisy, low-magnitude gradient updates and mitigate it by pruning such updates (Yadav et al., 2023; Yu et al., 2024; Sun et al., 2025), or by explicitly aligning task vectors (Stoica et al., 2024b; Gargiulo et al., 2025; Marczak et al., 2025; Choi et al., 2024). Gradient-based approaches include Fisher-weighted averaging (Matena & Raffel, 2022) and the learning of redundant vectors that, when subtracted from other task vectors, reduce interference (Xiong et al., 2024); These methods typically assume access to task-specific data and leverage it during adaptation. Other gradient-based techniques, such as Adamerging (Yang et al., 2024b), learn task- or layer-specific scaling coefficients and complement other interference-reduction methods. Prior gradient-based approaches assume access to task-2Resolving Interference 
+
+specific data, which may not be available due to privacy rea-sons or when operating in data-scarce scenarios. To address this problem, our work proposes a lightweight adaptation strategy that operates with any task-agnostic, unlabeled, aux-iliary data to adapt expert models into orthogonal subspaces. Our method is not a merging method by itself but rather an adaptation framework which enhances the performance of other existing merging techniques. 
+
+## 3. Problem Setup 
+
+Problem Setting . We assume access to a collection of finetuned expert models, that specialize in distinct tasks (e.g., classifying breeds of dogs; breeds of cats). Each model is composed of: (1) a backbone and (2) a head specific to the task (i.e., “task-head”). Heads can be as simple as a linear-layer or complex neural networks. We assume that all models share the same backbone architecture and initialization, whereas their respective heads are custom-built for each task. Our goal is to merge these backbones into a single one capable of being paired with 
+
+any task-head and solve its respective task. We operate in a data-scarce setting, where we do not have access to the data distributions from any tasks, not even validation data. 
+
+Notation. We assume access to a collection of N finetuned 
+
+expert models and denote each model’s backbone by f (x|θ)
+
+where x is a sample from some data distribution, and θ
+
+parameterizes f . Additionally, we denote a task-head as a function h, and the model finetuned on the ith task using dataset Di ∼ Pi as hi(f (x|θi)) . Altogether, the set of our models is given by,  hi(f (·| θi)) Ni=1 . Let θ0 be the shared initialization. Following Ilharco et al. (2023), we separate the finetuning specialization of model-i on task-i from θ0
+
+into a “task-vector”: τi = θi − θ0. Given the set of all task-vectors from all models, {τ1, . . . , τ N }, a merging method M
+
+produces a single “merged-vector”: τm = M (τ1, . . . , τ N ).We then obtain the merged backbone with the following operation: θm = θ0 + τm. For all task-evaluations, we couple θm with the respective task head hi: hi(f (x|θm)) .
+
+## 4. Cross-Task Interference 
+
+Directly merging models that are finetuned on distinct tasks often results in significant performance degradation when evaluating the merged model on each constituent task (Yadav et al., 2023; Yu et al., 2024; Ortiz-Jimenez et al., 2023; Wang et al., 2024a; Stoica et al., 2024b;a). This conflict occurs because the learned features in one model may overwrite the features in a second when combined. For example, suppose we would like to merge a model that classifies different breeds of cats with one that specializes in distinguishing between different breeds of dogs. Ideally, the merged model should be able to identify cat or dog breeds with the same efficacy as its constituent models. However, the parameter-values representing the features useful for classifying cats may be distorted by those necessary for differentiating dogs, resulting in a merged model whose output representations fail to classify either correctly. This interference between features is known as “cross-task interference”, and mitigating it is of paramount importance for successful merging (Stoica et al., 2024a; Ortiz-Jimenez et al., 2023). Developing a quantitative measure for this interference is therefore crucial for evaluating mitigation techniques by work to date. 
+
+Cross-Task Interference (ξ). We propose to measure cross-task interference as the deviation between the representations of the merged model and each task-expert model, when evaluated on its respective task: 
+
+ξ({θi}Ni=1 , θ m) = 
+
+> N
+
+X
+
+> i=1
+
+Ex[dist (hi(f (x|θi)) , h i(f (x|θm)))] ,
+
+(1) where “dist” is a distance metric that quantifies the output representation difference between the merged model and the respective individual model. Depending on the setting, “dist” can take many forms (e.g., KL-Divergence in classification to compare the estimated probability distributions between models). Note that ξ = 0 is a sufficient condition to guaranteeing that a merged model performs equally well to each of its constituent models, when evaluated on their respective tasks. 
+
+Relation to other interference metrics . ξ may appear similar to the “disentanglement-error” introduced by (Ortiz-Jimenez et al., 2023), which measures how scaling the parameters of each task-expert affects the representations of the merged model. However, our definition of interference explicitly compares the representations of the merged model to those of the original task-experts. 
+
+## 5. Resolving Interference ( RI )
+
+One way to ensure that the merged backbone θm = θ0 + τm
+
+minimizes ξ is by making sure each of the constituent task vectors τi incorporated into τm are functionally orthogonal 
+
+to the heads of other tasks. Specifically, each τi can be adapted to a τ ∗ 
+
+> i
+
+, where (1) τ ∗ 
+
+> i
+
+only influences the output representations across hi when evaluated on Di, and (2) τ ∗
+
+> i
+
+has no influence when evaluated across the heads and data of other tasks. This functionality can be achieved by enforcing the following constraints: 
+
+h(f (x|θ0+τ ∗ 
+
+> i
+
+) = 
+
+(
+
+h(f (x|θ0 + τi)) , x ∈ Di, h = hi
+
+h(f (x|θ0)) , x ∈ Dj, h = hj , ∀j̸ = i
+
+(2) Thus, τ ∗ 
+
+> i
+
+mimics τi under its task-head and data: hi(f (x|θ0 +
+
+τ ∗ 
+
+> i
+
+) = hi(f (x|θ0 + τi)) when x ∈ Di, we refer to this as task-preservation objective. Similarly, hj (f (x|θ0 + τ ∗ 
+
+> i
+
+)) = 
+
+hj (f (x|θ0)) when x ∈ Dj, ∀j̸ = i ensures that τ ∗ 
+
+> i
+
+bears no 3Resolving Interference 
+
+Algorithm 1: Resolving Interference (RI)                                                                           
+
+> Input: Shared initialization θ0, task-vectors {τi}Ni=1 , task heads {hi}Ni=1 , auxiliary dataset Daux ,hyperparameter α, merging method M
+> Output: Merged model θm
+> for i∈ { 1, . . . , N }do
+> Initialize τ∗
+> i←τi;
+> while not converged do
+> Sample x∼Daux ;
+> // task-preservation loss
+> L1←dist [hi(f(x|θ0+τi)) , h i(f(x|θ0+τ∗
+> i))] ;
+> // interference-reduction loss
+> L2←PNj=1 ,j ̸=idist [hj(f(x|θ0)) , h j(f(x|θ0+τ∗
+> i))] ;
+> // RI loss
+> LRI ← L 1+α
+> N−1L2;Update τ∗
+> ivia gradient descent on L;
+> end end
+> // Merge the adapted task-vectors
+> τm←M(τ∗
+> 1, . . . , τ ∗
+> N);
+> θm←θ0+τm;
+> return θm
+
+influence on the output representations of the other task-heads, we refer to this as interference-reduction objective. However, we cannot directly solve Eq. 2 because we do not 
+
+assume access to any task-data Di in our setting. Thus, we propose to alter it to instead be defined over any 1 accessible auxiliary data x ∈ Daux :
+
+h(f (x|θ0+τ ∗ 
+
+> i
+
+) = 
+
+(
+
+h(f (x|θ0 + τi)) , x ∈ Daux , h = hi
+
+h(f (x|θ0)) , x ∈ Daux , h = hj , ∀j̸ = i
+
+(3) While constraining on Daux no longer guarantees that τ ∗
+
+> i
+
+is an exact solution to Eq. 2, we find this constraint to be sufficient in practice. Empirically, enforcing this condition significantly reduces cross-task interference ξ, as illustrated in Figure 3. In practice, we solve Eq. 3 by optimizing the following loss objective, which we refer to as the Resolving Interference Loss or simply RI Loss (LRI ): 
+
+L1 = dist [hi(f (x|θ0 + τi)) , h i(f (x|θ0 + τ ∗ 
+
+> i
+
+))] ,
+
+L2 =
+
+> N
+
+X 
+
+> j=1 ,j ̸=i
+
+dist [hj (f (x|θ0)) , h j (f (x|θ0 + τ ∗ 
+
+> i
+
+))] .
+
+LRI (x ∈ Daux , θ 0, τ i, τ ∗ 
+
+> i
+
+) = L1 + α
+
+N − 1 L2,
+
+(4) It is trivial to observe that achieving L1 = 0 in Eq. 4 would help satisfy the task-preservation objective indicated by the 
+
+> 1We ablate different data choices in Section 8.
+
+blue component in Eq. 3, similarly achieving L2 = 0 in Eq. 4 would help satisfy the interference-reduction objective as indicated by the red component in Eq. 3. Correspondingly we term L1 as task-preservation loss and L2 as interference-reduction loss. Where, α controls the trade-off between the two losses. To make α less sensitive to the number of tasks, we normalize L2 by dividing it by N − 1. We found setting 
+
+α = 1 to work well in general and use it by default offering equal importance to both objectives. Once all task vectors have been disentangled with RI with respect to the heads of other tasks, they can then be merged using standard merging techniques. We summarize the our method in Algorithm 1. 
+
+## 6. Experimental Setup 
+
+Models. We make use of CLIP models of different sizes, such as ViT-B/32, ViT-B/16 and ViT-L/14 vision encoders across various classification tasks. The task-specific heads are constructed by concatenating text embeddings obtained from CLIP’s frozen text encoder after processing the class labels of each task. The predicted logits are obtained by a dot product between the embedding from the vision encoder and the class-label embeddings. Following prior work (Gargiulo et al., 2025; Marczak et al., 2025), we make use of model checkpoints across 20 tasks from (Wang et al., 2024c). 
+
+Merging Baselines. We evaluate our adaptation technique 
+
+RI along with other prominent merging techniques such as Weight Averaging (Choshen et al., 2022; Wortsman et al., 2022), Task-Arithmetic (Ilharco et al., 2023), TIES (Yadav et al., 2023), KnOTS-TIES (Stoica et al., 2024b), WUDI (Cheng et al., 2025), TSV-M (Gargiulo et al., 2025), Iso-C (Marczak et al., 2025) and Iso-CTS (Marczak et al., 2025). For simplicity, we refer to ’KnOTS-TIES’ as just ’KnOTS’ throughout this paper. The last few years have seen an overwhelming number of merging techniques being introduced (Wang et al., 2024c; Matena & Raffel, 2022; Jin et al., 2022; Wang et al., 2024b; Tam et al., 2023; Yu et al., 2024). Although the list of merging methods we test against is not exhaustive, we believe it covers a mix of prominent and current state-of-the-art merging techniques. Since our focus in this work is on the data-scarce setting, where we assume no access to task data, we regard all task-data-based adaptation (Yang et al., 2024b) and techniques which require additional capacity or task-specific indexing, such as routing-based strategies (Lu et al., 2024; Yang et al., 2024a), to be out of scope. 
+
+Merging Hyperparameters. We focus on the data-scarce setting, where access to task-specific data is entirely un-available—even for validation. In such cases, we adopt the default merging hyperparameter values recommended in the original works. The list of hyperparameters include scaling coefficient, top -k pruning factor and fraction of common-space. We list the hyperparameters used across different 4Resolving Interference                   
+
+> Figure 2. Resolving Interference ( RI )for the dog classifier involves passing unlabeled auxiliary images through (i) the frozen pretrained backbone f(θ0), (ii) the frozen dog classifier f(θ0+τdog ), and (iii) a trainable copy f(θ0+τ∗
+> dog ). A twin distillation loss preserves output distribution across the dog head hdog while forcing output across all other heads (e.g., hcat ) to match the pretrained backbone, producing an adapted task vector τ∗
+> dog . The same adaptation strategy is repeated for all expert models.
+
+merging methods, depending on the number of tasks being merged, in the Appendix. We later discuss in Section.8 how models adapted with RI are significantly less sensitive to tuning. 
+
+Resolving Interference ( RI ). In order to optimize over the RI loss (Eq.4) we choose KL-divergence as the distance metric. We analyze a bunch of other metrics choices in Sec.8 and find KL-Divergence to be the most effective. For the source of auxiliary data we use unlabeled images from the ImageNet (Deng et al., 2009) dataset. We find setting the hyperparameter α in Eq. 4 to its default value 1.0 leads to stable interference resolution. During RI , we use a learning rate of 1e−6 and a weight decay of 1e−4. We stick to this configuration across all our experiments though one may tune them to optimise over the cross-task interference metric in Eq. 4. Further, to make our method lightweight, we apply 
+
+RI for just 2500 training steps across a batch size of 128 for ViT-B/32 and ViT-B/16 models and use a reduced batch size of 32 for ViT-L/14 due to memory constraints. We run all our experiments on Nvidia A40 GPU. 
+
+## 7. Results 
+
+We evaluate the effectiveness of reducing interference using our lightweight adaptation strategy RI . Specifically, we merge expert models with a variety of prominent merging techniques and then assess the multitasking capabilities of the resulting merged model by measuring its performance on each task individually. Our evaluation covers vision benchmarks designed to probe both in-domain accuracy 
+
+and out-of-domain generalization on DomainNet, allowing us to rigorously test the robustness of interference reduction. 
+
+7.1. Merging 8/14/20 Vision Tasks 
+
+We use the image classification benchmark introduced by (Wang et al., 2024c), which evaluates the performance of the merged models across 8/14/20 vision datasets (complete list of tasks in A.3). For the task experts, we use model checkpoints from (Wang et al., 2024c). In Table 1, we report the average accuracy of the merged model with and without RI across ViT-B/32, ViT-B/16 and ViT-L/14 vision transformers. We find RI consistently improves merging methods across the 8/14/20 tasks and across the different model architectures. Notably, we find methods such as Task-Aritimentic (TA) and TIES improve performance by (7.4%, 9.6%, 8.6%) and (5.6%, 8.1%, 9.7%) on ViT-B/32 based (8/14/20) task setting. We also observe significant gains across the state-of-the-art merging methods such as Wudi (+9.6%) , KnOTS (+2.6%) , Iso-C 
+
+(+2.4%) , Iso-CTS (+1.6%) and TSV-M (+3.9%) on the 20-task ViT-B/32 setting. Since cross-task interference becomes a bigger issue with increasing number of tasks, resolving interference ( RI ) is even more effective at scale. Notably, we observe increased gains by (+1.5%, +2.8%, +3.9%) with TSV-M and (+0.2%, +0.9%, +1.6%) with Iso-CTS on the ViT-B/32 (8/14/20) tasks. While improved pre-training and model size are known to alleviate cross-task interference, we continue to observe consistent improvement even across the ViT-B/16 and the larger ViT-L/14 models. The only method which observes little to no gain in performance is simple averaging. This is due to the low scaling coefficient associated with averaging. The TA baseline, which is algorithmically the same as Averaging but uses a higher scaling coefficient in general, results in higher baseline performance and observes a significant boost in performance with the addition of RI . We conduct a detailed analysis in Section B.2 demonstrating the effect of scale on Averaging. 
+
+7.2. Out-of-Domain Generalization on DomainNet 
+
+We evaluate the ability of the merged model to generalize to unseen distributions using the DomainNet dataset, which comprises images across 345 classes of common objects 5Resolving Interference                                                                                                                                                                                              
+
+> Merging Method ViT-B/32 ViT-B/16 ViT-L/14
+> 8 tasks 14 tasks 20 tasks 8 tasks 14 tasks 20 tasks 8 tasks 14 tasks 20 tasks Zero-shot 48.3 57.2 56.1 55.3 61.3 59.7 64.7 68.2 65.2 Finetuned 92.8 90.9 91.3 94.6 92.8 93.2 95.8 94.3 94.7 Averaging 66.1 64.3 61.0 72.3 69.4 65.3 79.5 76.7 71.6
+> Averaging + RI (Ours) 65.7 64.6 61.4 71.3 69.1 64.9 78.9 75.8 71.1 TA 69.2 60.7 56.1 75.2 67.3 63.1 84.8 78.8 73.3 TA + RI (Ours) 76.5 70.3 64.7 81.4 75.9 69.5 87.3 82.1 76.4
+> TIES 73.7 64.7 58.0 79.5 71.2 65.8 86.7 78.7 74.3 TIES + RI (Ours) 79.3 72.8 67.7 84.1 78.4 72.9 89.4 82.6 79.1
+> KnOTS 77.2 72.1 66.7 81.7 77.2 71.1 87.8 81.1 78.8 KnOTS + RI (Ours) 78.4 74.0 69.3 83.1 78.4 73.0 88.4 83.1 79.7
+> WUDI 86.7 78.2 62.3 89.8 82.8 69.5 94.0 89.9 82.8 WUDI + RI (Ours) 88.1 82.3 74.0 90.8 86.1 80.3 94.3 90.5 87.7
+> Iso-C 86.3 79.9 75.1 90.3 84.5 79.5 94.2 89.5 87.7 Iso-C + RI (Ours) 87.0 81.4 77.5 90.8 85.9 82.0 94.3 89.9 88.6
+> Iso-CTS 86.6 81.6 77.7 91.0 86.2 82.2 94.7 91.0 90.0 Iso-CTS + RI (Ours) 86.8 82.5 79.3 91.1 87.0 83.6 94.7 91.0 90.2
+> TSV-M 85.4 79.9 76.5 88.7 84.4 80.4 92.8 89.1 87.7 TSV-M + RI (Ours) 87.0 82.7 80.3 90.0 86.0 83.2 93.5 90.2 89.3
+
+Table 1. Resolving Interference ( RI ) consistently improves existing merging techniques on the popular 8/14/20 task vision benchmarks. Achieving up to 10% improvement on TA and pushing SOTA merging techniques like TSV-M by up to 3.8% . Each entry reports average accuracy. In line with our focus on the task-data–free setting where tuning merging hyperparameters is not possible, we make use of the 
+
+recommended defaults for all merging baselines with and without RI .
+
+across 6 domains/image-styles: real, clipart, infograph, painting, quickdraw, and sketch. We partition each domain into two subsets—Split-0 containing the first 172 classes and Split-1 containing the remaining 173 classes. On each split, an independent CLIP-based ViT-B/32 model is fine-tuned on the real domain. We then test how well the merged model generalizes to the 5 unseen domains. In Table 2, we compare the performance of the merged models—with and without RI —to the individual expert models trained on each split. First, we observe that merging baselines even without RI consistently outperform both the Split-0 and Split-1 expert models, underscoring the enhanced generalization capability achieved via merging. Resolving interference ( RI ) before merging further improves generalization performance even further. In particular, we observe that RI improves the performance of Averaging and TIES by +2.0% and +2.3% , respectively, on average across all the unseen domains. These results suggest that while merging task-vectors across different tasks enhances generalization, it still suffers from cross-task interference. We hypothesize that while RI re-duces interference to an extent by encouraging orthogonality among task-vectors, while the remaining shared representa-tion space facilitates a positive transfer, leading to improved out-of-distribution performance. 
+
+## 8. Ablations & Analysis 
+
+In this section, we provide a comprehensive analysis of 
+
+RI , examining its impact on disentanglement error and investigating different distance metrics for optimizing the RI loss. We further explore an alternative strategy for reducing cross-task interference through distillation on auxiliary data and analyze what characteristics make a dataset a strong source of auxiliary input for RI . Finally, we assess the sensitivity of RI to various hyperparameter tuning objectives. To analyze our method at scale, unless otherwise specified, all experiments are conducted on the challenging 20-vision-task setup introduced in Section 7.1 using ViT-B/32–based expert models. 
+
+Does reducing the RI loss on auxiliary data reduce cross-task interference on task data? We investigate this by optimizing each expert model with the RI loss for 25,000 steps. As shown in Figure 3, the first 1000 steps yield a steep decrease in the RI loss on auxiliary data, which corresponds to a sharp reduction in the cross-task interference of the merged model on task data and leads to improved merging performance. The objective begins to saturate after roughly 2500 steps, providing only marginal gains thereafter. To keep 
+
+RI lightweight, we therefore apply it for only 2500 steps ,which represents the elbow-point in Figure 3 (left). Hence, we stick to adapting for 2500 steps in all our experiments, 6Resolving Interference                                                                                                                                                                                                                                      
+
+> Merging Method Clipart Infograph Painting Quickdraw Sketch Mean(%)
+> S-0 S-1 S-0 S-1 S-0 S-1 S-0 S-1 S-0 S-1 Split-0 model 76.2 70.0 49.3 38.0 67.7 51.9 17.2 18.5 66.3 59.4 51.5 Split-1 model 70.1 73.9 44.7 38.4 64.7 55.6 13.3 17.9 62.0 61.1 50.2 Averaging 76.5 74.7 50.1 40.1 69.2 54.9 16.1 20.0 67.7 62.7 53.2 Averaging + RI (Ours) 79.1 76.3 51.9 46.7 70.7 56.2 18.0 19.7 69.6 64.1 55.2
+> TA 77.5 75.6 51.0 41.0 70.1 55.5 16.9 20.3 68.5 63.6 54.0 TA + RI (Ours) 79.1 75.9 51.9 41.8 70.8 56.1 18.2 19.6 69.8 64.0 54.7
+> TIES 75.5 73.5 48.6 38.8 67.4 54.0 15.0 18.9 66.1 61.5 51.9 TIES + RI (Ours) 78.4 76.3 51.8 40.7 69.7 56.0 17.4 19.3 69.0 63.7 54.2
+> KnOTS 75.8 74.6 48.8 39.5 69.0 54.8 15.0 19.2 66.5 61.9 52.5 KnOTS + RI (Ours) 78.8 76.1 51.3 41.4 71.2 55.8 17.1 19.6 69.3 63.6 54.4
+> WUDI 76.6 74.1 49.8 40.0 69.2 54.7 15.3 19.3 67.2 62.3 52.8 WUDI + RI (Ours) 78.8 75.9 52.0 41.1 71.1 56.2 16.9 19.3 69.2 63.8 54.4
+> Iso-C 79.0 76.3 51.1 41.0 71.4 56.3 17.4 20.4 69.3 63.5 54.6
+> Iso-C + RI (Ours) 79.0 75.9 51.6 41.0 71.6 56.2 17.7 19.8 69.5 63.7 54.6
+> Iso-CTS 78.8 76.1 51.2 40.8 71.0 56.0 17.7 20.4 68.9 63.5 54.5
+> Iso-CTS + RI (Ours) 78.8 75.6 51.6 40.7 71.1 56.0 17.6 19.5 69.4 63.3 54.4 TSV-M 76.4 74.3 49.6 39.5 68.4 54.8 16.0 19.5 67.1 62.3 52.8 TSV-M + RI (Ours) 79.0 76.1 51.9 41.0 70.8 56.2 17.3 19.4 69.2 63.7 54.5
+
+Table 2. Resolving Interference ( RI ) improves generalization performance of merging techniques on unseen domains by upto 2.3% ,while improving by up to 3.9% compared to the task-expert models. Each dataset is split into two parts (denoted Split-0 (S-0) and Split-1 (S-1)), and the performance of original split-specific experts is reported in the top grey rows. 
+
+which balances compute cost and performance. Though if computational resources permit, applying RI for longer can yield additional gains, we observe methods like TSV-M gain an additional 1.8% , reaching 82.1% when adapted for 
+
+25000 steps. We further explore the computational cost and scalability of our method in Section 8. 
+
+Which is the best metric to reduce the RI objective? 
+
+We explore different choices such as Mean-Square-Error (MSE), Cross-Entropy and KL-Divergence. As seen in the Table 3 we observe that all three choices result in improved merging performance, where the KL-divergence based distance measure leads to an average improvement of 2.6% 
+
+across various state-of-the-art merging methods.                     
+
+> Distance Metric TSV-M Iso-C Iso-CTS Average None (Without RI) 76.5 75.1 77.7 76.4
+> RI MSE 78.2 76.7 78.4 77.7
+> Cross-Entropy 79.9 76.3 78.5 78.2
+> KL-Divergence 80.3 77.5 79.3 79.0
+
+Table 3. Comparison of distance metrics used to reduce RI loss on the merging performance. Minimizing KL-Divergence yields the highest improvement across merging methods. 
+
+Can we directly adapt a single merged model using mul-titask distillation on auxiliary data? While RI requires adapting each of the models to be merged individually, we explore an alternative strategy of directly adapting a single merged model by applying the cross-task interference objec-tive from Eq. 1 with auxiliary data. We term this approach 
+
+Merge+Distill Aux . As reported in Table 4, this method yields only marginal gains over standard merging baselines and performs worse than our Merge+ RI approach. We also experiment with adapting the pre-trained model directly using the multi-task distillation objective ( Zero-Shot+Distill 
+
+in Table 4), but observe only limited improvements over the zero-shot performance of the pre-trained model. These results empirically validate that resolving interference within each model prior to merging is more effective than directly distilling the merged model across multiple tasks using auxiliary data. Designing effective multi-task distilla-tion strategies over auxiliary data therefore remains an open problem and a promising direction for future exploration.                   
+
+> ViT-B/32 (20 tasks) Accuracy (%) Zero-Shot 56.1
+> Finetuned 91.3
+> Zero-Shot + Distill 63.5
+> Merging Method Baseline + Distill Aux +RI (Ours) Iso-C 75.1 75.0 77.5
+> Iso-CTS 77.7 76.4 79.3
+> TSV-M 76.5 77.1 80.3
+
+Table 4. Resolving Interference ( RI ) and Merging performs (green) outperforms merging followed by Multitask Distillation using auxiliary data (blue). 
+
+What makes a good source of auxiliary data? In the absence of task data, we evaluate the effectiveness of differ-ent synthetic and real auxiliary data sources for resolving interference, as shown in Figure 4. We report results on the 8-task vision setting described in Section 7.1 using our strongest merging baseline (TSV-M) with results for other merging methods provided in Section B.3. We first consider synthetic sources (Gaussian noise, 7Resolving Interference 
+
+Figure 3. The Twin-Distillation loss (Eq.4) on auxiliary data reduces sharply (left), followed by a similar decline in the cross-task interference of the merged model measured on task-specific data (middle), which leads to significant improvement when using existing merging techniques(right). 
+
+Leaves (Baradad Jurjo et al., 2021), and Shapes21k (Shreiner et al., 2009)), which are relevant in settings where even auxiliary data is unavailable. Despite being semantically unrelated to the downstream tasks, RI yields consistent gains of 0.4%, 0.6% , and 1.1% , respectively. Among these, Leaves and Shapes21k are more effective, likely due to their higher visual diversity and the presence of low-level structures such as edges and curves consistent with the find-ings from prior work (Frank & Davis, 2025). We then evaluate widely used real-world datasets with high visual di-versity—ImageNet (Deng et al., 2009), MSCOCO (Lin et al., 2014), and OpenImages (Kuznetsova et al., 2020)—and ob-serve similar gains of 1.5%, 1.8% , and 1.8% , indicating that RI consistently helps improve merging performance. Finally, using task data as auxiliary data (oracle setting) 
+
+yields the largest improvement of 3.3% , establishing a clear trend: while RI benefits from any visually diverse auxiliary data, sources that are closer to the target task distribution are the most effective.                                                      
+
+> Method Default Tuned on Aux Data Tuned on Task Data Baseline +RI (Ours) Baseline +RI (Ours) Baseline +RI (Ours) TA 56.1 64.7 60.2 63.4 61.3 64.5 TIES 58.0 67.7 61.0 66.1 63.7 68.9 KnOTS 66.7 69.3 62.3 67.8 66.6 70.5 Iso-C 75.1 77.5 67.7 74.6 75.1 77.4 Iso-CTS 77.7 79.3 65.8 70.9 77.8 79.3 TSVM 76.5 80.3 65.9 80.6 76.5 80.6 Mean(%) 68.3 73.1 63.8 71.1 70.1 73.5
+
+Table 5. Sensitivity to hyperparameter tuning. Models adapted with RI are less sensitive to tuning on privileged task-specific validation data, while tuning based on cross-task interference using auxiliary data proves far less effective. 
+
+Are merging methods with RI sensitive to the tuning of merging hyperparameters? It is common practice to tune merging hyperparameters—such as the scaling coefficient or pruning factor—assuming access to privileged, labeled, task-specific validation data. We compare this practice to using default merging hyperparameters, both with and 
+
+Figure 4. What makes a good source of auxiliary data for RI? RI benefits from a wide range of auxiliary sources, including synthetic and real data, as long as they exhibit sufficient visual diversity. While gains are observed across all sources, datasets that are closer to the target task distribution yield the largest improvements, with task data (oracle) providing the strongest performance. 
+
+without RI . As shown in Table 5, experts adapted with RI 
+
+exhibit markedly lower sensitivity to hyperparameter tuning, with only a 0.4% difference in performance on average across six different merging techniques, compared to a 1.8% 
+
+difference for unadapted models. We believe that models with reduced interference benefit from a flatter, more stable optimization landscape, allowing them to generalize well even under default hyperparameter settings and reducing the need for validation-based tuning, which may not be feasible. 
+
+Can the cross-task interference objective on auxiliary data be used to tune merging hyperparameters? Not quite. As shown in Table 5, tuning merging hyperparameters with unlabeled auxiliary data using the cross-task interfer-ence KL objective from Eq. 1 generally performs worse than 8Resolving Interference 
+
+simply using default hyperparameters—both when adapting models with RI and when not. This degradation likely arises from overfitting to the auxiliary input distribution, which may differ substantially from the true task distribu-tion. These findings highlight the need for new, more robust objectives for hyperparameter tuning in scenarios where task-specific validation data is unavailable. We hope the community continues to explore other proxy objectives in the absence of task-specific validation data. 
+
+Compute and Scalability Analysis. Resolving Interfer-ence (RI) is designed to scale efficiently with the number of tasks. Each expert is adapted independently using unlabeled auxiliary data, with no joint optimization across tasks, mak-ing RI embarrassingly parallel across experts. Adapting a single expert requires O(S) backbone forward passes and 
+
+O(N S ) head forward passes, where N is the number of tasks and S the number of training steps. Since task heads are typically much smaller than the backbone network, the additional cost from increasing N is minimal in practice, resulting in sub-linear runtime growth while memory usage remains constant. We profile RI on an NVIDIA A40 GPU with 48 GB VRAM, adapting each expert for 2500 steps (the elbow point of the RI objective). As shown in Table 6, adapting a single ViT-B/32 expert takes just 7 minutes in the 8-task setting and remains under 9 minutes when scaling to 20 tasks, with stable peak memory usage of 4.8 GB across all settings.              
+
+> # Tasks Training Steps Time / Expert Peak GPU Mem.
+> 82500 7m 07s 4.8 GB 14 2500 8m 33s 4.8 GB 20 2500 8m 50s 4.8 GB
+> Table 6. Computational profile of RI measured on an NVIDIA A40 (48 GB VRAM). Each expert is adapted independently. Runtime grows sub-linearly with the number of tasks, while peak memory usage remains constant.
+
+We conduct additional analysis on the amount of auxiliary data needed for RI in Section B.1 and investigate why the baseline Averaging+ RI underperforms in Section B.2. 
+
+## 9. Conclusion 
+
+We formally define the notion of cross-task interference as a principled diagnostic to quantify interference in model merging, capturing the representation mismatch between the merged model and its constituent experts. To minimize this, we propose Resolving Interference (RI ), a lightweight adaptation strategy which adapts expert models into disjoint functional subspaces, thereby reducing cross-task interfer-ence. This helps improve state-of-the-art merging methods by 3.8% on in-domain evaluation and improve generalization by 2.3% on unseen domain, demonstrating its effectiveness. 
+
+## 10. Acknowledgement 
+
+This work was supported in part by the Defense Advanced Research Projects Agency (DARPA) under the TIAMAT program and by the National Science Foundation under Grant No. 2144194 and 2403297. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the supporting organizations. 
+
+## References 
+
+Ba, J. L., Kiros, J. R., and Hinton, G. E. Layer normalization. 
+
+arXiv preprint arXiv:1607.06450 , 2016. Baradad Jurjo, M., Wulff, J., Wang, T., Isola, P., and Torralba, A. Learning to see by looking at noise. Advances in Neural Information Processing Systems , 34:2556–2569, 2021. Bossard, L., Guillaumin, M., and Van Gool, L. Food-101– mining discriminative components with random forests. In European conference on computer vision , pp. 446–461. Springer, 2014. Cheng, G., Han, J., and Lu, X. Remote sensing image scene classification: Benchmark and state of the art. IEEE ,2017. Cheng, R., Xiong, F., Wei, Y., Zhu, W., and Yuan, C. Whoever started the interference should end it: Guiding data-free model merging via task vectors. arXiv preprint arXiv:2503.08099 , 2025. Choi, J., Kim, D., Lee, C., and Hong, S. Revisiting weight averaging for model merging. arXiv preprint arXiv:2412.12153 , 2024. Choshen, L., Venezian, E., Slonim, N., and Katz, Y. Fusing finetuned models for better pretraining. arXiv:2204.03044 ,2022. Cimpoi, M., Maji, S., Kokkinos, I., Mohamed, S., and Vedaldi, A. Describing textures in the wild. In Pro-ceedings of the IEEE conference on computer vision and pattern recognition , 2014. Coates, A., Ng, A., and Lee, H. An analysis of single-layer networks in unsupervised feature learning. In Proceedings of the fourteenth international conference on artificial intelligence and statistics , pp. 215–223. JMLR Workshop and Conference Proceedings, 2011. Cohen, G., Afshar, S., Tapson, J., and Van Schaik, A. Emnist: Extending mnist to handwritten letters. In 2017 interna-tional joint conference on neural networks (IJCNN) , pp. 2921–2926. IEEE, 2017. 9Resolving Interference 
+
+Deng, J., Dong, W., Socher, R., Li, L.-J., Li, K., and Fei-Fei, L. Imagenet: A large-scale hierarchical image database. In 2009 IEEE Conference on Computer Vision and Pattern Recognition , pp. 248–255, 2009. doi: 10.1109/CVPR. 2009.5206848. Dhasade, A., Jhunjhunwala, D., Vujasinovic, M., Joshi, G., and Kermarrec, A.-M. Navigating the accuracy-size trade-off with flexible model merging. arXiv preprint arXiv:2505.23209 , 2025. Draxler, F., Veschgini, K., Salmhofer, M., and Hamprecht, F. Essentially no barriers in neural network energy landscape. In ICML , 2018. Frank, L. and Davis, J. What makes a good dataset for knowledge distillation? In Proceedings of the Computer Vision and Pattern Recognition Conference , pp. 23755– 23764, 2025. Frankle, J., Dziugaite, G. K., Roy, D., and Carbin, M. Linear mode connectivity and the lottery ticket hypothesis. In 
+
+ICML , 2020. Gargiulo, A. A., Crisostomi, D., Bucarelli, M. S., Scarda-pane, S., Silvestri, F., and Rodola, E. Task singular vectors: Reducing task interference in model merging. In Pro-ceedings of the Computer Vision and Pattern Recognition Conference , pp. 18695–18705, 2025. Garipov, T., Izmailov, P., Podoprikhin, D., Vetrov, D. P., and Wilson, A. G. Loss surfaces, mode connectivity, and fast ensembling of dnns. NeurIPS , 2018. Goodfellow, I. J., Erhan, D., Carrier, P. L., Courville, A., Mirza, M., Hamner, B., Cukierski, W., Tang, Y., Thaler, D., Lee, D.-H., et al. Challenges in representation learning: A report on three machine learning contests. In International conference on neural information processing , pp. 117– 124. Springer, 2013. Hammoud, H. A. A. K., Michieli, U., Pizzati, F., Torr, P., Bibi, A., Ghanem, B., and Ozay, M. Model merging and safety alignment: One bad model spoils the bunch. In 
+
+EMNLP , 2024. Helber, P., Bischke, B., Dengel, A., and Borth, D. Eurosat: A novel dataset and deep learning benchmark for land use and land cover classification. JSTARS , 2019. Ilharco, G., Ribeiro, M. T., Wortsman, M., Schmidt, L., Hajishirzi, H., and Farhadi, A. Editing models with task arithmetic. In ICLR , 2023. Jin, X., Ren, X., Preotiuc-Pietro, D., and Cheng, P. Dataless knowledge fusion by merging weights of language models. 
+
+arXiv preprint arXiv:2212.09849 , 2022. Krause, J., Stark, M., Deng, J., and Fei-Fei, L. 3d object representations for fine-grained categorization. In IEEE 3D Representation and Recognition Workshop ICCV ,2013. Krizhevsky, A., Hinton, G., et al. Learning multiple layers of features from tiny images. Technical report, University of Toronto, 2009. Kuznetsova, A., Rom, H., Alldrin, N., Uijlings, J., Krasin, I., Pont-Tuset, J., Kamali, S., Popov, S., Malloci, M., Kolesnikov, A., et al. The open images dataset v4: Uni-fied image classification, object detection, and visual relationship detection at scale. International journal of computer vision , 128(7):1956–1981, 2020. LeCun, Y. The mnist database of handwritten digits. 
+
+http://yann. lecun. com/exdb/mnist/ , 1998. Lin, T.-Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Doll ´ar, P., and Zitnick, C. L. Microsoft coco: Common objects in context. In European conference on computer vision , pp. 740–755. Springer, 2014. Lu, Z., Fan, C., Wei, W., Qu, X., Chen, D., and Cheng, Y. Twin-merging: Dynamic integration of modular exper-tise in model merging. Advances in Neural Information Processing Systems , 37:78905–78935, 2024. Marczak, D., Magistri, S., Cygert, S., Twardowski, B., Bagdanov, A. D., and van de Weijer, J. No task left behind: Isotropic model merging with common and task-specific subspaces. arXiv preprint arXiv:2502.04959 ,2025. Matena, M. and Raffel, C. Merging models with fisher-weighted averaging. In NeurIPS , 2022. McMahan, B., Moore, E., Ramage, D., Hampson, S., and y Arcas, B. A. Communication-efficient learning of deep networks from decentralized data. In Artificial intelligence and statistics . PMLR, 2017. Netzer, Y., Wang, T., Coates, A., Bissacco, A., Wu, B., Ng, A. Y., et al. Reading digits in natural images with unsupervised feature learning. In Deep learning and unsupervised feature learning workshop NeurIPS , 2011. Neyshabur, B., Sedghi, H., and Zhang, C. What is being transferred in transfer learning? NeurIPS , 2020. Nilsback, M.-E. and Zisserman, A. Automated flower classification over a large number of classes. In 2008 Sixth Indian conference on computer vision, graphics & image processing , pp. 722–729. IEEE, 2008. Ortiz-Jimenez, G., Favero, A., and Frossard, P. Task arith-metic in the tangent space: Improved editing of pre-trained models. NeurIPS , 2023. 10 Resolving Interference 
+
+Parkhi, O. M., Vedaldi, A., Zisserman, A., and Jawahar, C. V. Cats and dogs. In CVPR , 2012. Rame, A., Kirchmeyer, M., Rahier, T., Rakotomamonjy, A., Gallinari, P., and Cord, M. Diverse weight averaging for out-of-distribution generalization. NeurIPS , 2022. Rame, A., Vieillard, N., Hussenot, L., Dadashi, R., Cideron, G., Bachem, O., and Ferret, J. WARM: On the benefits of weight averaged reward models. In ICML , 2024. Shreiner, D. et al. OpenGL programming guide: the official guide to learning OpenGL, versions 3.0 and 3.1 . Pearson Education, 2009. Simsek, B., Ged, F., Jacot, A., Spadaro, F., Hongler, C., Gerstner, W., and Brea, J. Geometry of the loss landscape in overparameterized neural networks: Symmetries and invariances. In ICML , 2021. Socher, R., Perelygin, A., Wu, J., Chuang, J., Manning, C. D., Ng, A. Y., and Potts, C. Recursive deep models for semantic compositionality over a sentiment treebank. In 
+
+Proceedings of the 2013 conference on empirical methods in natural language processing , pp. 1631–1642, 2013. Stallkamp, J., Schlipsing, M., Salmen, J., and Igel, C. The german traffic sign recognition benchmark: a multi-class classification competition. In IJCNN , 2011. Stoica, G., Bolya, D., Bjorner, J. B., Ramesh, P., Hearn, T., and Hoffman, J. Zipit! merging models from different tasks without training. In ICLR , 2024a. Stoica, G., Ramesh, P., Ecsedi, B., Choshen, L., and Hoff-man, J. Model merging with svd to tie the knots. arXiv preprint arXiv:2410.19735 , 2024b. Sun, W., Li, Q., Geng, Y.-a., and Li, B. Cat merging: A training-free approach for resolving conflicts in model merging. arXiv preprint arXiv:2505.06977 , 2025. Tam, D., Bansal, M., and Raffel, C. Merging by matching models in task parameter subspaces. arXiv preprint arXiv:2312.04339 , 2023. Tang, A., Shen, L., Luo, Y., Zhan, Y., Hu, H., Du, B., Chen, Y., and Tao, D. Parameter-efficient multi-task model fusion with partial linearization. In ICLR , 2024. Veeling, B. S., Linmans, J., Winkens, J., Cohen, T., and Welling, M. Rotation equivariant cnns for digital pathol-ogy. In International Conference on Medical image com-puting and computer-assisted intervention , pp. 210–218. Springer, 2018. Wang, H., Ma, C., Almakky, I., Reid, I., Carneiro, G., and Yaqub, M. Rethinking weight-averaged model-merging. 
+
+CoRR , 2024a. Wang, K., Dimitriadis, N., Favero, A., Ortiz-Jimenez, G., Fleuret, F., and Frossard, P. Lines: Post-training layer scaling prevents forgetting and enhances model merging. 
+
+arXiv preprint arXiv:2410.17146 , 2024b. Wang, K., Dimitriadis, N., Ortiz-Jimenez, G., Fleuret, F., and Frossard, P. Localizing task information for im-proved model merging and compression. arXiv preprint arXiv:2405.07813 , 2024c. Wortsman, M., Ilharco, G., Gadre, S. Y., Roelofs, R., Gontijo-Lopes, R., Morcos, A. S., Namkoong, H., Farhadi, A., Carmon, Y., Kornblith, S., et al. Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time. In ICML , 2022. Xiao, H., Rasul, K., and Vollgraf, R. Fashion-mnist: a novel image dataset for benchmarking machine learning algorithms. arXiv preprint arXiv:1708.07747 , 2017. Xiao, J., Ehinger, K. A., Hays, J., Torralba, A., and Oliva, A. SUN database: Exploring a large collection of scene categories. IJCV , 2016. Xiong, F., Cheng, R., Chen, W., Zhang, Z., Guo, Y., Yuan, C., and Xu, R. Multi-task model merging via adaptive weight disentanglement. arXiv preprint arXiv:2411.18729 , 2024. Yadav, P., Tam, D., Choshen, L., Raffel, C., and Bansal, M. Ties-merging: resolving interference when merging models. In NeurIPS , 2023. Yang, E., Shen, L., Wang, Z., Guo, G., Chen, X., Wang, X., and Tao, D. Representation surgery for multi-task model merging. arXiv preprint arXiv:2402.02705 , 2024a. Yang, E., Wang, Z., Shen, L., Liu, S., Guo, G., Wang, X., and Tao, D. Adamerging: Adaptive model merging for multi-task learning. In ICLR , 2024b. Yu, L., Yu, B., Yu, H., Huang, F., and Li, Y. Language models are super mario: Absorbing abilities from homologous models as a free lunch. In ICML , 2024. 11 Resolving Interference 
+
+## A. Appendix 
+
+A.1. Merging Baseline Description                     
+
+> Merging Methods 2 Tasks 8 Tasks 14 Tasks 20 Tasks
+> TA 0.42 0.30 0.22 0.15 TIES 1.0 KnOTS 1.0 Iso-C 1.9 1.3 1.o 0.9 Iso-CTS 2.1 1.5 1.2 1.1 TSVM 1
+> Table A1. Scaling coefficients for different numbers of tasks.
+
+We now describe each of our merging baselines: Weight-averaging involves merging the taskvectors by simply av-eraging them i.e. τavg = 1 /N PNi=1 τi. Task-Arithmetic (TA) merges task vectors by computing a linear sum: 
+
+τTA = PNi=1 λiτi, where λi is a task-specific scaling co-efficient. Since jointly tuning multiple λi (one for each task) is computationally expensive, a common practice is to use a single shared scaling coefficient λ for all tasks i.e. 
+
+τTA = λ PNi=1 τi. TIES merging minimizes conflicts be-tween task vectors by first trimming low-magnitude weights, followed by averaging only the elements whose signs align with the elected sign. KnOTS jointly transforms task vectors into an aligned space using Singular Value Decomposition: 
+
+[τ1, τ 2, . . . , τ N ] = U Σ[ V1, V 2, . . . , V N ]. In the aligned space, other merging techniques such can be TIES is applied to merge all the Vi’s to compute τKnOTS = U ΣVmerged .TSVM 
+
+(Gargiulo et al., 2025) formulates merging as a Task Sub-space Vector Merging problem by first projecting each task vector τi onto a shared low-dimensional subspace 
+
+P , i.e., ˜τi = P ⊤τi, and then performing sign–aligned averaging in this subspace to obtain the merged vector 
+
+τTSVM = P   1
+
+> N
+
+PNi=1 sign(˜ τi) ⊙ | ˜τi|. Iso-C (Marczak et al., 2025) performs an isotropic combination of task vectors by whitening their covariance, representing each task as ˆτi = Σ −1/2(τi − μ) where μ = 1
+
+> N
+
+P 
+
+> i
+
+τi and Σ
+
+is the empirical covariance, and then averaging to yield 
+
+τIso-C = μ + Σ 1/2  1
+
+> N
+
+PNi=1 ˆτi
+
+. Iso-CTS (Marczak et al., 2025) extends Iso-C with a cross-task scaling step by assign-ing each task a similarity-based coefficient si, producing the final merge τIso-CTS = μ + Σ 1/2  1P 
+
+> isi
+
+PNi=1 si ˆτi
+
+, which adaptively weights tasks according to their pairwise correla-tions. 
+
+A.2. Merging Hyperparameters 
+
+A.2.1. Default Hyperparameters 
+
+Since we operate in a data scarce setting, we make use of the recommended default merging hyperparameters for all merging baselines. Table. A1 showcases the default scaling coefficients used when merging, along with the number of tasks it is to be used for. In the case of missing recommen-dations for the scaling co-efficient from the original work, such as for TA in the 14 and 20 task setting and Iso C and Iso CTS in the 2 task setting, we extrapolate the known values logarithmically, which seems to lie close to the trend followed after tuning. Apart from scaling co-efficients, for TIES and KnOTS we set Top-K pruning factor to 20%, where onlt the top 20% of the weights are retained across each task-vector. For Iso-CTS, we set common-space-fraction to 0.8. 
+
+A.2.2. Tuning on Task Data or Auxiliary data 
+
+For the case when we do tune the merging hyperparameters, we do the sweep across the following range and stop when the average validation accuracy or the RI Loss drops: TA: Scaling co-efficient: 30 intermediate steps ∈ [0 , 1] 
+
+TIES and KnOTS: Scaling co-efficient 30 intermediate steps ∈ [0 , 3] , 10 intermediate steps ∈ [10 , 100] 
+
+Iso C: Scaling co-efficient 30 intermediate steps ∈ [0 , 3] 
+
+Iso CTS: Scaling co-efficient 30 intermediate steps ∈ [0 , 3] ,Common Space Fraction: 6 intermediate steps ∈ [0 .5, 1.0] 
+
+A.3. 8/14/20 vision tasks 
+
+The 8/14/20 task vision benchmark includes the following: 1. Cars (Krause et al., 2013), 2. DTD (Cimpoi et al., 2014), 3. EuroSAT (Helber et al., 2019), 4. GTSRB (Stallkamp et al., 2011), 5. MNIST (LeCun, 1998), 6. RESISC45 (Cheng et al., 2017), 7. SUN397 (Xiao et al., 2016), 8. SVHN (Netzer et al., 2011), 9. CIFAR100 (Krizhevsky et al., 2009), 10. STL10 (Coates et al., 2011), 11. Flowers102 (Nilsback & Zisserman, 2008), 12. OxfordIIITPet (Parkhi et al., 2012), 13. PCAM (Veeling et al., 2018), 14. FER2013 (Goodfellow et al., 2013), 15. EMNIST (Cohen et al., 2017), 16. CIFAR10 (Krizhevsky et al., 2009), 17. Food101 (Bossard et al., 2014), 18. FashionMNIST (Xiao et al., 2017), 19. RenderedSST2(Socher et al., 2013), 20. KMNIST (Ba et al., 2016). Where tasks 1-8, 1-14 and 1-20 constitute the 8/14/20 task evaluations, respectively. 
+
+## B. Additional Analysis 
+
+B.1. Does the amount of auxiliary data matter? 
+
+We analyze the sensitivity of RI to the amount of auxiliary data used during adaptation. In our default setting, RI is applied for 2500 steps with a batch size of 128, corresponding to approximately 320k auxiliary images (about 25% of ImageNet). To evaluate robustness to dataset size, we subsample the auxiliary data to 0.8 ×, 0.6 ×, 0.4 ×, and 0.2 ×
+
+of this budget and report results in Table A1. Across all merging methods, RI remains equally effective even when using only 20% of the auxiliary data, with no degradation in performance, demonstrating that RI can be applied reliably in settings with limited auxiliary data. 12 Resolving Interference Method No RI 1.0 × 0.8 × 0.6 × 0.4 × 0.2 ×                    
+
+> Iso-C 75.1 77.4 77.4 77.5 77.6 77.8 Iso-CTS 77.7 79.1 79.0 79.0 79.1 79.1 TSV-M 76.5 80.1 80.1 80.2 80.2 80.3
+> Table A1. Effect of auxiliary data size on RI performance. Data fraction 1.0 ×corresponds to 320k auxiliary images used over 2500 steps with batch size 128. RI remains effective even under aggressive subsampling of auxiliary data.
+
+B.2. Why does RI + Averaging underperform? 
+
+We analyze why combining RI with simple weight averag-ing does not consistently improve in-domain performance on larger backbones. Weight averaging implicitly uses a very small effective scaling coefficient, which limits the influence of the adapted task vectors produced by RI. To examine this effect, we vary the scaling coefficient applied to Averaging+RI in the 20-task ViT-B/32 setting and re-port results in Table A2. Performance improves steadily as the scaling coefficient increases, peaking around 0.15, after which it degrades due to over-scaling. This behav-ior explains why gains from RI are not visible under the default averaging coefficient (0.05), while Task Arithmetic— algebraically equivalent to averaging but using a larger coefficient—benefits more strongly from RI. These results indicate that the underperformance of Averaging+RI is due to underutilization of RI’s corrective. 
+
+B.3. What makes a good source of auxiliary data? 
+
+As seen in Figure B.1 RI benefits from a wide range of auxiliary sources, including synthetic and real data, as long as they exhibit sufficient visual diversity across all merging methods. 
+
+## C. Reproducibility Statement 
+
+We encourage readers to reproduce our work, to facilitate this, we will be adding a link to our code base in the camera-ready version. Further, we share details of hyperparameters used to tune RI in Sec. 6 and share the default merging hyperparameters used in the Appendix. A.2.1. Consistent with prior works we make use of finetuned model checkpoints for ViT-B/32, and ViT-B/16, ViT-L/14 models from Wang et al. (2024c). 13 Resolving Interference Scaling Coeff. 0.0 0.025 0.05 0.075 0.1 0.125 0.15 0.175 0.2 0.225 0.25 0.275 0.3 
+
+Acc. (%) 56.1 59.3 61.4 62.9 64.0 64.6 64.7 64.3 63.4 62.1 60.4 58.6 56.6 
+
+Table A2. Effect of the scaling coefficient on Averaging+RI in the ViT-B/32 20-task setting. Performance peaks at moderate scaling values, indicating that default averaging underutilizes the adapted task vectors produced by RI. 
+
+Figure B.1. What makes a good source of auxiliary data for RI? 
+
+14
