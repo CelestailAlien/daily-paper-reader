@@ -1,0 +1,102 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-001.webp",
+      "caption": "Figure 2: Dense→pruned feature survival (MNN at τ = 0.7). Wanda consistently preserves more features than magnitude pruning across all models and sparsity levels.",
+      "page": 11,
+      "index": 1,
+      "width": 814,
+      "height": 252
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-002.webp",
+      "caption": "Table A.1: Summary of experimental runs by tier. Seeds column shows number of SAE random seeds per run.",
+      "page": 26,
+      "index": 2,
+      "width": 758,
+      "height": 242
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-003.webp",
+      "caption": "Figure 4: Feature survival rate by firing rate quintile (τ = 0.7). Across all models and pruning methods, rare features (Q1) survive substantially better than frequent ones (Q5). Lines represent different pruning method–sparsity combinations.",
+      "page": 15,
+      "index": 3,
+      "width": 814,
+      "height": 229
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-004.webp",
+      "caption": "Figure 1: Seed stability (MNN rate at τ = 0.7) as a function of sparsity. Error bars show standard deviation across seed pairs. While absolute MNN rates are low (2–4%), the pattern of degradation with sparsity is consistent.",
+      "page": 10,
+      "index": 4,
+      "width": 814,
+      "height": 252
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-005.webp",
+      "caption": "Figure 3: Transferability of pre-trained (official) SAEs to pruned model activations. FVU is plotted against sparsity for Gemma 3 1B and Gemma 2 2B, separated by pruning method. Wanda-pruned activations remain well within the reconstructable range.",
+      "page": 14,
+      "index": 5,
+      "width": 610,
+      "height": 404
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-006.webp",
+      "caption": "Figure 6: Mean KL divergence upon single-feature ablation for robust versus fragile features. Across all models and conditions, robust and fragile features show nearly identical causal effects, indicating a dissociation between geometric survival and causal importance.",
+      "page": 18,
+      "index": 6,
+      "width": 814,
+      "height": 452
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-007.webp",
+      "caption": "Table 2: Transferability: FVU of official (dense-trained) SAEs applied to pruned model activations. Lower FVU indicates better reconstruction. Wanda-pruned activations remain well-reconstructable up to 50% sparsity.",
+      "page": 13,
+      "index": 7,
+      "width": 775,
+      "height": 621
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-008.webp",
+      "caption": "Table 4: Mean KL divergence upon single-feature ablation. Robust and fragile features show nearly identical causal effects across all models and conditions. ∆ is the absolute percent difference.",
+      "page": 19,
+      "index": 8,
+      "width": 772,
+      "height": 351
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-009.webp",
+      "caption": "Figure 5: Feature fragility by firing rate, separated by pruning method. Blue: magnitude pruning; orange: Wanda. The monotonic decline from Q1 (rare) to Q5 (frequent) is robust across all models, methods, and sparsity levels.",
+      "page": 17,
+      "index": 9,
+      "width": 814,
+      "height": 275
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-010.webp",
+      "caption": "Table B.1: SAE reconstruction quality (FVU) averaged over seeds. The large majority of SAEs achieved near-complete feature utilization with our training procedure.",
+      "page": 27,
+      "index": 10,
+      "width": 582,
+      "height": 838
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-011.webp",
+      "caption": "Table 1: WikiText-2 perplexity across models, pruning methods, and sparsity levels. Lower is better. Gemma 2 dense perplexity is anomalously high (likely due to context length mismatch); relative differences remain informative. Catastrophic values (> 105) are abbreviated.",
+      "page": 9,
+      "index": 11,
+      "width": 781,
+      "height": 352
+    },
+    {
+      "url": "assets/figures/arxiv/2603.25325v1/fig-012.webp",
+      "caption": "Table 3: Feature survival rate by firing rate quintile (τ = 0.7). In all conditions, rare features (Q1) survive at substantially higher rates than frequent features (Q5). The ratio column shows the Q1/Q5 survival advantage.",
+      "page": 16,
+      "index": 12,
+      "width": 684,
+      "height": 478
+    }
+  ]
+}

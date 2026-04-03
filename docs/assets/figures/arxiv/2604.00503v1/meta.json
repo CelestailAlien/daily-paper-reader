@@ -1,0 +1,86 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-001.webp",
+      "caption": "Table 1. Comparison for zero-shot interactive object detection through visual prompts. Fixed AP is reported on LVIS minival set. Bold and underline denote the best and second-best results in each column, respectively. * means the training set of the evaluation dataset was used for pre-training with text prompts, so this model is not in a zero-shot setting.",
+      "page": 6,
+      "index": 1,
+      "width": 1018,
+      "height": 215
+    },
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-002.webp",
+      "caption": "Table 2. Comparison for zero-shot generic object detection through visual prompts. Fixed AP is reported on LVIS minival set. Bold and underline denote the best and second-best results in each column, respectively.",
+      "page": 6,
+      "index": 2,
+      "width": 1018,
+      "height": 203
+    },
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-003.webp",
+      "caption": "Figure 1. Dynamic Memory-Driven Prompting Diagram. During each iteration, the Visual Cues Bank updates its stored prompts with visual prompts used by PET-DINO, while PET-DINO utilizes the enriched prompts from the bank to improve training.",
+      "page": 11,
+      "index": 3,
+      "width": 932,
+      "height": 295
+    },
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-004.webp",
+      "caption": "Figure 2. Feature correlation analysis between visual prompts and instance-level image features showing the impact of AFVPG.",
+      "page": 11,
+      "index": 4,
+      "width": 393,
+      "height": 424
+    },
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-005.webp",
+      "caption": "Figure 8. Zero-shot detection visualizations of PET-DINO with text prompts. The category names from the dataset are utilized as textual inputs for prompt generation.",
+      "page": 15,
+      "index": 5,
+      "width": 1032,
+      "height": 573
+    },
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-006.webp",
+      "caption": "Table 3. Comparison for zero-shot generic object detection through text prompts. Fixed AP is reported on LVIS minival set. † means that a small number of iterations on Object365 are not for dedicated text-prompt training, but specifically to prevent the degradation of the inherited text-prompt performance.",
+      "page": 7,
+      "index": 6,
+      "width": 812,
+      "height": 188
+    },
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-007.webp",
+      "caption": "Figure 6. Zero-shot detection visualizations of PET-DINO on cross-image exemplar visual prompt-based detection. Exemplars are shown above, and prediction outputs are shown below.",
+      "page": 14,
+      "index": 7,
+      "width": 1036,
+      "height": 487
+    },
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-008.webp",
+      "caption": "Figure 7. Zero-shot detection visualizations of PET-DINO with class-level generic visual prompts. The visual prompt embeddings are pre-extracted from the training set.",
+      "page": 14,
+      "index": 8,
+      "width": 1032,
+      "height": 496
+    },
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-009.webp",
+      "caption": "Figure 4. Zero-shot detection visualizations of PET-DINO on interactive visual prompt-based detection in single-category dense object scenarios.",
+      "page": 13,
+      "index": 9,
+      "width": 1032,
+      "height": 469
+    },
+    {
+      "url": "assets/figures/arxiv/2604.00503v1/fig-010.webp",
+      "caption": "Figure 5. Zero-shot detection visualizations of PET-DINO on interactive visual prompt-based detection in multi-category dense object scenarios.",
+      "page": 13,
+      "index": 10,
+      "width": 1032,
+      "height": 525
+    }
+  ]
+}

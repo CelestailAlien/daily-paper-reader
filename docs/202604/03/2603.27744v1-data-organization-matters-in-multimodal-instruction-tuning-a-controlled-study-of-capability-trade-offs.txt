@@ -1,0 +1,305 @@
+Title: Data Organization Matters in Multimodal Instruction Tuning: A Controlled Study of Capability Trade-offs
+
+URL Source: https://arxiv.org/pdf/2603.27744v1
+
+Published Time: Tue, 31 Mar 2026 01:16:42 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Data Organization Matters in Multimodal Instruction Tuning: A Controlled Study of Capability Trade-offs 
+
+Guowei Tang 
+
+School of Statistics East China Normal University 
+
+wwgTang2021@163.com 
+
+## Abstract 
+
+Recent multimodal large language models (MLLMs) have achieved strong per-formance on general visual understanding, diagram and chart reasoning, and document-centric perception. However, these capabilities are typically acquired from heterogeneous supervision sources with substantially different task structures and learning demands, and the effect of how such data are temporally organized during training remains underexplored. In this work, we study whether data organization affects the capability trade-off among general understanding, struc-tured reasoning, and fine-grained OCR/document understanding in multimodal instruction tuning. To isolate this factor, we adopt a controlled three-stage training framework in which the backbone, trainable modules, and optimization pipeline are fixed across all runs, and only the temporal arrangement of post-alignment supervision is varied. We compare four representative strategies: direct mixture, curriculum training, balanced sampling, and reverse curriculum. Experiments are conducted on a validation suite spanning general visual instruction following, diagram reasoning, chart reasoning, scene-text question answering, and document question answering, together with aggregated metrics for reasoning, OCR, and overall performance. We further analyze convergence speed, training stability. The results show that data organization is not a secondary implementation detail but a first-order design variable in multimodal adaptation. In particular, curriculum training yields the best overall trade-off and the strongest structured reasoning performance; balanced sampling is more favorable for OCR-oriented capability but sacrifices part of the broader capability balance; and reverse curriculum performs worst in both final performance and optimization stability. Training-dynamics analysis further suggests that establishing general understanding and reasoning before introducing OCR-intensive supervision leads to smoother optimization and faster convergence. These findings highlight data scheduling as an explicit design dimension for multimodal model adaptation and provide practical motivation for future work on adaptive curricula and finer-grained task organization. 
+
+## 1 Introduction 
+
+Recent multimodal large language models (MLLMs) have achieved strong performance across a wide range of vision–language tasks, including open-ended visual instruction following Liu et al. (2023); Dai et al. (2023), diagram and chart reasoning Hu et al. (2023a); Xia et al. (2024), and text-centric document understanding Hu et al. (2024). Despite this progress, these capabilities are typically learned from heterogeneous supervision sources that differ substantially in task structure, perceptual granularity, and reasoning demand Dai et al. (2023). In practice, MLLMs are often trained on a combination of general visual instruction data, structured reasoning datasets, and OCR-intensive corpora Dai et al. (2023); Hu et al. (2024). However, although prior work has extensively studied 
+
+> arXiv:2603.27744v1 [cs.CV] 29 Mar 2026
+
+model architectures and optimization strategies Li et al. (2023); Dai et al. (2023), the effect of how heterogeneous data are organized during training remains underexplored. This issue is important because different data sources emphasize different capabilities. General visual instruction data mainly supports broad semantic grounding and instruction-following ability Liu et al. (2023); Dai et al. (2023). Diagram and chart datasets emphasize structured reasoning over visual layouts and symbolic relations Kembhavi et al. (2016); Masry et al. (2022). In contrast, OCR- and document-centric datasets require fine-grained perception of text tokens, local regions, and layout details Singh et al. (2019); Mathew et al. (2021). While these objectives can be complementary, they may also compete for limited adaptation capacity during parameter-efficient and sequential multimodal tuning Hu et al. (2022); Ge et al. (2025); Chen et al. (2025). Consequently, the ordering and composition of training data may affect not only the final average performance, but also the balance among general understanding, structured reasoning, and fine-grained OCR ability Ge et al. (2025); Chen et al. (2025). In this work, we investigate whether the organization strategy of training data influences the capability trade-off among general visual understanding, structured reasoning, and fine-grained OCR/document understanding Ge et al. (2025); Chen et al. (2025). To isolate this factor, we keep the training modules fixed across all experimental conditions. Specifically, the projector is trained alone during the initial alignment stage, following staged vision–language alignment practice Li et al. (2023); Liu et al. (2023); in subsequent stages, the projector and LLM LoRA are jointly optimized Hu et al. (2022); and the vision tower remains frozen throughout the entire training process, consistent with frozen-backbone multimodal adaptation pipelines Li et al. (2023). This controlled design ensures that any observed performance difference can be attributed primarily to data organization rather than to changes in trainable modules. We consider four representative data organization strategies. Our primary setting is a curriculum-style schedule , which first emphasizes general visual instruction and structured reasoning, and then introduces OCR- and document-intensive supervision in a later stage Bengio et al. (2009); Ge et al. (2025). We compare this strategy with three alternatives: direct mixture , which removes curriculum ordering and uses a fixed mixed distribution throughout the post-alignment stages; balanced sampling ,which enforces equal sampling probability across task sources; and reverse curriculum , which prioritizes OCR-heavy data before shifting toward general understanding and structured reasoning. Importantly, these conditions are designed to maintain approximately matched total data exposure, so that the primary difference lies in the temporal organization of supervision rather than in the amount of training signal. This design allows us to directly examine whether training order influences the final capability trade-off, a question closely related to recent studies on continual and sequential multimodal instruction tuning Ge et al. (2025); Chen et al. (2025). To evaluate the impact of these strategies, we assess model performance on a validation suite spanning the target capability spectrum, including a general visual instruction validation set, diagram reasoning, chart reasoning, text-based visual question answering, and document visual question answering Liu et al. (2023); Kembhavi et al. (2016); Masry et al. (2022); Singh et al. (2019); Mathew et al. (2021). We further report aggregated metrics for reasoning ability, OCR capability, and overall performance, and analyze convergence speed and training stability. Through this study, we aim to answer a practical question in multimodal instruction tuning: when the objective is to strike a balance among general understanding, reasoning ability, and OCR-intensive perception, does the training order matter? If so, under our setup, which data organization strategy delivers a better trade-off across these capabilities? 
+
+Bengio et al. (2009); Ge et al. (2025); Chen et al. (2025) Overall, the main contributions of this work are summarized as follows: • We formulate and systematically study the problem of how training data organization affects the balance among general visual understanding, structured reasoning, and fine-grained OCR/document understanding in multimodal instruction tuning. • We design a controlled experimental framework that fixes the trainable modules and training protocol, enabling a fair comparison among curriculum training, direct mixture, balanced sampling, and reverse curriculum. • We provide a comprehensive empirical analysis across task performance, convergence behavior, training stability, offering practical insights into data scheduling for multimodal model adaptation. 22 Related Work 
+
+2.1 Multimodal Large Language Models and Visual Instruction Tuning 
+
+Recent progress in multimodal large language models has largely been driven by the combination of strong pretrained language models and visual encoders, together with large-scale multimodal instruction tuning Alayrac et al. (2022); Li et al. (2023); Liu et al. (2023). Early representative systems such as Flamingo established the effectiveness of bridging frozen vision and language backbones for few-shot multimodal learning Alayrac et al. (2022). Subsequent works, including BLIP-2, further demonstrated that lightweight trainable connectors can effectively align frozen visual encoders with large language models under a staged training pipeline Li et al. (2023). Building on this line, visual instruction tuning methods such as LLaVA showed that instruction-following ability can be substantially improved by adapting models on diverse image–text instruction data Liu et al. (2023), while open-source systems such as Qwen-VL extended this paradigm toward more general multimodal understanding, grounding, and text reading Bai et al. (2023). These studies provide the architectural and training foundation for our work. However, they mainly emphasize model design and overall data scaling, while paying less attention to how different categories of supervision should be temporally organized during instruction tuning. 
+
+2.2 Specialized Supervision for Structured Reasoning and OCR-Centric Understanding 
+
+A second line of work focuses on datasets and benchmarks that target specific multimodal capabilities beyond general-purpose visual instruction following. For structured reasoning, diagram and chart understanding benchmarks such as AI2D and ChartQA require models to reason over visual layouts, symbolic relations, and quantitative patterns, thereby testing abilities that are not fully captured by generic image description or question-answering data Kembhavi et al. (2016); Masry et al. (2022). For fine-grained perception, TextVQA and DocVQA highlight the importance of reading scene text, understanding document layouts, and integrating local textual evidence with global visual context Singh et al. (2019); Mathew et al. (2021). Together, these benchmarks reveal that multimodal capability is inherently heterogeneous: a model that performs well on broad semantic understanding may still underperform on chart reasoning or OCR-intensive tasks. Our work is closely related to this line of research, but differs in emphasis. Instead of proposing a new benchmark or a new task-specific model, we investigate whether the organization of existing heterogeneous supervision sources affects the final balance among these capabilities. 
+
+2.3 Data Organization, Curriculum Learning, and Continual Multimodal Adaptation 
+
+Beyond model architecture and benchmark construction, an emerging line of research has begun to examine how data scheduling and sequential adaptation influence multimodal learning. Curriculum-oriented studies suggest that training order can affect optimization behavior and downstream capability acquisition, especially when supervision sources differ in complexity and modality composition Bengio et al. (2009). In parallel, recent work on continual or sequential multimodal instruction tuning has highlighted challenges such as task imbalance, catastrophic forgetting, and the tension between preserving general capability and acquiring specialized skills Ge et al. (2025); Chen et al. (2025). These studies indicate that the temporal arrangement of multimodal supervision is not merely an implementation detail, but a factor that may shape both performance and stability. Nevertheless, prior work has typically focused on continual-learning algorithms, model-expansion strategies, or task-specific anti-forgetting mechanisms. Our study instead asks a more controlled question: under fixed trainable modules and approximately matched total exposure, how do curriculum training, direct mixture, balanced sampling, and reverse curriculum differ in balancing general understanding, structured reasoning, and OCR-centric perception? 
+
+## 3 Methodology 
+
+3.1 Problem Formulation 
+
+We study whether the organization of heterogeneous training data affects the capability balance among three target dimensions in multimodal instruction tuning: general visual understanding, 3structured reasoning, and fine-grained OCR/document understanding. Let the training corpus be partitioned into four functional groups, 
+
+D = {D0, D 1, D 2, D 3}, (1) where D0 denotes alignment data, D1 denotes general visual instruction data, D2 denotes structured reasoning data, and D3 denotes OCR/document-centric data. At training stage s, a dataset is first sampled from a stage-dependent categorical distribution πs(d),and then an instance (x, y ) is uniformly sampled from the selected dataset. The stage-wise training objective is 
+
+Ls(θ) = Ed∼πs E(x,y )∼U (d)
+
+ℓ(fθ (x), y ), (2) where U(d) denotes uniform sampling within dataset d, fθ is the multimodal model, and ℓ(·) is the instruction-tuning loss. Our goal is not to change the model architecture or optimization modules, but to examine whether different choices of πs across stages lead to different trade-offs among the target capabilities. This controlled formulation isolates data scheduling as the primary experimental variable. 
+
+3.2 Capability-Oriented Data Partition 
+
+We organize the training data according to their dominant functional roles in multimodal adaptation: • D0: LLaVA-Pretrain 558K, used for initial visual–language alignment; • D1: ShareGPT4V, used for general semantic grounding and visual instruction following; • D2: AI2D and ChartQA, used for structured reasoning over diagrams, layouts, and charts; • D3: TextVQA and DocVQA, used for fine-grained text perception and document under-standing. This capability-oriented grouping serves two purposes. First, it makes explicit that different super-vision sources contribute differently to downstream capability formation. Second, it enables us to define training schedules at the level of functional supervision rather than at the level of a single undifferentiated mixed corpus. 
+
+3.3 Controlled Three-Stage Training 
+
+All conditions share the same three-stage training protocol. We use a fixed set of trainable modules so that differences across runs can be attributed to data organization rather than model-side variation. Let ΘP denote the projector parameters, ΘL denote the LLM LoRA parameters, and ΘV denote the vision tower parameters. The trainable parameter sets are 
+
+Θ(1) train = {ΘP },
+
+Θ(2 ,3) train = {ΘP , ΘL}. (3) Stage 1 performs initial visual–language alignment using D0 only. Stages 2 and 3 perform post-alignment adaptation, where downstream task capabilities are injected under different data organiza-tion strategies. 
+
+3.4 Data Organization Strategies 
+
+We compare four representative data organization strategies, denoted by c ∈ { A, B, C, D }. Each strategy is instantiated by a stage-specific sampling distribution π(c) 
+
+> s
+
+(d).
+
+Direct mixture (Condition A). This condition removes temporal curriculum and uses the same mixed sampling distribution across the post-alignment stages. It tests whether curriculum ordering provides benefits beyond exposure to the same overall supervision sources. 
+
+Curriculum training (Condition B). The main strategy adopts a coarse-to-specialized curriculum. Stage 2 emphasizes general visual instruction and structured reasoning, while Stage 3 expands the mixture to include OCR- and document-centric supervision. This design follows the intuition that broad semantic grounding and reasoning should be established before fine-grained textual perception is heavily emphasized. 4Balanced sampling (Condition C). This condition assigns equal probability to all post-alignment task sources. It evaluates whether explicit task balancing leads to a better capability compromise than curriculum-style or naturally skewed mixtures. 
+
+Reverse curriculum (Condition D). This condition inverts the main curriculum by emphasizing OCR-heavy data earlier and shifting toward general instruction and reasoning later. It tests whether introducing fine-grained perceptual supervision too early is detrimental to the final capability balance. To compare schedules more fairly, we approximately match the total exposure budget across con-ditions. Let Ts denote the number of training steps in stage s. The expected exposure of dataset d
+
+under condition c is 
+
+E(c)(d) = X
+
+> s∈{ 2,3}
+
+Ts π(c) 
+
+> s
+
+(d). (4) Our comparison is designed such that the major difference across conditions lies in the temporal organization of supervision rather than the total amount of supervision itself. 
+
+3.5 Training Dynamics Analysis 
+
+Beyond final validation scores, we analyze training dynamics from two complementary perspectives: capability evolution under periodic evaluation and optimization stability reflected by the training loss trajectory. This design allows us to examine not only where a model converges, but also how its different capabilities emerge and how stable the optimization process remains throughout training. 
+
+Stage-wise Capability Evaluation. At fixed training-step intervals, we evaluate the model on four capability categories: general capability, reasoning capability, fine-grained detail capability, and overall capability. Let the evaluation steps be denoted by Teval = {t1, t 2, . . . }. This stage-wise protocol enables us to characterize how different data organization strategies shape the trajectory of capability acquisition during training, rather than only comparing their final converged checkpoints. 
+
+Loss Curve and Local Fluctuation. In parallel, we record the training loss at every optimization step. Let ℓt denote the training loss at step t. To characterize short-term optimization stability, we define a local fluctuation measure over a window of size w as 
+
+σ(ℓ) 
+
+> t
+
+= Std  ℓt−w+1 , . . . , ℓ t
+
+. (5) 
+
+Spike Frequency To quantify abrupt instability during training, we compute the local mean and local standard deviation of the loss within a sliding window of size u. Specifically, at training step t,the local mean is defined as 
+
+μ(ℓ) 
+
+> t
+
+= 1
+
+u
+
+> t
+
+X
+
+> i=t−u+1
+
+ℓi, (6) and the local standard deviation is defined as 
+
+σ(ℓ) 
+
+> t
+
+= Std( ℓt−u+1 , . . . , ℓ t) . (7) where I[·] denotes the indicator function. A training step is regarded as a spike if its loss is significantly higher or lower than the local mean by more than two local standard deviations. Let the total number of training steps be T , and let the sliding-window size be u. Then the total number of valid windows is 
+
+Nwindow = T − u + 1 . (8) For each window ending at step t (where t = u, u + 1 , . . . , T ), we regard the window as containing a spike if the most recent loss value ℓt satisfies 
+
+ℓt > μ (ℓ) 
+
+> t
+
++ 2 σ(ℓ) 
+
+> t
+
+or ℓt < μ (ℓ) 
+
+> t
+
+− 2σ(ℓ) 
+
+> t
+
+. (9) Accordingly, the spike indicator is defined as 
+
+Ispike  
+
+> t
+
+= I
+
+h
+
+ℓt > μ (ℓ) 
+
+> t
+
++ 2 σ(ℓ) 
+
+> t
+
+or ℓt < μ (ℓ) 
+
+> t
+
+− 2σ(ℓ)
+
+> t
+
+i
+
+, (10) where I[·] denotes the indicator function. 5The spike frequency is then defined as 
+
+fspike = 1
+
+Nwindow 
+
+> T
+
+X
+
+> t=u
+
+Ispike  
+
+> t
+
+= 1
+
+T − u + 1 
+
+> T
+
+X
+
+> t=u
+
+Ispike  
+
+> t
+
+. (11) This metric represents the proportion of valid sliding windows in which the most recent loss exceeds the threshold. 
+
+Stage Transition Stability. Since our training protocol is stage-based, we further examine whether switching from an old stage to a new stage introduces significant optimization disturbance. Let the stage transition occur at step ts, where t− 
+
+> s
+
+and t+ 
+
+> s
+
+denote the nearest logged training steps immediately before and after the transition, respectively. To measure the relative change in loss across the stage boundary, we define the stage-transition ratio as 
+
+rstage = ℓt+ 
+
+> s
+
+− ℓt−
+
+> s
+
+ℓt−
+
+> s
+
+. (12) Here, ℓt− 
+
+> s
+
+denotes the loss at the end of the old stage, and ℓt+ 
+
+> s
+
+denotes the loss after entering the new stage. 
+
+3.6 Evaluation Metrics 
+
+We evaluate model performance on five validation tasks spanning the target capability spectrum: GENERAL -V AL , AI2D, C HART QA, T EXT VQA, and D OC VQA. In addition to reporting each task score individually, we define aggregated metrics to characterize capability balance across different task families. Specifically, for a given evaluation checkpoint, we define 
+
+Reasoning = AI2D + ChartQA 2 , (13) 
+
+Detail = TextVQA + DocVQA 2 , (14) 
+
+Overall = General -Val + AI2D + ChartQA + TextVQA + DocVQA 5 . (15) Here, Reasoning summarizes structured reasoning performance, Detail captures fine-grained OCR-and document-oriented capability, and Overall measures the average validation performance across the full capability spectrum. These metrics allow us to assess not only final average performance, but also how different training schedules allocate modeling capacity across general, reasoning-oriented, and detail-oriented tasks. 
+
+## 4 Experimental 
+
+4.1 Experimental Setup 
+
+We follow the controlled three-stage training protocol described in Section 3. Across all conditions, the trainable modules, optimization pipeline, and model backbone remain fixed; the only varying factor is the organization of post-alignment training data. Stage 1 uses D0 for initial visual–language alignment with projector-only training. Stages 2 and 3 jointly optimize the projector and LLM LoRA while keeping the vision tower frozen throughout. For training, we use all available samples from each dataset. For evaluation, we use a sampled subset of the evaluation set. We compare four data organization strategies: direct mixture (A), curriculum training (B), balanced sampling (C), and reverse curriculum (D). Table 1 summarizes the stage-wise data composition of all conditions. The main comparison focuses on whether curriculum order improves the balance among general understanding, structured reasoning, and OCR-centric perception. 6Table 1: Summary of stage-wise data organization strategies. S4V denotes ShareGPT4V, TXT denotes TextVQA, and DOC denotes DocVQA.                         
+
+> Condition Strategy Stage 1 Stage 2 Stage 3 ADirect mixture D0only S4V: 0.50, AI2D: 0.13, ChartQA: 0.13, TXT: 0.12, DOC: 0.12 S4V: 0.50, AI2D: 0.13, ChartQA: 0.13, TXT: 0.12, DOC: 0.12 BCurriculum D0only S4V: 0.70, AI2D: 0.15, ChartQA: 0.15 S4V: 0.20, AI2D: 0.10, ChartQA: 0.10, TXT: 0.30, DOC: 0.30 CBalanced sampling D0only S4V: 0.20, AI2D: 0.20, ChartQA: 0.20, TXT: 0.20, DOC: 0.20 S4V: 0.20, AI2D: 0.20, ChartQA: 0.20, TXT: 0.20, DOC: 0.20 DReverse curriculum D0only S4V: 0.20, AI2D: 0.10, ChartQA: 0.10, TXT: 0.30, DOC: 0.30 S4V: 0.70, AI2D: 0.15, ChartQA: 0.15
+
+Table 2: Main results on the validation benchmarks under the proposed data-organization scheme. Higher is better. The best score in each column is bolded .
+
+Condition General Reasoning OCR Overall General-Val AI2D ChartQA Reasoning TextVQA DocVQA OCR A 72.1 74.0 72.0 73.0 70.8 71.4 71.1 72.1 B 73.4 76.0 74.6 75.3 71.8 72.9 72.4 73.7 
+
+C 71.7 73.3 72.9 73.1 72.6 73.5 73.1 72.8 D 69.8 72.1 70.9 71.5 71.4 71.8 71.6 71.2 
+
+4.2 Main Results 
+
+Table 2 summarizes the main validation results under different data-organization strategies. Overall, the curriculum design (Condition B) achieves the best Overall score (73.7), outperforming direct mixture (Condition A, 72.1), balanced sampling (Condition C, 72.8), and reverse curriculum (Con-dition D, 71.2). This suggests that a staged progression that prioritizes general understanding and structured reasoning before introducing OCR-intensive supervision yields the most favorable overall capability trade-off. More specifically, Condition B attains the best performance on General-Val 
+
+(73.4), AI2D (76.0), and ChartQA (74.6), and correspondingly achieves the highest Reasoning average (75.3), indicating that this training order is particularly beneficial for developing general multimodal understanding and structured reasoning. In contrast, balanced sampling (Condition C) performs best on the OCR-oriented tasks, achieving the highest scores on TextVQA (72.6) and DocVQA (73.5), which leads to the strongest OCR average (73.1). This pattern suggests that more uniform task exposure is advantageous for fine-grained text perception. However, Condition C consistently trails Condition B on General-Val , AI2D , and 
+
+ChartQA , and therefore does not surpass the curriculum strategy in overall performance. Direct mixture (Condition A) serves as a reasonable baseline, but it shows no clear advantage on any metric, indicating that exposure to the same supervision sources alone is insufficient; the organization of that supervision also matters. Reverse curriculum (Condition D) yields the weakest Overall performance and underperforms substantially on General-Val , AI2D , and ChartQA . Although its OCR-related scores are slightly higher than those of Condition A, these gains are insufficient to compensate for the loss in broader understanding and reasoning ability. Taken together, these results indicate that emphasizing OCR-heavy supervision too early may interfere with the acquisition of more general multimodal capabilities. 
+
+4.3 Capability Trade-off Analysis 
+
+To provide a more intuitive view of the trade-offs across capability dimensions, Figure 1 visualizes the performance profile of each training condition as a radar chart over multiple validation axes. A clear pattern emerges: the curriculum design (Condition B) exhibits the most balanced and consistently expanded profile. It dominates on AI2D , ChartQA , Reasoning , General-Val , and Overall , indicating that this strategy not only yields the strongest aggregate performance but also better supports the joint development of general understanding and structured reasoning. In contrast, balanced sampling (Condition C) shows a more pronounced advantage along the TextVQA , DocVQA , and aggregated 
+
+OCR axes, suggesting that it shifts the model toward stronger text-centric perception, albeit at the cost of slightly weaker reasoning and overall generalization than Condition B. Direct mixture (Condition A) presents a relatively stable profile across dimensions, but its contour remains consistently inside that of Condition B, further suggesting that merely combining the same supervision sources is insufficient for optimal performance; the organization of supervision also 7Figure 1: Comparison of all the scores across different training conditions. 
+
+Figure 2: Comparison of Overall across different training conditions. matters. Reverse curriculum (Condition D) forms the smallest overall contour on most axes, with particularly noticeable degradation on General-Val , ChartQA , and Reasoning . This suggests that introducing OCR-heavy supervision too early may hinder the acquisition of broader multimodal understanding. Overall, Figure 1 corroborates the findings in Table 2: an appropriate curriculum-based data organization leads to a better global balance across capability dimensions, rather than producing gains that are confined to a single sub-skill. 
+
+4.4 Training Dynamics and Efficiency 
+
+Beyond final validation performance, we further examine whether the advantage of curriculum-style data organization is also reflected in optimization dynamics and computational efficiency. Following the metrics defined in Section 3.5, we analyze convergence behavior, short-term loss fluctuation, abrupt instability. The results are summarized in Table 3, while Figure 2 visualizes the evolution of the Overall score over training steps. A clear difference emerges in convergence behavior. Condition B reaches a high-performing regime earlier than the other strategies and maintains the strongest Overall trajectory throughout most of post-alignment training, indicating that curriculum ordering improves not only the final capability trade-off but also the efficiency with which useful capability is acquired. By contrast, Condition D converges the slowest and remains consistently below the other conditions, suggesting that introducing OCR-heavy supervision too early leads to a less effective optimization path. Conditions A and C 8Table 3: Training dynamics and efficiency statistics. Lower is better for loss standard deviation, spike frequency, stage-transition loss gap.                
+
+> Condition Loss Std ↓Spike Freq. ↓Stage Tran Stab A0.117 2.12% 0.29
+> B0.096 1.48% 0.37 C0.109 1.84% 0.27 D0.136 2.73% 0.68
+
+exhibit intermediate behavior: both improve steadily, but neither matches the convergence speed or final plateau achieved by Condition B. The stability statistics further support this pattern. Condition B yields the smallest loss fluctuation and the fewest instability spikes. This result is consistent with the intuition behind the proposed curriculum: establishing broad semantic grounding and structured reasoning before emphasizing OCR-intensive supervision can reduce optimization conflict across heterogeneous tasks. In contrast, Condition D exhibits the largest fluctuation statistics and the highest spike count, suggesting that reverse curriculum introduces a more unstable learning process. Notably, the stage-transition analysis provides an additional nuance: because Conditions A and C keep their mixtures unchanged across post-alignment stages, they are expected to show relatively smaller transition disturbance, whereas Condition B incurs a moderate transition cost when OCR/document-centric supervision is deliberately introduced in the later stage. Nevertheless, this temporary disturbance is compensated by faster convergence and better final performance. 
+
+4.5 Discussion 
+
+Taken together, the results indicate that data organization is a first-order design variable in multimodal instruction tuning rather than a secondary implementation choice. Under the controlled setting of this work, where the trainable modules and approximate total exposure are matched across conditions, changing only the temporal arrangement of supervision is already sufficient to produce markedly different capability profiles. In particular, curriculum training yields the most favorable global trade-off, balanced sampling remains attractive when OCR-centric performance is prioritized, and reverse curriculum is consistently less effective in balancing broad understanding, reasoning, and fine-grained perception. A plausible interpretation is that the acquisition order of heterogeneous supervision affects how lim-ited adaptation capacity is allocated during post-alignment tuning. Emphasizing general instruction following and structured reasoning earlier appears to establish a stronger semantic and relational foundation, upon which OCR- and document-centric capabilities can later be incorporated without severely disrupting previously acquired competencies. In contrast, placing OCR-heavy supervision too early may bias optimization toward local textual and perceptual patterns before broader multi-modal abstractions are sufficiently consolidated, which in turn weakens subsequent generalization and reasoning. This interpretation is also consistent with the training-dynamics observations, where the curriculum schedule exhibits smoother optimization and faster convergence than the alternative schedules. At the same time, the present findings should be interpreted within the scope of the current ex-perimental design. Our conclusions are drawn under a fixed three-stage training pipeline with a frozen vision backbone and projector+LoRA adaptation, and are evaluated on a validation suite centered on general understanding, reasoning, and OCR/document tasks. Accordingly, the results should not be overgeneralized as evidence that a single curriculum is universally optimal for all model scales, backbones, or downstream objectives. For example, when the deployment goal places disproportionate weight on OCR-intensive capability, a more balanced sampling strategy may still be preferable in practice. More broadly, our study suggests that data scheduling should be treated as an explicit optimization dimension in multimodal adaptation, and it motivates future work on adaptive curricula, finer-grained task grouping, and schedule design under broader model and benchmark settings. 95 Conclusion 
+
+In this work, we investigated whether the organization of heterogeneous training data affects the capability balance of multimodal instruction tuning. Under a controlled setting with fixed trainable modules and approximately matched data exposure, we compared four representative strategies: direct mixture, curriculum training, balanced sampling, and reverse curriculum. Our results suggest that data scheduling is not merely an implementation detail, but a key factor that shapes the trade-off among general visual understanding, structured reasoning, and fine-grained OCR/document understanding. Among the compared strategies, curriculum-style training yields the most favorable overall balance. By first consolidating broad semantic grounding and structured reasoning, and then introducing OCR- and document-intensive supervision, this strategy achieves stronger overall performance while maintaining competitive OCR capability. In contrast, direct mixture provides a reasonable but weaker baseline, balanced sampling tends to favor OCR-oriented tasks at the expense of broader capability balance, and reverse curriculum is generally less effective in both performance and optimization stability. These findings indicate that the temporal organization of supervision can substantially influence both final capability allocation and training dynamics. More broadly, our study highlights data organization as an explicit design dimension in multimodal model adaptation. Future work may extend this direction by exploring adaptive or performance-aware scheduling strategies, more fine-grained task grouping, and broader model scales and benchmark settings. We hope these findings can provide practical guidance for building multimodal systems that require a careful balance among general understanding, reasoning, and OCR-intensive perception. 
+
+## References 
+
+Liu, H., Li, C., Wu, Q., and Lee, Y. J. (2023). Visual Instruction Tuning. arXiv preprint arXiv:2304.08485 .Dai, W., Li, J., Li, D., Tiong, A. M. H., Zhao, J., Wang, W., Li, B., Fung, P., and Hoi, S. (2023). InstructBLIP: Towards General-purpose Vision-Language Models with Instruction Tuning. arXiv preprint arXiv:2305.06500 .Hu, A., Shi, Y., Xu, H., Ye, J., Ye, Q., Yan, M., Li, C., Qian, Q., Zhang, J., and Huang, F. (2023). mPLUG-PaperOwl: Scientific Diagram Analysis with the Multimodal Large Language Model. arXiv preprint arXiv:2311.18248 .Xia, R., Zhang, B., Ye, H., Yan, X., Liu, Q., Zhou, H., Chen, Z., Ye, P., Dou, M., Shi, B., Yan, J., and Qiao, Y. (2024). ChartX & ChartVLM: A Versatile Benchmark and Foundation Model for Complicated Chart Reasoning. arXiv preprint arXiv:2402.12185 .Hu, A., Xu, H., Ye, J., Yan, M., Zhang, L., Zhang, B., Zhang, J., Jin, Q., Huang, F., and Zhou, J. (2024). mPLUG-DocOwl 1.5: Unified Structure Learning for OCR-free Document Understanding. In Findings of the Association for Computational Linguistics: EMNLP 2024 , pages 3096–3120. Li, J., Li, D., Savarese, S., and Hoi, S. (2023). BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models. In Proceedings of the 40th International Conference on Machine Learning , pages 19730–19742. Kembhavi, A., Salvato, M., Kolve, E., Seo, M., Hajishirzi, H., and Farhadi, A. (2016). A Diagram Is Worth a Dozen Images. In Computer Vision – ECCV 2016 , pages 235–251. Cham: Springer. Masry, A., Long, D. X., Tan, J. Q., Joty, S., and Hoque, E. (2022). ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. In Findings of the Association for Computational Linguistics: ACL 2022 , pages 2263–2279. Singh, A., Natarajan, V., Shah, M., Jiang, Y., Chen, X., Batra, D., Parikh, D., and Rohrbach, M. (2019). Towards VQA Models That Can Read. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 8317–8326. Mathew, M., Karatzas, D., and Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) , pages 2200–2209. Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., and Chen, W. (2022). LoRA: Low-Rank Adaptation of Large Language Models. In International Conference on Learning Representations .
+
+10 Ge, C., Wang, X., Zhang, Z., Chen, H., Fan, J., Huang, L., Xue, H., and Zhu, W. (2025). Dynamic Mixture of Curriculum LoRA Experts for Continual Multimodal Instruction Tuning. In Proceedings of the 42nd International Conference on Machine Learning , Proceedings of Machine Learning Research 267 , pages 19011–19033. PMLR. Chen, J., Cong, R., Zhao, Y., Yang, H., Hu, G., Ip, H., and Kwong, S. (2025). SEFE: Superficial and Essential Forgetting Eliminator for Multimodal Continual Instruction Tuning. In Proceedings of the 42nd International Conference on Machine Learning , Proceedings of Machine Learning Research 267 , pages 7982–8001. PMLR. Bengio, Y., Louradour, J., Collobert, R., and Weston, J. (2009). Curriculum Learning. In Proceedings of the 26th International Conference on Machine Learning , pages 41–48. ACM. Alayrac, J.-B., Donahue, J., Luc, P., Miech, A., Barr, I., Hasson, Y., Lenc, K., Mensch, A., Millican, K., Reynolds, M., Ring, R., Rutherford, E., Cabi, S., Han, T., Gong, Z., Samangooei, S., Monteiro, M., Menick, J., Borgeaud, S., Brock, A., Nematzadeh, A., Sharifzadeh, S., Bi´ nkowski, M., Barreira, R., Vinyals, O., Zisserman, A., and Simonyan, K. (2022). Flamingo: A Visual Language Model for Few-Shot Learning. In Advances in Neural Information Processing Systems 35 , pages 23716–23736. Bai, J., Bai, S., Yang, S., Wang, S., Tan, S., Wang, P., Lin, J., Zhou, C., and Zhou, J. (2023). Qwen-VL: A Versatile Vision-Language Model for Understanding, Localization, Text Reading, and Beyond. arXiv preprint arXiv:2308.12966 .
+
+11

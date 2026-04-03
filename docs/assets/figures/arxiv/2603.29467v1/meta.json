@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "extractor": "pdffigures2",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2603.29467v1/fig-001.webp",
+      "caption": "Table 2: Ablation Studies on Training Data Combinations. CI: Cambrian Image; CT: Cambrian Text; M: Translated/Multilingual version.",
+      "page": 4,
+      "index": 1,
+      "width": 854,
+      "height": 238
+    }
+  ]
+}

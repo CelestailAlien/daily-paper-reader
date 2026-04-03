@@ -6,159 +6,92 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-03 ~ 2026-04-01
-- 运行时间：2026-04-01 09:40:15 UTC
+- 最新运行日期：2026-04-03
+- 运行时间：2026-04-03 19:57:39 UTC
 - 运行状态：成功
-- 本次总论文数：46
-- 精读区：0
-- 速读区：46
+- 本次总论文数：23
+- 精读区：12
+- 速读区：11
 
 ### 今日简报（AI）
-今日速览46篇AI论文，聚焦模型融合前沿。多篇满分研究揭示自适应与动态合并成为提升性能关键。建议关注无需原始数据的模型合并技术进展。
-- 详情：[/20260303-20260401/README](/20260303-20260401/README)
+- 今日共生成 23 篇推荐（精读 12 篇，速读 11 篇）
+- 精读：《Data Organization Matters in Multimodal Instruction Tuning: A Controlled Study of Capability Trade-offs》（10.0/10）, 《M-MiniGPT4: Multilingual VLLM Alignment via Translated Data》（10.0/10）
+- 速读：《Unbiased Multimodal Reranking for Long-Tail Short-Video Search》（8.0/10）, 《Context-specific Credibility-aware Multimodal Fusion with Conditional Probabilistic Circuits》（8.0/10）, 《Demo-Pose: Depth-Monocular Modality Fusion For Object Pose Estimation》（8.0/10）
+- 这些结果覆盖了当下较热的方向，建议先看精读区论文的关键问题与方法。
+- 详情：[/202604/03/README](/202604/03/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Data Organization Matters in Multimodal Instruction Tuning: A Controlled Study of Capability Trade-offs](/202604/03/2603.27744v1-data-organization-matters-in-multimodal-instruction-tuning-a-controlled-study-of-capability-trade-offs)  
+   标签：评分：10.0/10、query:llm-mllm-moe
+   evidence：多模态指令微调与数据组织研究
+2. [M-MiniGPT4: Multilingual VLLM Alignment via Translated Data](/202604/03/2603.29467v1-m-minigpt4-multilingual-vllm-alignment-via-translated-data)  
+   标签：评分：10.0/10、query:llm-mllm-moe
+   evidence：多语言视觉大语言模型与视言理解
+3. [Detecting Unknown Objects via Energy-based Separation for Open World Object Detection](/202604/03/2603.29954v1-detecting-unknown-objects-via-energy-based-separation-for-open-world-object-detection)  
+   标签：评分：10.0/10、query:cv
+   evidence：开放世界目标检测与未知物体表征学习
+4. [PET-DINO: Unifying Visual Cues into Grounding DINO with Prompt-Enriched Training](/202604/03/2604.00503v1-pet-dino-unifying-visual-cues-into-grounding-dino-with-prompt-enriched-training)  
+   标签：评分：10.0/10、query:cv
+   evidence：开放集目标检测以及支持文本和视觉提示的通用检测器
+5. [Expert-Choice Routing Enables Adaptive Computation in Diffusion Language Models](/202604/03/2604.01622v1-expert-choice-routing-enables-adaptive-computation-in-diffusion-language-models)  
+   标签：评分：10.0/10、query:llm-mllm-moe
+   evidence：混合专家模型中的专家选择路由与负载均衡
+6. [Interpretable Zero-shot Referring Expression Comprehension with Query-driven Scene Graphs](/202604/03/2603.25004v1-interpretable-zero-shot-referring-expression-comprehension-with-query-driven-scene-graphs)  
+   标签：评分：9.0/10、query:llm-mllm-moe
+   evidence：使用视觉语言模型的零样本指代理解
+7. [Geometric Evolution Graph Convolutional Networks: Enhancing Graph Representation Learning via Ricci Flow](/202604/03/2603.26178v1-geometric-evolution-graph-convolutional-networks-enhancing-graph-representation-learning-via-ricci-flow)  
+   标签：评分：9.0/10、query:cv
+   evidence：图表征学习与增强型图卷积网络
+8. [AMIGO: Agentic Multi-Image Grounding Oracle Benchmark](/202604/03/2603.28662v1-amigo-agentic-multi-image-grounding-oracle-benchmark)  
+   标签：评分：9.0/10、query:llm-mllm-moe
+   evidence：智能体视觉语言模型与多图定位
+9. [Aligning Multimodal Sequential Recommendations via Robust Direct Preference Optimization with Sparse MoE](/202604/03/2603.29259v1-aligning-multimodal-sequential-recommendations-via-robust-direct-preference-optimization-with-sparse-moe)  
+   标签：评分：9.0/10、query:llm-mllm-moe
+   evidence：结合稀疏混合专家模型与偏好优化的多模态序列推荐
+10. [Adversarial Prompt Injection Attack on Multimodal Large Language Models](/202604/03/2603.29418v1-adversarial-prompt-injection-attack-on-multimodal-large-language-models)  
+   标签：评分：9.0/10、query:llm-mllm-moe
+   evidence：多模态大语言模型上的对抗性提示注入攻击
+11. [RegFormer: Transferable Relational Grounding for Efficient Weakly-Supervised Human-Object Interaction Detection](/202604/03/2604.00507v1-regformer-transferable-relational-grounding-for-efficient-weakly-supervised-human-object-interaction-detection)  
+   标签：评分：9.0/10、query:cv
+   evidence：人机交互检测与关系定位 Transformer
+12. [Investigating Permutation-Invariant Discrete Representation Learning for Spatially Aligned Images](/202604/03/2604.01843v1-investigating-permutation-invariant-discrete-representation-learning-for-spatially-aligned-images)  
+   标签：评分：9.0/10、query:cv
+   evidence：图像的离散表征学习与语义特征
 
 ### 速读区论文标签
-1. [ACE-Merging: Data-Free Model Merging with Adaptive Covariance Estimation](/20260303-20260401/2603.02945v1-ace-merging-data-free-model-merging-with-adaptive-covariance-estimation)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：基于自适应协方差估计的无数据模型合并
-2. [Trade-offs in Ensembling, Merging and Routing Among Parameter-Efficient Experts](/20260303-20260401/2603.03535v1-trade-offs-in-ensembling-merging-and-routing-among-parameter-efficient-experts)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：大模型中的合并、参数平均与路由
-3. [BD-Merging: Bias-Aware Dynamic Model Merging with Evidence-Guided Contrastive Learning](/20260303-20260401/2603.03920v1-bd-merging-bias-aware-dynamic-model-merging-with-evidence-guided-contrastive-learning)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：用于多任务学习的动态模型合并框架
-4. [Functionality-Oriented LLM Merging on the Fisher--Rao Manifold](/20260303-20260401/2603.04972v1-functionality-oriented-llm-merging-on-the-fisher--rao-manifold)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：Fisher-Rao 流形上的大模型合并与权重空间合并
-5. [Exploring the potential and limitations of Model Merging for Multi-Domain Adaptation in ASR](/20260303-20260401/2603.05354v1-exploring-the-potential-and-limitations-of-model-merging-for-multi-domain-adaptation-in-asr)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：用于多领域自适应的模型合并及合并算法基准测试
-6. [An Empirical Study and Theoretical Explanation on Task-Level Model-Merging Collapse](/20260303-20260401/2603.09463v1-an-empirical-study-and-theoretical-explanation-on-task-level-model-merging-collapse)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：大模型合并中性能崩溃的理论解释
-7. [Model Merging in the Era of Large Language Models: Methods, Applications, and Future Directions](/20260303-20260401/2603.09938v1-model-merging-in-the-era-of-large-language-models-methods-applications-and-future-directions)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：大模型时代模型合并的全面综述
-8. [Mashup Learning: Faster Finetuning by Remixing Past Checkpoints](/20260303-20260401/2603.10156v1-mashup-learning-faster-finetuning-by-remixing-past-checkpoints)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：通过模型合并聚合历史检查点
-9. [Resolving Interference (RI): Disentangling Models for Improved Model Merging](/20260303-20260401/2603.13467v1-resolving-interference-ri-disentangling-models-for-improved-model-merging)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：解耦模型以减少合并中的跨任务干扰
-10. [ES-Merging: Biological MLLM Merging via Embedding Space Signals](/20260303-20260401/2603.14405v1-es-merging-biological-mllm-merging-via-embedding-space-signals)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：通过嵌入空间信号合并生物多模态大模型
-11. [DiffGraph: An Automated Agent-driven Model Merging Framework for In-the-Wild Text-to-Image Generation](/20260303-20260401/2603.20470v1-diffgraph-an-automated-agent-driven-model-merging-framework-for-in-the-wild-text-to-image-generation)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：自动化智能体驱动的模型合并框架
-12. [SSAM: Singular Subspace Alignment for Merging Multimodal Large Language Models](/20260303-20260401/2603.21584v1-ssam-singular-subspace-alignment-for-merging-multimodal-large-language-models)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：通过子空间对齐合并多模态大语言模型
-13. [Data-Free Layer-Adaptive Merging via Fisher Information for Long-to-Short Reasoning LLMs](/20260303-20260401/2603.21705v1-data-free-layer-adaptive-merging-via-fisher-information-for-long-to-short-reasoning-llms)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：基于Fisher信息的LLM层自适应合并
-14. [Preference-Aligned LoRA Merging: Preserving Subspace Coverage and Addressing Directional Anisotropy](/20260303-20260401/2603.26299v1-preference-aligned-lora-merging-preserving-subspace-coverage-and-addressing-directional-anisotropy)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：合并多个LoRA模块与参数对齐
-15. [Label-Free Cross-Task LoRA Merging with Null-Space Compression](/20260303-20260401/2603.26317v1-label-free-cross-task-lora-merging-with-null-space-compression)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：针对大语言模型的基于适配器几何结构的无标签LoRA合并方法
-16. [Merge and Conquer: Instructing Multilingual Models by Adding Target Language Weights](/20260303-20260401/2603.28263v1-merge-and-conquer-instructing-multilingual-models-by-adding-target-language-weights)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：多语言大模型的模型合并
-17. [OptiMer: Optimal Distribution Vector Merging Is Better than Data Mixing for Continual Pre-Training](/20260303-20260401/2603.28858v1-optimer-optimal-distribution-vector-merging-is-better-than-data-mixing-for-continual-pre-training)  
-   标签：评分：10.0/10、query:modelmerge
-   evidence：事后合并分布向量以进行模型组合
-18. [Robust Heterogeneous Analog-Digital Computing for Mixture-of-Experts Models with Theoretical Generalization Guarantees](/20260303-20260401/2603.02633v1-robust-heterogeneous-analog-digital-computing-for-mixture-of-experts-models-with-theoretical-generalization-guarantees)  
-   标签：评分：9.0/10、query:llm-mllm-moe
-   evidence：混合专家模型与免微调框架
-19. [TSEmbed: Unlocking Task Scaling in Universal Multimodal Embeddings](/20260303-20260401/2603.04772v1-tsembed-unlocking-task-scaling-in-universal-multimodal-embeddings)  
-   标签：评分：9.0/10、query:llm-mllm-moe
-   evidence：结合混合专家模型 (MoE) 处理多模态嵌入
-20. [NeuronMoE: Neuron-Guided Mixture-of-Experts for Efficient Multilingual LLM Extension](/20260303-20260401/2603.05046v1-neuronmoe-neuron-guided-mixture-of-experts-for-efficient-multilingual-llm-extension)  
-   标签：评分：9.0/10、query:llm-mllm-moe
-   evidence：用于大模型扩展的混合专家模型
-21. [A Survey of Weight Space Learning: Understanding, Representation, and Generation](/20260303-20260401/2603.10090v1-a-survey-of-weight-space-learning-understanding-representation-and-generation)  
-   标签：评分：9.0/10、query:modelmerge
-   evidence：权重空间学习综述，涉及模型间的对称性与知识迁移
-22. [VC-Soup: Value-Consistency Guided Multi-Value Alignment for Large Language Models](/20260303-20260401/2603.18113v1-vc-soup-value-consistency-guided-multi-value-alignment-for-large-language-models)  
-   标签：评分：9.0/10、query:modelmerge
-   evidence：用于大语言模型多价值观对齐的模型合并
-23. [Secure Linear Alignment of Large Language Models](/20260303-20260401/2603.18908v2-secure-linear-alignment-of-large-language-models)  
-   标签：评分：9.0/10、query:modelmerge
-   evidence：跨模型对齐与表示收敛
-24. [Characterizing Linear Alignment Across Language Models](/20260303-20260401/2603.18908v3-characterizing-linear-alignment-across-language-models)  
-   标签：评分：9.0/10、query:modelmerge
-   evidence：跨语言模型的线性对齐与表征收敛
-25. [Aggregation Alignment for Federated Learning with Mixture-of-Experts under Data Heterogeneity](/20260303-20260401/2603.21276v1-aggregation-alignment-for-federated-learning-with-mixture-of-experts-under-data-heterogeneity)  
-   标签：评分：9.0/10、query:llm-mllm-moe
-   evidence：混合专家模型的联邦学习
-26. [AdaLTM: Adaptive Layer-wise Task Vector Merging for Categorical Speech Emotion Recognition with ASR Knowledge Integration](/20260303-20260401/2603.25041v1-adaltm-adaptive-layer-wise-task-vector-merging-for-categorical-speech-emotion-recognition-with-asr-knowledge-integration)  
-   标签：评分：9.0/10、query:modelmerge
-   evidence：自适应逐层任务向量合并与模型合并
-27. [Efficient Inference of Large Vision Language Models](/20260303-20260401/2603.27960v1-efficient-inference-of-large-vision-language-models)  
-   标签：评分：9.0/10、query:llm-mllm-moe
-   evidence：大视觉语言模型综述与高效设计
-28. [FedAFD: Multimodal Federated Learning via Adversarial Fusion and Distillation](/20260303-20260401/2603.04890v1-fedafd-multimodal-federated-learning-via-adversarial-fusion-and-distillation)  
-   标签：评分：8.0/10、query:modelmerge
-   evidence：多模态联邦学习中的对抗融合与表示对齐
-29. [Federated Heterogeneous Language Model Optimization for Hybrid Automatic Speech Recognition](/20260303-20260401/2603.04945v1-federated-heterogeneous-language-model-optimization-for-hybrid-automatic-speech-recognition)  
-   标签：评分：8.0/10、query:modelmerge
-   evidence：联邦学习中多个本地模型的合并
-30. [Ensembling Language Models with Sequential Monte Carlo](/20260303-20260401/2603.05432v1-ensembling-language-models-with-sequential-monte-carlo)  
-   标签：评分：8.0/10、query:modelmerge
-   evidence：将K个语言模型组合成集成分布
-31. [UniCom: Unified Multimodal Modeling via Compressed Continuous Semantic Representations](/20260303-20260401/2603.10702v1-unicom-unified-multimodal-modeling-via-compressed-continuous-semantic-representations)  
+1. [Unbiased Multimodal Reranking for Long-Tail Short-Video Search](/202604/03/2603.24975v2-unbiased-multimodal-reranking-for-long-tail-short-video-search)  
    标签：评分：8.0/10、query:llm-mllm-moe
-   evidence：统一多模态建模与视觉语言模型
-32. [Spatially Varying Coefficient Mallows Model Averaging](/20260303-20260401/2603.13930v1-spatially-varying-coefficient-mallows-model-averaging)  
+   evidence：大模型驱动的视频搜索多模态重排序
+2. [Context-specific Credibility-aware Multimodal Fusion with Conditional Probabilistic Circuits](/202604/03/2603.26629v1-context-specific-credibility-aware-multimodal-fusion-with-conditional-probabilistic-circuits)  
    标签：评分：8.0/10、query:modelmerge
-   evidence：候选模型的加权平均
-33. [A Heterogeneous Ensemble for Multi-Center COVID-19 Classification from Chest CT Scans](/20260303-20260401/2603.14621v1-a-heterogeneous-ensemble-for-multi-center-covid-19-classification-from-chest-ct-scans)  
+   evidence：上下文特定的可信度感知多模态融合框架
+3. [Demo-Pose: Depth-Monocular Modality Fusion For Object Pose Estimation](/202604/03/2603.27533v1-demo-pose-depth-monocular-modality-fusion-for-object-pose-estimation)  
+   标签：评分：8.0/10、query:modelmerge
+   evidence：用于物体姿态估计的多模态融合策略
+4. [When Choices Become Priors: Contrastive Decoding for Scientific Figure Multiple-Choice QA](/202604/03/2603.28026v1-when-choices-become-priors-contrastive-decoding-for-scientific-figure-multiple-choice-qa)  
+   标签：评分：8.0/10、query:llm-mllm-moe
+   evidence：多模态模型对科学图表视觉证据的推理
+5. [Physics-Embedded Feature Learning for AI in Medical Imaging](/202604/03/2603.28057v1-physics-embedded-feature-learning-for-ai-in-medical-imaging)  
    标签：评分：8.0/10、query:cv
-   evidence：视觉 Transformer 与图像分类集成
-34. [Vision-Language Model Based Multi-Expert Fusion for CT Image Classification](/20260303-20260401/2603.15154v1-vision-language-model-based-multi-expert-fusion-for-ct-image-classification)  
+   evidence：医学影像中的物理嵌入特征学习
+6. [Agentic Tool Use in Large Language Models](/202604/03/2604.00835v1-agentic-tool-use-in-large-language-models)  
    标签：评分：8.0/10、query:llm-mllm-moe
-   evidence：视觉语言模型中的多专家融合
-35. [Mastering the Minority: An Uncertainty-guided Multi-Expert Framework for Challenging-tailed Sequence Learning](/20260303-20260401/2603.15708v1-mastering-the-minority-an-uncertainty-guided-multi-expert-framework-for-challenging-tailed-sequence-learning)  
+   evidence：大语言模型中的智能体工具使用
+7. [DLWM: Dual Latent World Models enable Holistic Gaussian-centric Pre-training in Autonomous Driving](/202604/03/2604.00969v1-dlwm-dual-latent-world-models-enable-holistic-gaussian-centric-pre-training-in-autonomous-driving)  
+   标签：评分：8.0/10、query:cv
+   evidence：自动驾驶中以高斯为中心的表征学习
+8. [PDA: Text-Augmented Defense Framework for Robust Vision-Language Models against Adversarial Image Attacks](/202604/03/2604.01010v1-pda-text-augmented-defense-framework-for-robust-vision-language-models-against-adversarial-image-attacks)  
    标签：评分：8.0/10、query:llm-mllm-moe
-   evidence：多专家融合网络与集成LoRA用于序列学习
-36. [MOSAIC: Composable Safety Alignment with Modular Control Tokens](/20260303-20260401/2603.16210v1-mosaic-composable-safety-alignment-with-modular-control-tokens)  
-   标签：评分：8.0/10、query:modelmerge
-   evidence：可组合的安全对齐与模块化控制
-37. [AIMER: Calibration-Free Task-Agnostic MoE Pruning](/20260303-20260401/2603.18492v1-aimer-calibration-free-task-agnostic-moe-pruning)  
-   标签：评分：8.0/10、query:llm-mllm-moe
-   evidence：无需校准的任务无关 MoE 剪枝
-38. [Secure Linear Alignment of Large Language Models](/20260303-20260401/2603.18908v1-secure-linear-alignment-of-large-language-models)  
-   标签：评分：8.0/10、query:modelmerge
-   evidence：跨模型对齐与表示收敛
-39. [Similarity-Aware Mixture-of-Experts for Data-Efficient Continual Learning](/20260303-20260401/2603.23436v1-similarity-aware-mixture-of-experts-for-data-efficient-continual-learning)  
-   标签：评分：8.0/10、query:llm-mllm-moe
-   evidence：用于持续学习和知识迁移的混合专家模型
-40. [Mixture of Demonstrations for Textual Graph Understanding and Question Answering](/20260303-20260401/2603.23554v1-mixture-of-demonstrations-for-textual-graph-understanding-and-question-answering)  
-   标签：评分：8.0/10、query:llm-mllm-moe
-   evidence：用于示例选择的混合专家机制
-41. [Diet Your LLM: Dimension-wise Global Pruning of LLMs via Merging Task-specific Importance Score](/20260303-20260401/2603.23985v1-diet-your-llm-dimension-wise-global-pruning-of-llms-via-merging-task-specific-importance-score)  
-   标签：评分：8.0/10、query:modelmerge
-   evidence：合并任务特定重要性得分进行剪枝
-42. [A Step Toward Federated Pretraining of Multimodal Large Language Models](/20260303-20260401/2603.26786v1-a-step-toward-federated-pretraining-of-multimodal-large-language-models)  
-   标签：评分：8.0/10、query:llm-mllm-moe
-   evidence：多模态大语言模型的联邦预训练与对齐
-43. [Test-Time Instance-Specific Parameter Composition: A New Paradigm for Adaptive Generative Modeling](/20260303-20260401/2603.27665v1-test-time-instance-specific-parameter-composition-a-new-paradigm-for-adaptive-generative-modeling)  
-   标签：评分：8.0/10、query:modelmerge
-   evidence：用于自适应建模的测试时实例特定参数组合
-44. [Not Search, But Scan: Benchmarking MLLMs on Scan-Oriented Academic Paper Reasoning](/20260303-20260401/2603.28651v1-not-search-but-scan-benchmarking-mllms-on-scan-oriented-academic-paper-reasoning)  
-   标签：评分：8.0/10、query:llm-mllm-moe
-   evidence：多模态大语言模型推理
-45. [Aligning Multimodal Sequential Recommendations via Robust Direct Preference Optimization with Sparse MoE](/20260303-20260401/2603.29259v1-aligning-multimodal-sequential-recommendations-via-robust-direct-preference-optimization-with-sparse-moe)  
-   标签：评分：8.0/10、query:llm-mllm-moe
-   evidence：使用稀疏混合专家模型的多模态序列推荐
-46. [Curvature-Guided LoRA: Steering in the pretrained NTK subspace](/20260303-20260401/2603.29824v1-curvature-guided-lora-steering-in-the-pretrained-ntk-subspace)  
-   标签：评分：8.0/10、query:modelmerge
-   evidence：预测对齐问题，使 PEFT 与全量微调匹配
+   evidence：鲁棒视觉语言模型的防御框架
+9. [How Pruning Reshapes Features: Sparse Autoencoder Analysis of Weight-Pruned Language Models](/202604/03/2603.25325v1-how-pruning-reshapes-features-sparse-autoencoder-analysis-of-weight-pruned-language-models)  
+   标签：评分：7.0/10、query:llm-mllm-moe
+   evidence：语言模型中的特征几何与剪枝
+10. [Few-shot Writer Adaptation via Multimodal In-Context Learning](/202604/03/2603.29450v1-few-shot-writer-adaptation-via-multimodal-in-context-learning)  
+   标签：评分：7.0/10、query:llm-mllm-moe
+   evidence：用于手写文本识别的多模态上下文学习
+11. [TrafficMoE: Heterogeneity-aware Mixture of Experts for Encrypted Traffic Classification](/202604/03/2603.29520v1-trafficmoe-heterogeneity-aware-mixture-of-experts-for-encrypted-traffic-classification)  
+   标签：评分：7.0/10、query:llm-mllm-moe
+   evidence：用于流量分类的混合专家模型
 
 
 <div class="dpr-home-promo-card">

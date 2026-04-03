@@ -1,0 +1,457 @@
+Title: PET-DINO: Unifying Visual Cues into Grounding DINO with Prompt-Enriched Training
+
+URL Source: https://arxiv.org/pdf/2604.00503v1
+
+Published Time: Thu, 02 Apr 2026 00:40:49 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# PET-DINO: Unifying Visual Cues into Grounding DINO with Prompt-Enriched Training 
+
+## Weifu Fu 1†* Jinyang Li 2∗ Bin-Bin Gao 1 Jialin Li 3
+
+## Yuhuan Lin 1 Hanqiu Deng 1 Wenbing Tao 2 Yong Liu 1 Chengjie Wang 1
+
+> 1
+
+YouTu Lab, Tencent 2Huazhong University of Science and Technology 3Kling Team, Kuaishou Technology 
+
+{ryanwfu, danylgao, choasliu }@tencent.com, {jinyangli, wenbingtao }@hust.edu.cn 
+
+## Abstract 
+
+Open-Set Object Detection (OSOD) enables recognition of novel categories beyond fixed classes but faces challenges in aligning text representations with complex visual con-cepts and the scarcity of image-text pairs for rare cate-gories. This results in suboptimal performance in spe-cialized domains or with complex objects. Recent visual-prompted methods partially address these issues but often involve complex multi-modal designs and multi-stage opti-mizations, prolonging the development cycle. Additionally, effective training strategies for data-driven OSOD models remain largely unexplored. To address these challenges, we propose PET-DINO , a universal detector supporting both text and visual prompts. Our Alignment-Friendly Visual 
+
+Prompt Generation ( AFVPG ) module builds upon an ad-vanced text-prompted detector, addressing the limitations of text representation guidance and reducing the development cycle. We introduce two prompt-enriched training strate-gies: Intra-Batch Parallel Prompting ( IBP ) at the itera-tion level and Dynamic Memory-Driven Prompting ( DMD )at the overall training level. These strategies enable si-multaneous modeling of multiple prompt routes, facilitating parallel alignment with diverse real-world usage scenarios. Comprehensive experiments demonstrate that PET-DINO exhibits competitive zero-shot object detection capabilities across various prompt-based detection protocols. These strengths can be attributed to inheritance-based philoso-phy and prompt-enriched training strategies, which play a critical role in building an effective generic object detector. Project page: https://fuweifuvtoo.github.io/pet-dino. 
+
+## 1. Introduction 
+
+As a fundamental pillar of visual perception, object detec-tors play a crucial role in a wide range of real-world appli-cations. However, conventional detection models [6, 15, 33,  
+
+> *Equal contribution, †Corresponding author.
+
+38] are restricted to a fixed set of predefined categories, lim-iting their ability to handle the vast diversity of visual con-cepts. Open-Set Object Detection (OSOD) enables mod-els to recognize and localize novel visual concepts unseen during training, thereby overcoming the limitations of tradi-tional detectors. This advancement paves the way for more general and intelligent visual perception systems that can adapt to the evolving complexity of the real world. Current mainstream open-vocabulary detection meth-ods [7, 17, 20, 32] use large-scale data or vision-language models (VLMs) to align visual representations with pre-trained text encoders, enabling zero-shot generalization by capturing high-level category semantics. Nevertheless, this paradigm still encounters significant challenges in truly open-world scenarios. First, text features often struggle to correspond effectively to visual concepts in specialized domains or for complex objects, making it difficult to ac-curately distinguish these categories. Second, the scarcity of image-text aligned samples for long-tail categories fur-ther impedes the model’s open-vocabulary performance. In contrast, visual representations inherently contain rich in-formation that extends beyond textual descriptions and are not constrained by cross-modal alignment. Consequently, recent research has explored the use of visual representa-tions of objects as prompts (i.e., visual prompts) for de-tectors, leveraging their strong representational capacity to compensate for the limitations of text-only prompts. Recent works, such as T-Rex2 [10], aim to build mod-els that accept both visual and textual prompts as input. By leveraging object visual representations to guide detection, T-Rex2 achieves strong zero-shot performance in both inter-active and generic detection. CP-DETR [1] uses an efficient early cross-modal fusion encoder to enhance interactions between image features and category semantics, boosting generalization. Similarly, YOLOE [27] achieves real-time detection, low cost, and strong generalization through effi-cient modality alignment and visual prompt encoding. These approaches employ tightly coupled model archi-tectures and rely on large-scale supervised training to real-1
+
+> arXiv:2604.00503v1 [cs.CV] 1 Apr 2026
+
+ize open-set perception. However, such integrated solutions inevitably require complex multi-modal processing designs and multi-stage training processes, all of which prolong the development cycle. Furthermore, for models that are highly data-dependent, it is crucial to thoroughly explore and op-timize training strategies, as this can significantly enhance data-driven effectiveness. Therefore, there remains consid-erable room for improvement in both model construction and training strategies within existing methods. In terms of model construction, we aim to build upon an advanced text-prompted detector and concentrate on the development of efficient visual prompt schemes, thereby re-ducing the development cycle and harmonizing text and vi-sual prompt routes. Specifically, we propose an Alignment-Friendly Visual Prompt Generation (AFVPG ) module that extracts visual prompt embeddings from enhanced image features and shares parameters with the text prompt branch for efficient visual cue injection. Within the detection trans-former, the text-prompted process provides the model with fundamental high-level semantic understanding, while the visual prompts generated by our proposed module effec-tively align instance-level image representations. Regarding training strategies, since visual prompts are derived from the input image itself, this limits the diver-sity of visual prompts and consequently affects the model’s open-set perception. This also makes it difficult to model cross-image visual prompts and class-level multi-image global visual prompts, thus restricting alignment with real-world usage scenarios. Moreover, offline pre-extraction of visual prompts is not applicable to iterative models dur-ing training. Therefore, we design training process-based strategies to address these issues. To align with real-world scenarios, we design our train-ing strategies to reflect three practical visual prompting modes: interactive exemplar-guided prompting, class-level global prompting, and cross-image prompting. Leverag-ing the iterative nature of training, we propose the first training strategies for the dual-modality prompted detec-tor: Intra-Batch Parallel Prompting (IBP ) and Dynamic Memory-Driven Prompting (DMD ). At the iteration level, IBP utilizes visual prompts from other images within the same batch as prompts for the current image, and aggregate prompts of the same category to also serve as visual prompts for the current image during training, thereby simultane-ously modeling exemplar-guided, class-level global, and cross-image prompting. At the overall training level, DMD introduces a Visual Cues Bank that dynamically stores ex-tracted visual prompt representations. In each iteration, ag-gregated prompts sampled from the Visual Cues Bank are used to further enhance the class-level global prompting mode. These also improve classification performance. Based on the above methods, we propose PET-DINO ,a universal object detector compatible with both text and visual prompts, as well as the first corresponding train-ing strategies. Analytical experiments show that our visual prompt generation scheme based on text-prompt-based pre-training achieves a higher upper bound compared to training with visual prompts alone, and that both training strategies are remarkably effective. Our method achieves significant zero-shot detection performance on COCO [19], LVIS [8], and ODinW [13], and delivers excellent results across vari-ous prompt-based detection routes. Furthermore, in-domain evaluations also show strong performance. Our main contributions are summarized as follows: • We propose an Alignment-Friendly Visual Prompt Gen-eration module, endowing advanced text-prompted de-tector with enhanced perception capabilities for linguis-tically complex scenarios, while also preserving the per-formance of text-prompted detection and reducing the de-velopment cycle. • We propose two prompt-enriched training strategies. Intra-Batch Parallel Prompting facilitates the simultane-ous modeling of multiple prompt routes, while Dynamic Memory-Driven Prompting employs a Visual Cues Bank to propagate and enrich visual prompts. These strategies collectively allow the model to handle diverse real-world scenarios in a parallel manner. • Our approach achieves competitive performance against mainstream visual-prompted open-set Object detectors across multiple benchmarks. Furthermore, experimental analysis confirms the advantages of text-prompted pre-training over training from scratch. 
+
+## 2. Related Work 
+
+Text-prompted open-vocabulary object detection. Main-stream methods achieve zero-shot generalization by align-ing visual features with text embeddings from pre-trained vision-language models, thereby capturing high-level cat-egory semantics. ViLD [7] distills knowledge from the large-scale vision-language model CLIP [24]. Region-CLIP [37] and DetCLIP [31] align language with image re-gions and leverage image-text pairs with pseudo boxes to enrich region-level knowledge for more generalized object detection. GLIP [17] further unifies object detection and phrase grounding tasks, transforming detection into text-guided region localization. Grounding DINO [20] further proposes a feature enhancer and a cross-modality decoder to achieve denser fusion. GLEE [29], using sentence-level text encoding, achieves object perception tasks without task-specific fine-tuning. Moreover, text-prompted and long-tail perception paradigms have also been extended to segmen-tation and tracking [2–4, 16, 23]. 
+
+Object detection with visual prompts. While text prompts offer a generic description, certain objects can be challeng-ing due to the potential mismatch between text descriptions and complex visual scenes. In such cases, visual prompts 2Bi -Cross - 
+
+> Attention
+> Deformable
+> Cross -
+> Attention
+> Self -
+> Attention
+> Query
+> Selection
+> Interaction
+> Decoder
+> Text
+> Cross -
+> Attention
+> Coordinates
+> Intra -Batch
+> …
+> Visual Cues Bank
+> Current
+> A F V P G
+> Object Representations
+> Feature Enhancer
+> Visual
+> Prompt
+> Intra -Batch
+> Memory -Driven
+> Text Prompt
+> ‘penguin ’
+> ‘person ’
+> ‘bicycle ’
+> ...
+> Position
+> Encoding
+> Self -
+> Attention FFN
+> Backbone
+> Text
+> Encoder
+> FFN
+> FFN
+> Self -
+> Attention
+
+Figure 1. Overall architecture of PET-DINO. Input coordinates undergo a Visual Prompt Generation process, interacting with enhanced image features to obtain visual prompts. The text encoder creates text embeddings, which interact with image features in the Feature Enhancer module to produce text prompts. Both types of prompts guide the Query Selection Module, offering location priors for initial queries. These queries are then refined through decoder layers to predict objects and classifications. 
+
+can serve as a complement to text prompts. MQDet [30] augments text queries with class-specific visual informa-tion from query images. T-Rex [9] is an interactive object counting model that can first detect and then count arbi-trary objects. T-Rex2 [10] proposes a general open-set ob-ject detection method that combines text and visual prompts and aligns the two prompt modalities via contrastive learn-ing, effectively improving the model’s generality and zero-shot detection capability. DINOv [14] enables segmentation and detection via visual in-context prompting, employing exemplars like masks and boxes to provide specific guid-ance. CP-DETR [1] proposes a unified detector that fuses text, visual, and optimized prompts, exploring more effi-cient cross-modal fusion mechanisms. MI-Grounding [35] introduces the “Image Prompt Paradigm”, which uses a few instance images as prompts to achieve open-set object de-tection and segmentation. YOLOE [27] achieves real-time detection and segmentation of arbitrary objects across di-verse open-world scenarios, supporting text, visual, or no prompts, balancing speed, accuracy, and flexibility. 
+
+## 3. Method 
+
+Built upon the text-prompted detector Grounding DINO [20], PET-DINO introduces novel visual prompting and prompt-enriched training strategies, as shown in Figure 1. PET-DINO supports two routes: visual prompt route and textual prompt route. The input coordinates are pro-cessed by Alignment-Friendly Visual Prompt Generation (AFVPG) module to obtain visual prompts. For textual in-puts, the text encoder produces text embeddings, which are further enhanced through interaction with image features in the Feature Enhancer module. Both types of prompt serve as guidance in the query selection module, providing loca-tion priors for the 900 initialized queries, which are then it-eratively refined by a 6-layer interaction decoder to capture instance-level information for precise object detection. We propose the first large-scale training strategies for visual prompt training, including Intra-Batch Parallel Prompting (IBP) and Dynamic Memory-Driven Prompting (DMD). This scheme aims to achieve alignment with vi-sual prompt detection usage scenarios in a parallel manner, expand the discriminative range of categories, and enhance category sensitivity. For optimization, the training objec-tives for our model are as follows: 
+
+L = LL1 + LGIoU + Lalignment (1) where LL1 and LGIoU denote the localization losses, cor-responding to the L1 loss and GIoU loss [25], respectively. The term Lalignment refers to the focal loss [18] used for classification. 
+
+3.1. Prompt-guided Detection Routes 
+
+Inherited Text Prompt Route. For textual inputs, category names are concatenated as input text to reformulate object detection as a grounding task. The enhanced text features output from the feature enhancer module can be regarded as text prompt embeddings, which then serve as guidance in the query selection module. The selected queries are fed into the cross-modality decoder, which incorporates a text cross-attention layer to inject text information into queries. Finally, text prompt embeddings are used for contrastive learning with instance-level representations output by the decoder, enabling open-vocabulary perception. 
+
+Visual Prompt Routes. We aim to develop two types of visual prompt routes with broad practical applications. The first, termed Exemplar-Guided Route , enables the detector to interactively capture objects belonging to the same cat-egory as a given instance-level visual prompt. The sec-ond, referred to as Global-Concept Route , aggregates var-ious visual prompts from multiple images to generate a generic and comprehensive prompt for each category. By 3inputting global prompts for various categories, the model can achieve broad recognition across a wide range of object categories, thereby enabling comprehensive perception. 
+
+3.2. Streamlined Visual Cue Injection 
+
+To efficiently inject visual cues into the model while main-taining the performance of text prompt route, we design an Alignment-Friendly Visual Prompt Generation (AFVPG) module, which extracts visual prompt embeddings from the enhanced image features and incorporates a parameter-sharing mechanism with the text prompt branch. Specifically, directly extracting instance-level visual prompt embeddings from the backbone’s under-enhanced features is challenging. These features are denoted as xi ∈
+
+RCi×Hi×Wi , where i ∈ { 1, 2, ..., L } indexes the L fea-ture map layers. Moreover, early interaction between vi-sual prompts and image features may gradually widen the gap between them. To address these issues, we instead use enhanced image features x′ 
+
+> i
+
+∈ RCi×Hi×Wi , which have been enhanced by deformable self-attention [38] and feed-forward networks (FFN) in the Feature Enhancer. The en-hanced image features are obtained as follows: 
+
+x′ 
+
+> i
+> Li=1
+
+= FFN(DeformSelfAttn( {xi}Li=1 )) (2) To ensure category balance and computational effi-ciency, we follow the inductive approach for each cate-gory’s visual prompt as in T-Rex2 [10]. Specifically, we ini-tialize a learnable content embedding, which is then broad-cast K times for K prompt boxes, denoted as C ∈ RK×D .Additionally, we initialize an extra universal learnable con-tent carrier C′ ∈ R1×D to aggregate features. By concate-nating C and C′ and applying a linear layer for projection, we obtain the input query embedding Q ∈ R(K+1) ×D .For each category, we first normalize the coordinates of K prompt boxes. These normalized coordinates are then concatenated with a global normalized coordinate 
+
+[0 .5, 0.5, 1, 1] . The resulting (K + 1) coordinates are subse-quently encoded using sine-cosine positional encoding and passed through a linear transformation, producing Qpos ∈
+
+R(K+1) ×D . The Q and Qpos are generated as follows: 
+
+Q = Linear (CAT ([ C; C′])) (3) 
+
+Qpos = Linear (PE ( b1, . . . , b K , [0 .5, 0.5, 1, 1])) (4) The queries interact with the enhanced image features 
+
+x′ 
+
+> i
+
+through multi-scale deformable cross-attention, enabling them to focus on instance-specific information of interest within the visual cues. Afterward, self-attention and a feed-forward network (FFN) are applied, allowing the universal content carrier to integrate information from other queries. This aggregation yields the global visual prompt embedding 
+
+V ∈ R1×D . The process is formulated as follows. 
+
+Q′ = MSDeformAttn( Q, Q pos , {x′i}Li=1 ) (5) Current Intra -Batch             
+
+> Image
+> Features
+> Coordinates
+> Current
+> Intra -
+> Batch
+> Visual Prompt
+> Generation
+> 'jacket' 'person' 'kayak' 'cap' 'dog' 'bicycle'
+> Current
+> Visual
+> Prompt Intra -Batch
+> Aggregate
+> 'jacket' 'jacket' 'person' 'person' 'kayak' 'cap' 'cap' 'dog' 'bicycle'
+> Image -level
+> Class -level
+> Instance -level
+
+Figure 2. Intra-Batch Parallel Prompting Diagram. Image and their target coordinates within a batch are processed to generate image-level visual prompts. We incorporate visual prompts from other samples as additional prompts for the current image, ag-gregating those from the same category to form class-level visual prompts. 
+
+V = FFN(SelfAttn( Q′))[ −1] (6) We obtain the visual prompt embeddings of multiple cat-egories and combine them as [V1, V 2, ..., V c]. These em-beddings are obtained from enhanced image features x′
+
+> i
+
+,thereby promoting better alignment with the instance infor-mation embedded within them. Ultimately, a grounding-like process guided by visual prompts can be achieved. No-tably, given the versatility of the deformable self-attention and FFN in the Feature Enhancer, we share them between visual prompt generation and text prompt detection. 
+
+3.3. Intra-Batch Parallel Prompting 
+
+We leverage the efficient parallelism of mini-batch training by treating the visual prompts corresponding to different samples within the same batch as negative samples for each other and aggregating them. This approach aims to break the compressed category discrimination space caused by single-image visual prompts and to achieve alignment with general usage scenarios, including both Exemplar-Guided Route and Global-Concept Route , in a parallel manner. The Intra-Batch Parallel (IBP) Prompting is shown in Figure 2. A batch of images [I1, I 2, . . . , I N ], where N
+
+denotes the batch size, together with their corresponding coordinates, is fed into the visual prompt generation pro-cess. This process produces all image-level visual embed-dings for each category, denoted as V jc , where c represents the category id and j represents the sample index in the batch. For category c, all visual embeddings of category 4c within the batch are grouped together. This group is de-noted as Vc = [ . . . , V jc , V j+1  
+
+> c
+
+, . . . ], which contains n ele-ments, where n ≤ N .For the visual embeddings of category c from non-current images [I1, . . . , I i−1, I i+1 , . . . , I N ] in the batch, they are aggregated as follows: 
+
+V batch  
+
+> c
+
+=
+
+
+
+> 1
+> n−1
+
+X 
+
+> j∈J
+> j̸=i
+
+V jc , if i ∈ J 
+
+> 1
+> n
+
+X
+
+> j∈J
+
+V jc , if i / ∈ J 
+
+(7) where J is the set of indices of images in the batch that contain category c, V batch c denotes the aggregated visual prompt from non-self samples. In this way, for category 
+
+c in image Ii, we obtain two visual prompts, denoted as 
+
+{V ic , V batch c }.Here, V ic is derived from the self-image and is respon-sible for interactive detection during training ( Exemplar-Guided Route ). In contrast, V batch c is obtained by aggregat-ing the embeddings from other images in the batch, which not only facilitates the optimization of cross-image visual prompt detection, but also enables class-level, multi-image global visual prompt detection ( Global-Concept Route ). Thus, this design enables the alignment between training and general usage scenarios in a parallel fashion. Further-more, when the current image does not contain category 
+
+c, i.e., V ic /∈ V c, Intra-Batch Parallel Prompting also en-larges the category discrimination space and enhances the category sensitivity of prompt-based detection. In addi-tion, when multiple datasets are involved in training, each batch is constructed by sampling images from only a single dataset to prevent semantic ambiguity arising from conflict-ing category definitions. 
+
+3.4. Dynamic Memory-Driven Prompting 
+
+While the IBP strategy offers a strong foundation, its ca-pacity for generating diverse prompts across training iter-ations is limited. To address this, we introduce Dynamic Memory-Driven (DMD) Prompting, which is designed to further expand prompt diversity and drive additional perfor-mance gains in the Global-Concept Route scenario. We introduce a Visual Cues Bank as a carrier for visual prompt propagation during iterative training. We employ a dynamic update strategy, which offers superior adaptabil-ity to continually iterative networks compared to offline vi-sual prompts. The Visual Cues Bank is updated with newly extracted visual prompt embeddings, including both cur-rent and intra-batch prompts, thus maintaining a continu-ally iterative representation space for dynamic prompting. Specifically, for each category, we maintain a first-in-first-out (FIFO) queue of length M to ensure prompt updates. During each training iteration, we randomly select d cate-gories (including both negative and positive ones) from the dataset and sample their corresponding prompt embeddings from the Visual Cues Bank. For each category c, We extract the historical visual prompts [ eV 1 
+
+> c
+
+, eV 2 
+
+> c
+
+, . . . , eV Mc ] from the Visual Cues Bank. To align with the Global-Concept Route scenario, we further aggregate these embeddings to obtain a generic visual rep-resentation for category c:
+
+V mem  
+
+> c
+
+= 1
+
+M
+
+> M
+
+X
+
+> k=1
+
+eV kc (8) Based on the above methods, our approach models three types of visual prompting in parallel . For each category c
+
+in image i, we obtain three distinct visual prompt embed-dings, denoted as {V ic , V batch  
+
+> c
+
+, V mem  
+
+> c
+
+}. As an additional benefit, the Visual Cues Bank facilitates efficient training by providing diverse visual prompt embeddings, which enables contrastive learning between categories that rarely co-occur within the same image. Since each dataset possesses a dis-tinct category dictionary, we maintain separate Visual Cues Banks for each training dataset (e.g., Object365, OpenIm-ages) to preserve semantic consistency within each domain. 
+
+## 4. Experiments 
+
+4.1. Dataset settings 
+
+We train our models using datasets of varying scales to fa-cilitate comprehensive experimentation. For the small-scale setting, we use only the Object365 dataset [26]. In the large-scale setting, we further incorporate data from Open-Images [12] and V3Det [28]. All datasets employed in our experiments are publicly available. Notably, our approach requires a significantly smaller amount of data compared to other methods such as T-Rex2[10] and CP-DETR[1]. For evaluation, we report zero-shot detection performance on COCO [19], LVIS minival [8, 11], and ODinW [13]. 
+
+4.2. Implementation Details 
+
+We develop two model variants based on Swin-T [21] and Swin-L. We use BERT-base [5] as the text encoder, and adopt the checkpoints from MM-Grounding-DINO [36]. We use AdamW [22] as the optimizer with a weight de-cay of 1e-4. All experiments are run on 8 GPUs with a total batch size of 32. During training, only the network modules related to visual prompt routes are updated with a learning rate of 1e-4, while the image backbone and other modules are frozen. Models are trained for 12 epochs, with the learning rate reduced by a factor of 10 at epochs 8 and 11. We use a cyclical training strategy: 8 iterations of visual prompt tuning followed by 1 iteration of text prompt tuning. For Dynamic Memory-Driven Prompting, we set M to 16. The hyperparameter d is set to 40 for category-rich datasets such as Object365, OpenImages, and V3Det. 5Method Open Prompt Backbone VLM sup. Data Training Data COCO LVIS ODinW35 Source Type Size T-Rex2 [10] N Visual-I Swin-T CLIP 3.1M O365, OpenImages, HierText, CrowdHuman, SA-1B 56.6 59.3 37.7 CP-DETR-T [1] N Visual-I Swin-T CLIP 3.3M O365, OpenImages, GoldG, V3Det 61.8 64.1 41.0                                                        
+
+> PET-DINO YVisual-I Swin-T -0.6M O365 64.0 61.8 38.8
+> PET-DINO YVisual-I Swin-T -2.5M O365, OpenImages, V3Det 64.3 64.5 48.3
+> T-Rex2 [10] NVisual-I Swin-L CLIP 3.1M O365, OpenImages, HierText, CrowdHuman, SA-1B 58.5 62.5 39.7 CP-DETR-L *[1] NVisual-I Swin-L CLIP 3.3M O365, OpenImages, GoldG, V3Det 68.4 71.6 50.6 PET-DINO YVisual-I Swin-L -0.6M O365 66.4 64.3 39.0
+> PET-DINO YVisual-I Swin-L -2.5M O365, OpenImages, V3Det 66.5 65.8 49.7
+
+Table 1. Comparison for zero-shot interactive object detection through visual prompts. Fixed AP is reported on LVIS minival set. Bold 
+
+and underline denote the best and second-best results in each column, respectively. * means the training set of the evaluation dataset was used for pre-training with text prompts, so this model is not in a zero-shot setting. Method Open Prompt Backbone VLM sup. Data Training Data COCO LVIS ODinW35 Source Type Size T-Rex2 [10] N Visual-G Swin-T CLIP 3.1M O365, OpenImages, HierText, CrowdHuman, SA-1B 38.8 37.4 23.6 YOLOE-v11-S [27] Y Visual-G YOLO-v11-S MobileCLIP 1.4M O365, GoldG - 26.2 -                                                      
+
+> PET-DINO YVisual-G Swin-T -0.6M O365 40.3 29.6 20.4
+> PET-DINO YVisual-G Swin-T -2.5M O365, OpenImages, V3Det 38.4 31.5 25.5
+> T-Rex2 [10] NVisual-G Swin-L CLIP 3.1M O365, OpenImages, HierText, CrowdHuman, SA-1B 46.5 47.6 27.8 YOLOE-v11-L [27] YVisual-G YOLOv11-L MobileCLIP 1.4M O365, GoldG -33.7 -
+> PET-DINO YVisual-G Swin-L -0.6M O365 46.7 34.9 24.2
+> PET-DINO YVisual-G Swin-L -2.5M O365, OpenImages, V3Det 44.3 35.7 28.6
+
+Table 2. Comparison for zero-shot generic object detection through visual prompts. Fixed AP is reported on LVIS minival set. Bold 
+
+and underline denote the best and second-best results in each column, respectively. 
+
+4.3. Protocols and Metrics 
+
+Our method aims to align model training with real-world application scenarios: Exemplar-Guided Route and Global-Concept Route . During testing, these can be evaluated us-ing the Visual-I and Visual-G protocols [10], respectively. Therefore, we use three different evaluation protocols un-der different routes. In the Visual-I protocol, models operate under the 
+
+Exemplar-Guided Route . For each test image, we randomly select one ground-truth (GT) box for each category to obtain visual prompt. This protocol effectively reflects the core ca-pabilities required for interactive object detection and has a wide range of applications, such as automatic annotation. In the Visual-G protocol, models operate under the Global-Concept Route . For each category, we randomly sample 16 images containing that category from the training set and extract their visual prompt embeddings offline. Then we compute the average embedding for each category and use these embeddings as input visual prompts. In the Text pro-tocol, all category names from the benchmark are used as text inputs to generate text prompts. For all protocols, Av-erage Precision (AP) is used as the evaluation metric. 
+
+4.4. Comparison with Generic Detector 
+
+Exemplar-Guided Visual Prompt Evaluation. As shown in Table 1, with the Swin-T backbone and using only the Objects365 dataset, PET-DINO achieves state-of-the-art zero-shot performance on COCO, surpassing CP-DETR by 2.2 AP. This demonstrates the high efficiency of our prompt-enriched training strategies, which enables strong performance even with limited data. Notably, CP-DETR uses 5.5 times more training data (3.3M vs. 0.6M), fur-ther proving the advantage of our method in reducing train-ing cost. When trained with larger-scale datasets, PET-DINO significantly outperforms previous methods across all benchmarks. Compared to CP-DETR-T, the perfor-mance of Visual-I on ODinW35 is improved from 41.0 AP to 48.3 AP. When using the Swin-L backbone and train-ing on multiple datasets, PET-DINO achieves 65.8 AP in zero-shot evaluation on LVIS minival. These experimental results indicate that our approach shows clear superiority in interactive object detection. 
+
+Global-Concept Visual Prompt Evaluation. The Visual-G evaluation results are shown in Table 2. With the Swin-T backbone and only Objects365 for training, PET-DINO achieves 40.3 AP on COCO, outperforming T-Rex2 by 1.5 AP. When trained with multiple datasets, Visual-G achieves 25.5 AP on ODinW35, surpassing T-Rex2 by 1.9 AP. How-ever, on LVIS-minival, PET-DINO shows only limited per-formance compared to T-Rex2. This may be attributed, on one hand, to the limited long-tail category performance of our inherited pre-trained model [36], and on the other hand, to T-Rex2’s utilization of the open-vocabulary capabilities of the vision-language model CLIP [24] and the SA-1B dataset produced by the data engine, which covers more diverse scenarios. When using the Swin-L backbone with 6Method Prompt Backbone Training Data COCO LVIS ODinW35 Type Grounding DINO [20] Text Swin-T O365, GoldG, Cap4M 48.4 27.4 22.3 MM-Grounding-DINO [36] Text Swin-T O365, GoldG, V3Det 50.6 40.5 21.4                               
+
+> PET-DINO Text Swin-T O365 †49.8 ↓0.837.8 ↓2.720.6 ↓0.8
+> Grounding DINO [20] Text Swin-L O365, OpenImages, GoldG 52.5 33.9 26.1 MM-Grounding-DINO [36] Text Swin-L O365V2, OpenImage, GoldG 53.0 36.7 23.9
+> PET-DINO Text Swin-L O365 †54.0 ↑1.039.3 ↑2.623.1 ↓0.8
+
+Table 3. Comparison for zero-shot generic object detection through text prompts. Fixed AP is reported on LVIS minival set. † means that a small number of iterations on Object365 are not for dedicated text-prompt training, but specifically to prevent the degradation of the inherited text-prompt performance. Method Prompt Backbone Training Data COCO Type X-Decoder T [39] Text Focal-T COCO+CC3M+... 43.6 OpenSeed T [34] Text Swin-T COCO+O365 52.0 OpenSeed L [34] Text Swin-L COCO+O365 58.2 MI Grounding-S [35] Image ViT-L COCO+LVIS 54.7 DINOv [14] Visual-G Swin-T COCO+SA-1B 45.2 DINOv [14] Visual-G Swin-L COCO+SA-1B 54.2         
+
+> PET-DINO Visual-G Swin-T COCO+LVIS 50.0 PET-DINO Visual-G Swin-L COCO+LVIS 56.3
+
+Table 4. In-domain evaluation on COCO. We evaluate all models on COCO val set with the box AP reported. 
+
+T-Rex2 VP encoder AFVPG COCO Text COCO Visual-I COCO Visual-G 
+
+✓ 49.6 59.2 37.6 
+
+✓ 49.8 64.0 ↑4.8 40.3 ↑2.7
+
+Table 5. Ablation study of visual prompt generation. AFVPG in-dicates Alignment-Friendly Visual Prompt Generation and yields consistent improvements on both Visual-I and Visual-G protocols. 
+
+Row AFVPG IBP DMD COCO Text COCO Visual-I COCO Visual-G 0 50.6 - -1 ✓ 49.7 67.0 12.5 2 ✓ ✓ 49.8 63.5 24.7 3 ✓ ✓ 49.6 63.2 37.2 4 ✓ ✓ ✓ 49.8 64.0 40.3 
+
+Table 6. Ablation study of PET-DINO. IBP and DMD de-note Intra-Batch Parallel prompting and Dynamic Memory-Driven prompting, respectively. 
+
+Objects365, PET-DINO achieves state-of-the-art zero-shot performance on COCO with 46.7 AP. These results demon-strate the effectiveness of our model for generic object de-tection with visual prompts. 
+
+Text Prompt Evaluation. In this section, we evaluate the model’s performance under text prompts. Given that PET-DINO shares network components across text and visual prompt route, we examine the impact of this joint training paradigm on text prompt performance. As shown in Table 3, PET-DINO with a Swin-T backbone shows slightly lower performance compared to its predecessor, MM-Grounding-DINO [36]. This is expected due to the limited tuning of text prompt modules intended to preserve the original model’s capabilities. Crucially, despite this constraint, PET-DINO’s text prompt performance is not only well preserved but also enhanced with a more powerful backbone. Specif-ically, PET-DINO with a Swin-L backbone achieves im-provements of 1.0 AP and 2.6 AP on COCO and LVIS 
+
+minival , respectively. These results indicate that the shared network has enough capacity to accommodate the joint training of both routes. Furthermore, we speculate that training with visual prompts may facilitate the enhancement of image features for the text prompt route. 
+
+4.5. In-domain Evaluation on COCO 
+
+Table 4 presents a comparison with several state-of-the-art universal models, all of which are trained on the COCO dataset. X-Decoder [39] and OpenSeed [34] are evaluated using the text prompt protocol, while DINOv [14] and PET-DINO adopt the Visual-G protocol, and MI Grounding-S [35] utilizes the image prompt paradigm. With the Swin-L backbone, PET-DINO achieves a +2.1 AP improvement over DINOv. Remarkably, with only a few visual prompts per category, PET-DINO attains results comparable to well-established text-prompted open-set models. For instance, the performance gap between PET-DINO (Swin-L) and OpenSeed (Swin-L) is merely 1.9 AP. These results col-lectively underscore the strong effectiveness of PET-DINO and the robust performance of its visual prompt route in in-domain scenarios. 
+
+4.6. Ablation Study 
+
+To save computational resources, all ablation studies are conducted using a Swin-T backbone and are trained on the Object365 dataset. 
+
+Effectiveness of AFVPG. To demonstrate the effectiveness of the proposed Alignment-Friendly Visual Prompt Gener-ation module, we replace it with T-Rex2 visual prompt en-coder. As shown in Table 5, the visual prompt detection 7capability provided by the T-Rex2 visual prompt encoder proves to be suboptimal. In contrast, our AFVPG module achieves notable improvements ( +4.8 AP on Visual-I and 
+
++2.7 AP on Visual-G), indicating that extracting instance-level visual prompt embeddings from the enhanced features is more effective than using the backbone’s under-enhanced features, and since the AFVPG module shares parameters with the text prompt branch, the global high-level semantic representations from the text branch also contribute to the visual prompt learning, and further proving the effective-ness of the inheritance strategy. 
+
+Overall Ablation Study of PET-DINO. In this section, we validate the effectiveness of our visual prompt generation scheme and the two prompt-enriched training strategies. As shown in Table 6, Row 0 indicates the base model MM-Grounding-DINO, which is a text-prompted model that does not support visual prompt detection. In Row 1, the in-corporation of the Alignment-Friendly Visual Prompt Gen-eration (AFVPG) module extends MM-Grounding-DINO to support visual prompts. Although the Visual-G metric remains low at this stage, the model achieves a notable Visual-I performance of 67.0 AP. Row 2 and Row 3 in-corporate Dynamic Memory-Driven Prompting (DMD) and Intra-Batch Parallel Prompting (IBP), respectively, both of which improve Visual-G performance. In particular, Row 3 substantially increases the Visual-G metric from 12.5 AP to 37.2 AP ( +24.7 AP). Although Visual-I sees a slight de-crease, we argue that this reflects a beneficial shift in the model’s focus: during inference, it relies less on replicating specific instances and more on recognizing the generaliz-able class patterns they represent. Row 4 incorporates both AFVPG and two prompt-enriched training strategies, fur-ther boosting the Visual-G metric by +3.1 AP to 40.3 AP and the Visual-I metric to 64.0 AP. Compared with Row 1, The adoption of these two prompt-enriched training strate-gies enables comprehensive parallel optimization, resulting in a highly efficient and unified training framework. 
+
+4.7. Analysis of Text-Prompted Pre-training 
+
+Our approach adopts an inheritance-based strategy, differ-ing from multi-stage development methods. We build upon an advanced text-prompted detector, equipping it with the perceptual advantages of visual cues, while also reducing training costs and development cycles, and preserving the performance of text-prompted detection. In this section, we investigate the effectiveness and the impact of inheriting a pre-trained text-prompted detector. We conducted comparative experiments between train-ing a model from scratch and inheriting a pre-trained model. The results are presented in Table 7. Our experiment demonstrates that initializing with a well-established text-prompted model as the pre-trained model yields superior performance compared to training from scratch. Specifi-              
+
+> Method Training Data COCO COCO MM-Grounding-DINO PET-DINO visual-I visual-G PET-DINO-T -O365 62.1 32.7 (from scratch) PET-DINO-T O365, GoldG, V3Det O365 64.0 40.3
+> (from pre-trained)
+
+Table 7. With or without inheriting the pre-trained model. All models are trained with Swin-T. 40                         
+
+> 45
+> 50
+> 55
+> 60
+> 65
+> 1234567891 0 1 1 1 2
+> mAP(%)
+> epochs
+> (a) Training Curves of Visual -I
+> From Scratch MM-Grounding-DINO pretrained 6
+> 11
+> 16
+> 21
+> 26
+> 31
+> 36
+> 41
+> 1234567891 0 1 1 1 2
+> mAP(%)
+> epochs
+> (b) Training Curves of Visual -G
+> From Scratch MM-Grounding-DINO pretrained
+
+Figure 3. Comparison between training from scratch and inherit-ing the pre-trained model. The models are trained on O365 and evaluated on COCO val set. 
+
+cally, the Visual-G protocol exhibits a significant perfor-mance improvement of +7.6 AP. As illustrated in Figure 3, after 12 epochs, the performance of the model trained from scratch has already stabilized, whereas inheriting the pre-trained MM-Grounding-DINO achieves a higher upper bound. This indicates that text-prompted pre-training ex-cels at leveraging global high-level semantic representa-tions, which helps our model understand high-level cate-gory semantics, especially in the Global-Concept Route .
+
+## 5. Conclusion 
+
+In this paper, we propose PET-DINO, a versatile object detection framework that supports both text and visual prompting by extending the Grounding DINO architec-ture. We begin by introducing the Alignment-Friendly Visual Prompt Generation (AFVPG) module, which en-hances the model’s sensitivity to complex and domain-specific visual cues and maintains text-prompting func-tionality. Additionally, we introduce two prompt-enriched training strategies, Intra-Batch Parallel Prompting (IBP) and Dynamic Memory-Driven Prompting (DMD), for vi-sual prompt learning. These strategies align with diverse real-world scenarios and enhance overall performance by simulating a dense prompt environment during training. PET-DINO achieves significant zero-shot detection perfor-mance across multiple benchmarks and experimental anal-ysis demonstrates that text-prompt pre-training elevates the performance ceiling over training from scratch. This work adopts an inheritance-based philosophy and develops prompt-enriched training strategies to meet diverse practi-cal scenarios. We hope this work can provide new insights for generic object detection. 8References 
+
+[1] Qibo Chen, Weizhong Jin, Jianyue Ge, Mengdi Liu, Yuchao Yan, Jian Jiang, Li Yu, Xuanjiang Guo, Shuchang Li, and Jianzhong Chen. Cp-detr: Concept prompt guide detr to-ward stronger universal object detection. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 2141– 2149, 2025. 1, 3, 5, 6 [2] Sijia Chen, En Yu, Jinyang Li, and Wenbing Tao. Delving into the trajectory long-tail distribution for muti-object track-ing. In Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition , pages 19341–19351, 2024. 2 [3] Sijia Chen, En Yu, and Wenbing Tao. Cross-view referring multi-object tracking. In Proceedings of the AAAI Confer-ence on Artificial Intelligence , pages 2204–2211, 2025. [4] Sijia Chen, Yanqiu Yu, En Yu, and Wenbing Tao. Reamot: A benchmark and framework for reasoning-based multi-object tracking. arXiv preprint arXiv:2505.20381 , 2025. 2 [5] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional trans-formers for language understanding. In Proceedings of the 2019 conference of the North American chapter of the asso-ciation for computational linguistics: human language tech-nologies, volume 1 (long and short papers) , pages 4171– 4186, 2019. 5 [6] WeiFu Fu, CongChong Nie, Ting Sun, Jun Liu, TianLiang Zhang, and Yong Liu. Lvis challenge track technical report 1st place solution: Distribution balanced and boundary re-finement for large vocabulary instance segmentation. arXiv preprint arXiv:2111.02668 , 2021. 1 [7] Xiuye Gu, Tsung-Yi Lin, Weicheng Kuo, and Yin Cui. Open-vocabulary object detection via vision and language knowledge distillation. arXiv preprint arXiv:2104.13921 ,2021. 1, 2 [8] Agrim Gupta, Piotr Dollar, and Ross Girshick. Lvis: Adataset for large vocabulary instance segmentation. In Pro-ceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 5356–5364, 2019. 2, 5 [9] Qing Jiang, Feng Li, Tianhe Ren, Shilong Liu, Zhaoyang Zeng, Kent Yu, and Lei Zhang. T-rex: Counting by visual prompting. arXiv preprint arXiv:2311.13596 , 2023. 3 [10] Qing Jiang, Feng Li, Zhaoyang Zeng, Tianhe Ren, Shilong Liu, and Lei Zhang. T-rex2: Towards generic object detec-tion via text-visual prompt synergy. In European Conference on Computer Vision , pages 38–57. Springer, 2024. 1, 3, 4, 5, 6[11] Aishwarya Kamath, Mannat Singh, Yann LeCun, Gabriel Synnaeve, Ishan Misra, and Nicolas Carion. Mdetr-modulated detection for end-to-end multi-modal understand-ing. In Proceedings of the IEEE/CVF international confer-ence on computer vision , pages 1780–1790, 2021. 5 [12] Alina Kuznetsova, Hassan Rom, Neil Alldrin, Jasper Ui-jlings, Ivan Krasin, Jordi Pont-Tuset, Shahab Kamali, Stefan Popov, Matteo Malloci, Alexander Kolesnikov, et al. The open images dataset v4: Unified image classification, object detection, and visual relationship detection at scale. Interna-tional journal of computer vision , 128(7):1956–1981, 2020. 5[13] Chunyuan Li, Haotian Liu, Liunian Li, Pengchuan Zhang, Jyoti Aneja, Jianwei Yang, Ping Jin, Houdong Hu, Zicheng Liu, Yong Jae Lee, et al. Elevater: A benchmark and toolkit for evaluating language-augmented visual models. Advances in Neural Information Processing Systems , 35:9287–9301, 2022. 2, 5 [14] Feng Li, Qing Jiang, Hao Zhang, Tianhe Ren, Shilong Liu, Xueyan Zou, Huaizhe Xu, Hongyang Li, Jianwei Yang, Chunyuan Li, et al. Visual in-context prompting. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 12861–12871, 2024. 3, 7 [15] Jialin Li, Qiang Nie, Weifu Fu, Yuhuan Lin, Guangpin Tao, Yong Liu, and Chengjie Wang. Lors: Low-rank residual structure for parameter-efficient network stacking. In Pro-ceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 15866–15876, 2024. 1 [16] Jinyang Li, En Yu, Sijia Chen, and Wenbing Tao. Ovtr: End-to-end open-vocabulary multiple object tracking with trans-former. arXiv preprint arXiv:2503.10616 , 2025. 2 [17] Liunian Harold Li, Pengchuan Zhang, Haotian Zhang, Jian-wei Yang, Chunyuan Li, Yiwu Zhong, Lijuan Wang, Lu Yuan, Lei Zhang, Jenq-Neng Hwang, et al. Grounded language-image pre-training. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 10965–10975, 2022. 1, 2 [18] Xiang Li, Wenhai Wang, Lijun Wu, Shuo Chen, Xiaolin Hu, Jun Li, Jinhui Tang, and Jian Yang. Generalized focal loss: Learning qualified and distributed bounding boxes for dense object detection. Advances in neural information processing systems , 33:21002–21012, 2020. 3 [19] Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, Piotr Doll´ ar, and C Lawrence Zitnick. Microsoft coco: Common objects in context. In 
+
+European conference on computer vision , pages 740–755. Springer, 2014. 2, 5 [20] Shilong Liu, Zhaoyang Zeng, Tianhe Ren, Feng Li, Hao Zhang, Jie Yang, Qing Jiang, Chunyuan Li, Jianwei Yang, Hang Su, et al. Grounding dino: Marrying dino with grounded pre-training for open-set object detection. In Euro-pean conference on computer vision , pages 38–55. Springer, 2024. 1, 2, 3, 7 [21] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and Baining Guo. Swin transformer: Hierarchical vision transformer using shifted windows. In 
+
+Proceedings of the IEEE/CVF international conference on computer vision , pages 10012–10022, 2021. 5 [22] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. arXiv preprint arXiv:1711.05101 , 2017. 5 [23] Zelin Peng, Zhengqin Xu, Zhilin Zeng, Changsong Wen, Yu Huang, Menglin Yang, Feilong Tang, and Wei Shen. Un-derstanding fine-tuning clip for open-vocabulary semantic segmentation in hyperbolic space. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 4562–4572, 2025. 2 [24] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, 
+
+9Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from natural language supervi-sion. In International conference on machine learning , pages 8748–8763. PmLR, 2021. 2, 6 [25] Hamid Rezatofighi, Nathan Tsoi, JunYoung Gwak, Amir Sadeghian, Ian Reid, and Silvio Savarese. Generalized in-tersection over union: A metric and a loss for bounding box regression. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 658–666, 2019. 3 [26] Shuai Shao, Zeming Li, Tianyuan Zhang, Chao Peng, Gang Yu, Xiangyu Zhang, Jing Li, and Jian Sun. Objects365: A large-scale, high-quality dataset for object detection. In Pro-ceedings of the IEEE/CVF international conference on com-puter vision , pages 8430–8439, 2019. 5 [27] Ao Wang, Lihao Liu, Hui Chen, Zijia Lin, Jungong Han, and Guiguang Ding. Yoloe: Real-time seeing anything. In 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 24591–24602, 2025. 1, 3, 6 [28] Jiaqi Wang, Pan Zhang, Tao Chu, Yuhang Cao, Yujie Zhou, Tong Wu, Bin Wang, Conghui He, and Dahua Lin. V3det: Vast vocabulary visual detection dataset. In Proceedings of the IEEE/CVF International Conference on Computer Vi-sion , pages 19844–19854, 2023. 5 [29] Junfeng Wu, Yi Jiang, Qihao Liu, Zehuan Yuan, Xiang Bai, and Song Bai. General object foundation model for images and videos at scale. In Proceedings of the IEEE/CVF Con-ference on Computer Vision and Pattern Recognition , pages 3783–3795, 2024. 2 [30] Yifan Xu, Mengdan Zhang, Chaoyou Fu, Peixian Chen, Xi-aoshan Yang, Ke Li, and Changsheng Xu. Multi-modal queried object detection in the wild. Advances in Neural Information Processing Systems , 36:4452–4469, 2023. 3 [31] Lewei Yao, Jianhua Han, Youpeng Wen, Xiaodan Liang, Dan Xu, Wei Zhang, Zhenguo Li, Chunjing Xu, and Hang Xu. Detclip: Dictionary-enriched visual-concept paralleled pre-training for open-world detection. Advances in Neural Infor-mation Processing Systems , 35:9125–9138, 2022. 2 [32] Lewei Yao, Renjie Pi, Jianhua Han, Xiaodan Liang, Hang Xu, Wei Zhang, Zhenguo Li, and Dan Xu. Detclipv3: To-wards versatile generative open-vocabulary object detection. In Proceedings of the IEEE/CVF conference on computer vi-sion and pattern recognition , pages 27391–27401, 2024. 1 [33] Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M Ni, and Heung-Yeung Shum. Dino: Detr with improved denoising anchor boxes for end-to-end object detection. arXiv preprint arXiv:2203.03605 , 2022. 1 [34] Hao Zhang, Feng Li, Xueyan Zou, Shilong Liu, Chunyuan Li, Jianwei Yang, and Lei Zhang. A simple framework for open-vocabulary segmentation and detection. In Proceed-ings of the IEEE/CVF International Conference on Com-puter Vision , pages 1020–1031, 2023. 7 [35] Jinrong Zhang, Penghui Wang, Chunxiao Liu, Wei Liu, Dian Jin, Qiong Zhang, Erli Meng, and Zhengnan Hu. Just a few glances: Open-set visual perception with image prompt paradigm. In Proceedings of the AAAI Conference on Artifi-cial Intelligence , pages 9969–9976, 2025. 3, 7 [36] Xiangyu Zhao, Yicheng Chen, Shilin Xu, Xiangtai Li, Xin-jiang Wang, Yining Li, and Haian Huang. An open and com-prehensive pipeline for unified object grounding and detec-tion. arXiv preprint arXiv:2401.02361 , 2024. 5, 6, 7 [37] Yiwu Zhong, Jianwei Yang, Pengchuan Zhang, Chun-yuan Li, Noel Codella, Liunian Harold Li, Luowei Zhou, Xiyang Dai, Lu Yuan, Yin Li, et al. Regionclip: Region-based language-image pretraining. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 16793–16803, 2022. 2 [38] Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, and Jifeng Dai. Deformable detr: Deformable trans-formers for end-to-end object detection. arXiv preprint arXiv:2010.04159 , 2020. 1, 4 [39] Xueyan Zou, Zi-Yi Dou, Jianwei Yang, Zhe Gan, Linjie Li, Chunyuan Li, Xiyang Dai, Harkirat Behl, Jianfeng Wang, Lu Yuan, et al. Generalized decoding for pixel, image, and lan-guage. In Proceedings of the IEEE/CVF conference on com-puter vision and pattern recognition , pages 15116–15127, 2023. 7 
+
+10 PET-DINO: Unifying Visual Cues into Grounding DINO with Prompt-Enriched Training 
+
+# Supplementary Material 
+
+## A. More Implementation Details 
+
+A.1. Detailed Illustration of DMD 
+
+Here, we further provide a detailed illustration of Dynamic Memory-Driven (DMD) Prompting, as shown in Figure 1. At iteration t, n categories are sampled from the Visual Cues Bank. For each sampled category, the corresponding stored visual prompts are aggregated to generate a memory-driven prompt. These memory-driven prompts, together with the current prompts and intra-batch prompts, are used in paral-lel to guide the model for detection, enabling parallel opti-mization, enhancing alignment with application scenarios, and strengthening open-category recognition. After partic-ipating in the guidance process, the current prompts and intra-batch prompts are stored by category to update the Vi-sual Cues Bank, thereby enriching the visual cues for it-eration t+1 and significantly reducing computational over-head. To ensure that stored visual prompts remain compati-ble with the evolving network, the Visual Cues Bank keeps up to M prompt embeddings per category during training, discarding the oldest when new ones are added. Iter t       
+
+> Visual Cues Bank
+> Iter t+1
+> Sample &
+> Aggregate
+> Sample &
+> Aggregate
+> Img t+1
+> Img t
+> M
+> M
+> Visual Cues Bank
+> PET -DINO
+> PET -DINO
+> Iter t
+> Visual Cues Bank
+> Iter t+1
+> Sample &
+> Aggregate
+> Sample &
+> Aggregate
+> Img t+1
+> Img t
+> M
+> M
+> Visual Cues Bank
+> PET -DINO
+> PET -DINO
+> Drop
+> Drop
+
+Figure 1. Dynamic Memory-Driven Prompting Diagram. During each iteration, the Visual Cues Bank updates its stored prompts with visual prompts used by PET-DINO, while PET-DINO utilizes the enriched prompts from the bank to improve training. 
+
+A.2. More Training Details 
+
+Both the matching cost computation and the final loss calcu-lation incorporate classification losses, box L1 losses, and GIoU losses. For classification, we employ a contrastive loss between predicted objects and prompt embeddings to align the prompt representations with the implicit informa-tion in the image. Specifically, we compute the dot product between each output query and the prompt embeddings to obtain logits for each category and then apply focal loss to 
+
+Figure 2. Feature correlation analysis between visual prompts and instance-level image features showing the impact of AFVPG. 
+
+each logit. For Hungarian matching, we assign weights of 2.0, 5.0, and 2.0 to the classification, L1, and GIoU costs, respectively. The corresponding loss weights are 1.0, 5.0, and 2.0 in the final loss calculation. We use automatic mixed precision for training. For im-age augmentation, we adopt standard techniques used in DETR-like methods, including multi-scale training and ran-dom flipping. Following DINO, we employ contrastive de-noising training (CDN) to stabilize training and accelerate convergence. 
+
+## B. Visualization Analysis of Proposed Modules 
+
+B.1. Feature correlation analysis of AFVPG 
+
+To visually demonstrate the effectiveness of AFVPG, we provide a feature correlation analysis as shown in Figure 2. We compute the cosine similarity, followed by Softmax nor-malization, between all candidate prompts and the image feature most similar to each visual prompt. As illustrated, AFVPG (bottom) markedly enhances diagonal responses and suppresses off-diagonal interfer-ence, effectively mitigating the cross-category ambiguity observed in the model without AFVPG (top). This intrinsic alignment facilitates precise query selection, yielding sub-stantial performance gains of 4.8 AP on visual-I via this simple yet effective design. 
+
+B.2. t-SNE visualization of IBP and DMD 
+
+To reveal the underlying reasons for the performance gains in Table 6, we conducted a t-SNE visualization on the visual prompt features of 10 randomly selected categories from the COCO dataset. As shown in Figure 3, without IBP and DMD (left), the visual prompt features are scattered without clear bound-aries between categories. In contrast, incorporating IBP 1Figure 3. t-SNE visualization of visual prompt features showing the impact of IBP and DMD. 
+
+and DMD (right) leads to tighter intra-class aggregation and clearer inter-class separation. This highly discriminative se-mantic space ensures robust category differentiation in com-plex multi-category scenarios, serving as the primary driver of performance boost. 
+
+## C. Visualizations 
+
+In this section, we comprehensively showcase the capabil-ities of PET-DINO across diverse scenarios by leveraging various types of prompts. We evaluated zero-shot detection performance in dense object scenarios using PET-DINO in the interactive vi-sual prompt detection mode. As shown in Figure 4, PET-DINO demonstrates excellent performance in single-category scenes. Furthermore, as illustrated in Figure 5, PET-DINO maintains strong performance in multi-category scenarios, accurately distinguishing between different cate-gories. These results demonstrate that our prompt genera-tion and training strategies enable the model to perform well in complex and dense detection scenarios, underscoring the strong potential of PET-DINO for real-world applications like automatic annotation and object counting. As illustrated in Figure 6, PET-DINO can identify ob-jects of the same category in different images based on a target selected from an exemplar image, paving the way for broader and more general application scenarios. In Figure 7, we present zero-shot results based on pre-extracted generic visual prompts. The method achieves strong performance in various scenarios, demonstrating the effectiveness of our training strategies aligned with practi-cal usage. It is especially valuable for adapting to novel scenarios without additional retraining, and can further be applied to cases where textual representations are difficult to align with the targets. In Figure 8, we present zero-shot text prompt-based de-tection results. Our model maintains robust performance and demonstrates effectiveness across various scenarios, re-flecting the harmony of our inheritance strategy. In conclusion, empowered by our strategies, PET-DINO effectively adapts to diverse application scenarios, exhibit-ing high accuracy and robust generalization. 2Figure 4. Zero-shot detection visualizations of PET-DINO on interactive visual prompt-based detection in single -category dense object scenarios. 
+
+Figure 5. Zero-shot detection visualizations of PET-DINO on interactive visual prompt-based detection in multi -category dense object scenarios. 
+
+3Figure 6. Zero-shot detection visualizations of PET-DINO on cross-image exemplar visual prompt-based detection. Exemplars are shown above, and prediction outputs are shown below. 
+
+Figure 7. Zero-shot detection visualizations of PET-DINO with class-level generic visual prompts. The visual prompt embeddings are pre-extracted from the training set. 
+
+4person, baseball glove, baseball bat, …  dinning table, fork, knife, carrot, broccoli, orange, …  person, elephant, … 
+
+person, tie, knife, cake, …  person, motorcycle, car, truck, backpack, bottle, …  person, motorcycle, car, … Figure 8. Zero-shot detection visualizations of PET-DINO with text prompts. The category names from the dataset are utilized as textual inputs for prompt generation. 
+
+5
